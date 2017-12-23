@@ -135,6 +135,13 @@ Lrud.prototype = assign({}, EventEmitter.prototype, {
     return nextIndex
   },
 
+  _getEventOffset: function (event) {
+    return (
+      Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.RIGHT ||
+      Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.DOWN
+    ) ? 1 : -1
+  },
+
   _bubbleKeyEvent: function (event, id) {
     var node = this.nodes[id]
     if (!node) return
@@ -146,11 +153,20 @@ Lrud.prototype = assign({}, EventEmitter.prototype, {
     if (this._isValidLRUDEvent(event, node)) {
       var activeChild = node.activeChild || node.children[0]
       var activeIndex = node.children.indexOf(activeChild)
-      var offset = Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.RIGHT || Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.DOWN ? 1 : -1
+      var offset = this._getEventOffset(event)
       var nextIndex = this._getNextActiveIndex(node, activeIndex, offset)
       var nextChild = node.children[nextIndex]
 
       if (nextChild) {
+        this.emit('move', {
+          id,
+          orientation: node.orientation,
+          carousel: node.carousel,
+          offset,
+          enter: { id: nextChild, index: nextIndex },
+          leave: { id: activeChild, index: activeIndex }
+        })
+
         this.focus(nextChild)
 
         return event.stopPropagation()

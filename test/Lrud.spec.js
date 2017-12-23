@@ -4,6 +4,7 @@ const { expect } = require('chai')
 const sinon = require('sinon')
 const Lrud = require('../src')
 const constants = require('../src/constants')
+const data = require('./data.json')
 
 describe('Given an instance of Lrud', () => {
   let navigation
@@ -14,7 +15,7 @@ describe('Given an instance of Lrud', () => {
     navigation = new Lrud()
   })
 
-  const nodesJSON = () => JSON.parse(JSON.stringify(navigation.nodes))
+  const toJSON = (o) => JSON.parse(JSON.stringify(o))
 
   describe('register', () => {
     it('should throw an error when attempting to register without an id', () => {
@@ -24,7 +25,7 @@ describe('Given an instance of Lrud', () => {
     it('should register a node as expected', () => {
       navigation.register('root')
 
-      expect(nodesJSON()).to.deep.equal({
+      expect(toJSON(navigation.nodes)).to.deep.equal({
         root: {
           children: []
         }
@@ -43,7 +44,7 @@ describe('Given an instance of Lrud', () => {
         imposter: true
       })
 
-      expect(nodesJSON()).to.deep.equal({
+      expect(toJSON(navigation.nodes)).to.deep.equal({
         root: {
           children: [],
           orientation: 'vertical',
@@ -315,10 +316,12 @@ describe('Given an instance of Lrud', () => {
     it('should move through a horizontal list as expected', () => {
       const stopPropagationSpy = sinon.spy()
       const focusSpy = sinon.spy()
+      const moveSpy = sinon.spy()
 
       navigation.currentFocus = 'child1'
 
       navigation.on('focus', focusSpy)
+      navigation.on('move', moveSpy)
 
       navigation.register('root', { orientation: 'horizontal' })
       navigation.register('child1', { parent: 'root' })
@@ -341,6 +344,43 @@ describe('Given an instance of Lrud', () => {
         [ 'child2' ],
         [ 'child1' ]
       ])
+
+      expect(toJSON(moveSpy.args)).to.deep.equal(data.horizontalMove)
+    })
+
+    it('should move through a vertical list as expected', () => {
+      const stopPropagationSpy = sinon.spy()
+      const focusSpy = sinon.spy()
+      const moveSpy = sinon.spy()
+
+      navigation.currentFocus = 'child1'
+
+      navigation.on('focus', focusSpy)
+      navigation.on('move', moveSpy)
+
+      navigation.register('root', { orientation: 'vertical' })
+      navigation.register('child1', { parent: 'root' })
+      navigation.register('child2', { parent: 'root' })
+      navigation.register('child3', { parent: 'root' })
+
+      // DOWN
+      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: stopPropagationSpy }) // Focus child2
+      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: stopPropagationSpy }) // Focus child3
+      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: stopPropagationSpy }) // Edge
+      // UP
+      navigation.handleKeyEvent({ keyCode: 38, stopPropagation: stopPropagationSpy }) // Focus child2
+      navigation.handleKeyEvent({ keyCode: 38, stopPropagation: stopPropagationSpy }) // Focus child1
+      navigation.handleKeyEvent({ keyCode: 38, stopPropagation: stopPropagationSpy }) // Edge
+
+      expect(stopPropagationSpy.callCount).to.equal(4)
+      expect(focusSpy.args).to.deep.equal([
+        [ 'child2' ],
+        [ 'child3' ],
+        [ 'child2' ],
+        [ 'child1' ]
+      ])
+
+      expect(toJSON(moveSpy.args)).to.deep.equal(data.verticalMove)
     })
   })
 
