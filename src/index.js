@@ -13,9 +13,14 @@ function newNode (props) {
   props = props || {}
 
   return {
-    parent: props.parent || null,
+    parent: props.parent,
     children: props.children || [],
-    activeChild: props.activeChild || null
+    activeChild: props.activeChild,
+    orientation: props.orientation,
+    wrapping: props.wrapping,
+    grid: props.grid,
+    carousel: props.carousel,
+    data: props.data
   }
 }
 
@@ -45,9 +50,7 @@ Lrud.prototype = assign({}, EventEmitter.prototype, {
 
   unregister: function (id) {
     var node = this.nodes[id]
-    if (!node) {
-      return console.warn('Attempting to unregister an unknown node')
-    }
+    if (!node) return
 
     var parentNode = this.nodes[node.parent]
 
@@ -98,11 +101,20 @@ Lrud.prototype = assign({}, EventEmitter.prototype, {
   },
 
   handleKeyEvent: function (event) {
-
+    this._bubbleKeyEvent(event, this.currentFocus)
   },
 
-  _bubbleKeypress: function (event, id) {
+  getNodes: function () {
+    return JSON.parse(JSON.stringify(this.nodes))
+  },
 
+  _bubbleKeyEvent: function (event, id) {
+    var node = this.nodes[id]
+    if (!node) return
+
+    if (Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.ENTER) {
+      return this.emit('select', assign({ id: id }, node))
+    }
   },
 
   _setActiveChild: function (id, nextActiveChild) {
@@ -112,6 +124,7 @@ Lrud.prototype = assign({}, EventEmitter.prototype, {
       if (activeChild) {
         this.emit('deactivate', activeChild)
       }
+
       this.emit('activate', nextActiveChild)
       this.nodes[id].activeChild = nextActiveChild
     }

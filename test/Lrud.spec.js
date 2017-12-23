@@ -19,14 +19,38 @@ describe('Given an instance of Lrud', () => {
       expect(() => navigation.register()).to.throw('Attempting to register with an invalid id')
     })
 
-    it('should add a node as expected', () => {
+    it('should register a node as expected', () => {
       navigation.register('root')
 
-      expect(navigation.nodes).to.deep.equal({
+      expect(navigation.getNodes()).to.deep.equal({
         root: {
-          parent: null,
+          children: []
+        }
+      })
+    })
+
+    it('should register a node passing through only the white listed props', () => {
+      navigation.register('root', {
+        orientation: 'vertical',
+        wrapping: true,
+        grid: true,
+        carousel: true,
+        data: {
+          hi: true
+        },
+        imposter: true
+      })
+
+      expect(navigation.getNodes()).to.deep.equal({
+        root: {
           children: [],
-          activeChild: null
+          orientation: 'vertical',
+          wrapping: true,
+          grid: true,
+          carousel: true,
+          data: {
+            hi: true
+          }
         }
       })
     })
@@ -35,8 +59,8 @@ describe('Given an instance of Lrud', () => {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
 
-      expect(navigation.nodes.root.children).to.deep.equal([ 'child' ])
-      expect(navigation.nodes.child.parent).to.equal('root')
+      expect(navigation.getNodes().root.children).to.deep.equal([ 'child' ])
+      expect(navigation.getNodes().child.parent).to.equal('root')
     })
 
     it('should maintain the child order if a node is registered multiple times', () => {
@@ -45,7 +69,7 @@ describe('Given an instance of Lrud', () => {
       navigation.register('child2', { parent: 'root' })
       navigation.register('child', { parent: 'root' })
 
-      expect(navigation.nodes.root.children).to.deep.equal([
+      expect(navigation.getNodes().root.children).to.deep.equal([
         'child',
         'child2'
       ])
@@ -57,7 +81,7 @@ describe('Given an instance of Lrud', () => {
       navigation.register('root')
       navigation.unregister('root')
 
-      expect(navigation.nodes.root).to.equal(undefined)
+      expect(navigation.getNodes().root).to.equal(undefined)
     })
 
     it('should undo the parent/child relationship as expected', () => {
@@ -65,7 +89,7 @@ describe('Given an instance of Lrud', () => {
       navigation.register('child', { parent: 'root' })
       navigation.unregister('child')
 
-      expect(navigation.nodes.root.children).to.deep.equal([])
+      expect(navigation.getNodes().root.children).to.deep.equal([])
     })
 
     it('should remove the children of the unregistered node', () => {
@@ -74,8 +98,8 @@ describe('Given an instance of Lrud', () => {
       navigation.register('child2', { parent: 'root' })
       navigation.unregister('root')
 
-      expect(navigation.nodes.child).to.equal(undefined)
-      expect(navigation.nodes.child2).to.equal(undefined)
+      expect(navigation.getNodes().child).to.equal(undefined)
+      expect(navigation.getNodes().child2).to.equal(undefined)
     })
 
     it('should blur the \'currentFocus\' node if it is the node being unregistered', () => {
@@ -111,10 +135,10 @@ describe('Given an instance of Lrud', () => {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
-      navigation.nodes.root.activeChild = 'child2'
+      navigation.getNodes().root.activeChild = 'child2'
       navigation.unregister('child2')
 
-      expect(navigation.nodes.root.activeChild).to.equal(null)
+      expect(navigation.getNodes().root.activeChild).to.equal(undefined)
     })
   })
 
@@ -228,12 +252,12 @@ describe('Given an instance of Lrud', () => {
 
       navigation.focus('root')
 
-      expect(navigation.nodes.root.activeChild).to.equal('child')
+      expect(navigation.getNodes().root.activeChild).to.equal('child')
 
       navigation.focus('child-of-child2')
 
-      expect(navigation.nodes.child2.activeChild).to.equal('child-of-child2')
-      expect(navigation.nodes.root.activeChild).to.equal('child2')
+      expect(navigation.getNodes().child2.activeChild).to.equal('child-of-child2')
+      expect(navigation.getNodes().root.activeChild).to.equal('child2')
     })
 
     it('should emit the activate event as expected', () => {
@@ -266,6 +290,26 @@ describe('Given an instance of Lrud', () => {
 
       expect(spy.calledOnce).to.equal(true)
       expect(spy.calledWith('child')).to.equal(true)
+    })
+  })
+
+  describe('handleKeyEvent', () => {
+    it('should emit the select event as expected', () => {
+      const spy = sinon.spy()
+
+      navigation.on('select', spy)
+
+      navigation.register('root')
+      navigation.register('child', { parent: 'root' })
+
+      navigation.focus('child')
+
+      navigation.handleKeyEvent({ keyCode: 13 })
+
+      const args = spy.getCall(0).args[0]
+
+      expect(spy.calledOnce).to.equal(true)
+      expect(args.id).to.equal('child')
     })
   })
 
