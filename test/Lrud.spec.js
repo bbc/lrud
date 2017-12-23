@@ -308,15 +308,60 @@ describe('Given an instance of Lrud', () => {
 
       navigation.handleKeyEvent({ keyCode: 13 })
 
-      const args = spy.getCall(0).args[0]
-
       expect(spy.calledOnce).to.equal(true)
-      expect(args.id).to.equal('child')
+      expect(spy.calledWith('child')).to.equal(true)
+    })
+
+    it('should move through a horizontal list as expected', () => {
+      const stopPropagationSpy = sinon.spy()
+      const focusSpy = sinon.spy()
+
+      navigation.currentFocus = 'child1'
+
+      navigation.on('focus', focusSpy)
+
+      navigation.register('root', { orientation: 'horizontal' })
+      navigation.register('child1', { parent: 'root' })
+      navigation.register('child2', { parent: 'root' })
+      navigation.register('child3', { parent: 'root' })
+
+      // RIGHT
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Focus child2
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Focus child3
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Edge
+      // LEFT
+      navigation.handleKeyEvent({ keyCode: 37, stopPropagation: stopPropagationSpy }) // Focus child2
+      navigation.handleKeyEvent({ keyCode: 37, stopPropagation: stopPropagationSpy }) // Focus child1
+      navigation.handleKeyEvent({ keyCode: 37, stopPropagation: stopPropagationSpy }) // Edge
+
+      expect(stopPropagationSpy.callCount).to.equal(4)
+      expect(focusSpy.args).to.deep.equal([
+        [ 'child2' ],
+        [ 'child3' ],
+        [ 'child2' ],
+        [ 'child1' ]
+      ])
     })
   })
 
-  // TODO
-  // describe('Overriding static properties', () => {
-  //
-  // })
+  describe('Overriding static KEY_CODES/KEY_MAP properties', () => {
+    it('should emit the select event as expected', () => {
+      Lrud.KEY_CODES = { 1: 'Enter' }
+      Lrud.KEY_MAP = { ENTER: 'Enter' }
+
+      const spy = sinon.spy()
+
+      navigation.on('select', spy)
+
+      navigation.register('root')
+      navigation.register('child', { parent: 'root' })
+
+      navigation.focus('child')
+
+      navigation.handleKeyEvent({ keyCode: 1 })
+
+      expect(spy.calledOnce).to.equal(true)
+      expect(spy.calledWith('child')).to.equal(true)
+    })
+  })
 })

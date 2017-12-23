@@ -104,13 +104,60 @@ Lrud.prototype = assign({}, EventEmitter.prototype, {
     this._bubbleKeyEvent(event, this.currentFocus)
   },
 
+  _isValidLRUDEvent: function (event, node) {
+    var keyCode = event.keyCode
+
+    return (
+      (
+        node.orientation === 'horizontal' &&
+        (
+          Lrud.KEY_CODES[keyCode] === Lrud.KEY_MAP.LEFT ||
+          Lrud.KEY_CODES[keyCode] === Lrud.KEY_MAP.RIGHT
+        )
+      ) ||
+      (
+        node.orientation === 'vertical' &&
+        (
+          Lrud.KEY_CODES[keyCode] === Lrud.KEY_MAP.UP ||
+          Lrud.KEY_CODES[keyCode] === Lrud.KEY_MAP.DOWN
+        )
+      )
+    )
+  },
+
+  _getNextActiveIndex: function (node, activeIndex, offset) {
+    var nextIndex = activeIndex + offset
+    var size = node.children.length
+
+    if (node.wrapping && nextIndex === -1) return size - 1
+    if (node.wrapping && nextIndex === size) return 0
+
+    return nextIndex
+  },
+
   _bubbleKeyEvent: function (event, id) {
     var node = this.nodes[id]
     if (!node) return
 
     if (Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.ENTER) {
-      return this.emit('select', assign({ id: id }, node))
+      return this.emit('select', id)
     }
+
+    if (this._isValidLRUDEvent(event, node)) {
+      var activeChild = node.activeChild || node.children[0]
+      var activeIndex = node.children.indexOf(activeChild)
+      var offset = Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.RIGHT || Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.DOWN ? 1 : -1
+      var nextIndex = this._getNextActiveIndex(node, activeIndex, offset)
+      var nextChild = node.children[nextIndex]
+
+      if (nextChild) {
+        this.focus(nextChild)
+
+        return event.stopPropagation()
+      }
+    }
+
+    this._bubbleKeyEvent(event, node.parent)
   },
 
   _setActiveChild: function (id, nextActiveChild) {
