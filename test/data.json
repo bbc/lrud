@@ -1,0 +1,126 @@
+{
+  "horizontalMove": [
+    [
+      {
+        "id": "root",
+        "orientation": "horizontal",
+        "offset": 1,
+        "enter": {
+          "id": "child2",
+          "index": 1
+        },
+        "leave": {
+          "id": "child1",
+          "index": 0
+        }
+      }
+    ],
+    [
+      {
+        "id": "root",
+        "orientation": "horizontal",
+        "offset": 1,
+        "enter": {
+          "id": "child3",
+          "index": 2
+        },
+        "leave": {
+          "id": "child2",
+          "index": 1
+        }
+      }
+    ],
+    [
+      {
+        "id": "root",
+        "orientation": "horizontal",
+        "offset": -1,
+        "enter": {
+          "id": "child2",
+          "index": 1
+        },
+        "leave": {
+          "id": "child3",
+          "index": 2
+        }
+      }
+    ],
+    [
+      {
+        "id": "root",
+        "orientation": "horizontal",
+        "offset": -1,
+        "enter": {
+          "id": "child1",
+          "index": 0
+        },
+        "leave": {
+          "id": "child2",
+          "index": 1
+        }
+      }
+    ]
+  ],
+  "verticalMove": [
+    [
+      {
+        "id": "root",
+        "orientation": "vertical",
+        "offset": 1,
+        "enter": {
+          "id": "child2",
+          "index": 1
+        },
+        "leave": {
+          "id": "child1",
+          "index": 0
+        }
+      }
+    ],
+    [
+      {
+        "id": "root",
+        "orientation": "vertical",
+        "offset": 1,
+        "enter": {
+          "id": "child3",
+          "index": 2
+        },
+        "leave": {
+          "id": "child2",
+          "index": 1
+        }
+      }
+    ],
+    [
+      {
+        "id": "root",
+        "orientation": "vertical",
+        "offset": -1,
+        "enter": {
+          "id": "child2",
+          "index": 1
+        },
+        "leave": {
+          "id": "child3",
+          "index": 2
+        }
+      }
+    ],
+    [
+      {
+        "id": "root",
+        "orientation": "vertical",
+        "offset": -1,
+        "enter": {
+          "id": "child1",
+          "index": 0
+        },
+        "leave": {
+          "id": "child2",
+          "index": 1
+        }
+      }
+    ]
+  ]
+}

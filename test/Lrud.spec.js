@@ -1,17 +1,17 @@
 /* eslint-env mocha, chai */
 
-const { expect } = require('chai')
-const sinon = require('sinon')
-const Lrud = require('../src')
-const constants = require('../src/constants')
-const data = require('./data.json')
+import { expect } from 'chai'
+import sinon from 'sinon'
+import Lrud from '../src'
+import { DEFAULT_KEY_CODES, DEFAULT_KEY_MAP } from '../src/constants'
+import data from './data.json'
 
 describe('Given an instance of Lrud', () => {
   let navigation
 
   beforeEach(() => {
-    Lrud.KEY_CODES = constants.DEFAULT_KEY_CODES
-    Lrud.KEY_MAP = constants.DEFAULT_KEY_MAP
+    Lrud.KEY_CODES = DEFAULT_KEY_CODES
+    Lrud.KEY_MAP = DEFAULT_KEY_MAP
     navigation = new Lrud()
   })
 
