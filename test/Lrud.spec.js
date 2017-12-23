@@ -382,6 +382,60 @@ describe('Given an instance of Lrud', () => {
 
       expect(toJSON(moveSpy.args)).to.deep.equal(data.verticalMove)
     })
+
+    it('should move through a wrapping list as expected', () => {
+      const focusSpy = sinon.spy()
+
+      navigation.currentFocus = 'child1'
+
+      navigation.on('focus', focusSpy)
+
+      navigation.register('root', { orientation: 'horizontal', wrapping: true })
+      navigation.register('child1', { parent: 'root' })
+      navigation.register('child2', { parent: 'root' })
+      navigation.register('child3', { parent: 'root' })
+
+      // RIGHT
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: () => {} }) // Focus child2
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: () => {} }) // Focus child3
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: () => {} }) // Focus child1
+
+      expect(focusSpy.args).to.deep.equal([
+        [ 'child2' ],
+        [ 'child3' ],
+        [ 'child1' ]
+      ])
+    })
+
+    it('should move through a grid as expected', () => {
+      const focusSpy = sinon.spy()
+
+      navigation.currentFocus = 'row1-child1'
+
+      navigation.on('focus', focusSpy)
+
+      navigation.register('root', { orientation: 'vertical', grid: true })
+      navigation.register('row1', { orientation: 'horizontal', parent: 'root' })
+      navigation.register('row2', { orientation: 'horizontal', parent: 'root' })
+      navigation.register('row1-child1', { parent: 'row1' })
+      navigation.register('row1-child2', { parent: 'row1' })
+      navigation.register('row1-child3', { parent: 'row1' })
+      navigation.register('row2-child1', { parent: 'row2' })
+      navigation.register('row2-child2', { parent: 'row2' })
+      navigation.register('row2-child3', { parent: 'row2' })
+
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: () => {} }) // RIGHT
+      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: () => {} }) // DOWN
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: () => {} }) // RIGHT
+      navigation.handleKeyEvent({ keyCode: 38, stopPropagation: () => {} }) // UP
+
+      expect(focusSpy.args).to.deep.equal([
+        [ 'row1-child2' ],
+        [ 'row2-child2' ],
+        [ 'row2-child3' ],
+        [ 'row1-child3' ]
+      ])
+    })
   })
 
   describe('Overriding static KEY_CODES/KEY_MAP properties', () => {

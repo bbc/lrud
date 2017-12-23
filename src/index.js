@@ -2,11 +2,9 @@ var EventEmitter = require('events').EventEmitter
 var assign = require('lodash.assign')
 var constants = require('./constants')
 
-function Lrud (options) {
-  options = options || {}
-
-  this.nodes = options.nodes || {}
-  this.currentFocus = options.currentFocus || null
+function Lrud () {
+  this.nodes = {}
+  this.currentFocus = null
 }
 
 function newNode (props) {
@@ -142,6 +140,22 @@ Lrud.prototype = assign({}, EventEmitter.prototype, {
     ) ? 1 : -1
   },
 
+  _updateGrid: function (node) {
+    var self = this
+    var rowId = node.activeChild || node.children[0]
+    var rowNode = this.nodes[rowId]
+    var activeChild = rowNode.activeChild || rowNode.children[0]
+
+    if (!activeChild) return
+
+    var activeIndex = rowNode.children.indexOf(activeChild)
+
+    node.children.forEach(function (id) {
+      var node = self.nodes[id]
+      self._setActiveChild(id, node.children[activeIndex] || node.activeChild)
+    })
+  },
+
   _bubbleKeyEvent: function (event, id) {
     var node = this.nodes[id]
     if (!node) return
@@ -158,6 +172,10 @@ Lrud.prototype = assign({}, EventEmitter.prototype, {
       var nextChild = node.children[nextIndex]
 
       if (nextChild) {
+        if (node.grid) {
+          this._updateGrid(node)
+        }
+
         this.emit('move', {
           id,
           orientation: node.orientation,
