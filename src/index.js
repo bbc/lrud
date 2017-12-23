@@ -4,7 +4,6 @@ import { DEFAULT_KEY_CODES, DEFAULT_KEY_MAP } from './constants'
 function Lrud () {
   this.nodes = {}
   this.currentFocus = null
-  this._events = {}
 }
 
 function newNode (props) {
