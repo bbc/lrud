@@ -60,13 +60,13 @@ Lrud.prototype = assign({}, EventEmitter.prototype, {
       })
 
       if (parentNode.activeChild === id) {
-        parentNode.activeChild = null
+        parentNode.activeChild = undefined
       }
     }
 
     if (this.currentFocus === id) {
       this.blur(id)
-      this.currentFocus = null
+      this.currentFocus = undefined
     }
 
     delete this.nodes[id]
@@ -102,10 +102,6 @@ Lrud.prototype = assign({}, EventEmitter.prototype, {
 
   handleKeyEvent: function (event) {
     this._bubbleKeyEvent(event, this.currentFocus)
-  },
-
-  getNodes: function () {
-    return JSON.parse(JSON.stringify(this.nodes))
   },
 
   _bubbleKeyEvent: function (event, id) {
