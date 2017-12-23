@@ -20,7 +20,6 @@ function newNode (props) {
 }
 
 Lrud.prototype = assign({}, EventEmitter.prototype, {
-
   register: function (id, props) {
     props = props || {}
 
@@ -51,10 +50,12 @@ Lrud.prototype = assign({}, EventEmitter.prototype, {
     }
 
     var parentNode = this.nodes[node.parent]
+
     if (parentNode) {
       parentNode.children = parentNode.children.filter(function (cid) {
         return cid !== id
       })
+
       if (parentNode.activeChild === id) {
         parentNode.activeChild = null
       }
@@ -93,8 +94,37 @@ Lrud.prototype = assign({}, EventEmitter.prototype, {
     this.blur()
     this.currentFocus = id
     this.emit('focus', id)
-  }
+    this._bubbleActive(id)
+  },
 
+  handleKeyEvent: function (event) {
+
+  },
+
+  _bubbleKeypress: function (event, id) {
+
+  },
+
+  _setActiveChild: function (id, nextActiveChild) {
+    var activeChild = this.nodes[id].activeChild
+
+    if (activeChild !== nextActiveChild) {
+      if (activeChild) {
+        this.emit('deactivate', activeChild)
+      }
+      this.emit('activate', nextActiveChild)
+      this.nodes[id].activeChild = nextActiveChild
+    }
+  },
+
+  _bubbleActive: function (id) {
+    var node = this.nodes[id]
+
+    if (node.parent) {
+      this._setActiveChild(node.parent, id)
+      this._bubbleActive(node.parent)
+    }
+  }
 })
 
 Lrud.KEY_CODES = constants.DEFAULT_KEY_CODES

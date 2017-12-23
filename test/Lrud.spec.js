@@ -82,6 +82,7 @@ describe('Given an instance of Lrud', () => {
       const spy = sinon.spy()
 
       navigation.on('blur', spy)
+
       navigation.register('root')
       navigation.currentFocus = 'root'
       navigation.unregister('root')
@@ -96,6 +97,7 @@ describe('Given an instance of Lrud', () => {
       navigation.currentFocus = 'child'
 
       navigation.on('blur', spy)
+
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
@@ -121,7 +123,9 @@ describe('Given an instance of Lrud', () => {
       const spy = sinon.spy()
 
       navigation.on('blur', spy)
+
       navigation.register('root')
+
       navigation.blur('root')
 
       expect(spy.calledWith('root')).to.equal(true)
@@ -133,8 +137,10 @@ describe('Given an instance of Lrud', () => {
       navigation.currentFocus = 'child'
 
       navigation.on('blur', spy)
+
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
+
       navigation.blur()
 
       expect(spy.calledWith('child')).to.equal(true)
@@ -146,7 +152,9 @@ describe('Given an instance of Lrud', () => {
       const spy = sinon.spy()
 
       navigation.on('focus', spy)
+
       navigation.register('root')
+
       navigation.focus('root')
 
       expect(spy.calledWith('root')).to.equal(true)
@@ -156,8 +164,10 @@ describe('Given an instance of Lrud', () => {
       const spy = sinon.spy()
 
       navigation.on('focus', spy)
+
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
+
       navigation.focus('root')
 
       expect(spy.calledWith('child')).to.equal(true)
@@ -167,6 +177,7 @@ describe('Given an instance of Lrud', () => {
       const spy = sinon.spy()
 
       navigation.on('focus', spy)
+
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
 
@@ -183,9 +194,11 @@ describe('Given an instance of Lrud', () => {
       navigation.currentFocus = 'child2'
 
       navigation.on('focus', spy)
+
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
+
       navigation.focus()
 
       expect(spy.calledWith('child2')).to.equal(true)
@@ -197,12 +210,67 @@ describe('Given an instance of Lrud', () => {
       navigation.currentFocus = 'child'
 
       navigation.on('blur', spy)
+
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
+
       navigation.focus('child2')
 
       expect(spy.calledWith('child')).to.equal(true)
     })
+
+    it('should set the \'activeChild\' property up the tree as expected', () => {
+      navigation.register('root')
+      navigation.register('child', { parent: 'root' })
+      navigation.register('child2', { parent: 'root' })
+      navigation.register('child-of-child2', { parent: 'child2' })
+
+      navigation.focus('root')
+
+      expect(navigation.nodes.root.activeChild).to.equal('child')
+
+      navigation.focus('child-of-child2')
+
+      expect(navigation.nodes.child2.activeChild).to.equal('child-of-child2')
+      expect(navigation.nodes.root.activeChild).to.equal('child2')
+    })
+
+    it('should emit the activate event as expected', () => {
+      const spy = sinon.spy()
+
+      navigation.on('activate', spy)
+
+      navigation.register('root')
+      navigation.register('child', { parent: 'root' })
+      navigation.register('child-of-child', { parent: 'child' })
+
+      navigation.focus('child-of-child')
+
+      expect(spy.calledTwice).to.equal(true)
+      expect(spy.firstCall.calledWith('child-of-child')).to.equal(true)
+      expect(spy.secondCall.calledWith('child')).to.equal(true)
+    })
+
+    it('should emit the deactivate event as expected', () => {
+      const spy = sinon.spy()
+
+      navigation.on('deactivate', spy)
+
+      navigation.register('root')
+      navigation.register('child', { parent: 'root' })
+      navigation.register('child2', { parent: 'root' })
+
+      navigation.focus('child')
+      navigation.focus('child2')
+
+      expect(spy.calledOnce).to.equal(true)
+      expect(spy.calledWith('child')).to.equal(true)
+    })
   })
+
+  // TODO
+  // describe('Overriding static properties', () => {
+  //
+  // })
 })
