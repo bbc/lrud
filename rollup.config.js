@@ -5,7 +5,7 @@ export default {
   output: {
     file: 'lib/lrud.js',
     format: 'umd',
-    name: 'lrud'
+    name: 'Lrud'
   },
   plugins: [
     builtins()
