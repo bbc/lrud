@@ -1,7 +1,7 @@
 {
   "name": "lrud",
   "version": "1.0.0",
-  "main": "src/index.js",
+  "main": "lib/lrud.js",
   "license": "MIT",
   "devDependencies": {
     "babel-core": "^6.26.0",
@@ -15,10 +15,10 @@
     "uglify-js": "^3.2.2"
   },
   "scripts": {
-    "test": "mocha --require babel-register",
-    "prebuild": "npm run lint",
+    "lint": "standard src/**/*.js",
+    "test": "npm run lint && mocha --require babel-register",
+    "prebuild": "npm test",
     "build": "rollup -c",
-    "postbuild": "uglifyjs lib/lrud.js -o lib/lrud.min.js",
-    "lint": "standard src/**/*.js"
+    "postbuild": "uglifyjs lib/lrud.js -o lib/lrud.min.js"
   }
 }
