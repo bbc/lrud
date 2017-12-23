@@ -111,16 +111,24 @@ describe('Given an instance of Lrud', () => {
       lrud.on('blur', spy)
       lrud.register('root')
       lrud.register('child', { parent: 'root' })
-      lrud.register('chil2', { parent: 'root' })
-      lrud.unregister('chil2')
+      lrud.register('child2', { parent: 'root' })
+      lrud.unregister('child2')
 
       expect(lrud.currentFocus).to.equal('child')
       expect(spy.notCalled).to.equal(true)
     })
 
-    // it('should unset the \'activeChild\' of the parent if the unregisted node is the currect active child', () => {
-    //
-    // })
+    it('should unset the \'activeChild\' of the parent if the unregisted node is the currect active child', () => {
+      const lrud = new Lrud()
+
+      lrud.register('root')
+      lrud.register('child', { parent: 'root' })
+      lrud.register('child2', { parent: 'root' })
+      lrud.nodes.root.activeChild = 'child2'
+      lrud.unregister('child2')
+
+      expect(lrud.nodes.root.activeChild).to.equal(null)
+    })
   })
 
   describe('blur', () => {

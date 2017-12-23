@@ -46,13 +46,18 @@ Lrud.prototype = assign({}, EventEmitter.prototype, {
 
   unregister: function (id) {
     var node = this.nodes[id]
-    if (!node) return
+    if (!node) {
+      return console.warn('Attempting to unregister an unknown node')
+    }
 
     var parentNode = this.nodes[node.parent]
     if (parentNode) {
       parentNode.children = parentNode.children.filter(function (cid) {
         return cid !== id
       })
+      if (parentNode.activeChild === id) {
+        parentNode.activeChild = null
+      }
     }
 
     if (this.currentFocus === id) {
