@@ -10,23 +10,15 @@ const app = express()
 app.use('/public', express.static(path.resolve(__dirname, '../public')))
 
 app.get('/', (req, res) => {
-  try {
-    res.sendFile(path.join(__dirname, 'index.html'))
-  } catch (error) {
-    res.send('Oops ' + error)
-  }
+  res.sendFile(path.join(__dirname, 'index.html'))
 })
 
 app.get('/home', (req, res) => {
-  try {
-    res.json({
-      html: renderToStaticMarkup(<App />),
-      nodes: navigation.nodes,
-      focus: 'root'
-    })
-  } catch (error) {
-    res.send('Oops ' + error)
-  }
+  res.json({
+    html: renderToStaticMarkup(<App />),
+    nodes: navigation.nodes,
+    focus: 'root'
+  })
 })
 
 export default app
