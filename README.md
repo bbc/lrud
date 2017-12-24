@@ -5,7 +5,8 @@
 
 ## Examples
 
-* ([React Example Project](./examples/react))
+* [React](./examples/react)
+* [Server-Side React](./examples/ssr)
 
 ## Inspiration
 
