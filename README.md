@@ -3,6 +3,8 @@
 
 [![Build Status](https://travis-ci.org/stuart-williams/lrud.svg?branch=master)](https://travis-ci.org/stuart-williams/lrud)
 
+*([React Example Project](./examples/react))*
+
 ## Inspiration
 
 * [BBC - TV Application Layer (TAL)](http://bbc.github.io/tal/widgets/focus-management.html)
