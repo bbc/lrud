@@ -22,6 +22,8 @@
     "minify": "uglifyjs lib/lrud.js --compress --mangle --output lib/lrud.min.js",
     "prebuild": "npm test && npm run clean",
     "build": "rollup -c",
-    "postbuild": "npm run minify"
+    "postbuild": "npm run minify",
+    "start:react": "cd examples/react && yarn && npm start",
+    "start:ssr": "cd examples/ssr && yarn && npm start"
   }
 }
