@@ -3,9 +3,7 @@ import navigation from './navigation'
 
 export default class Button extends PureComponent {
   componentWillUnmount () {
-    const { id, parent } = this.props
-
-    navigation.unregister(id, { parent })
+    navigation.unregister(this.props.id)
   }
 
   render () {

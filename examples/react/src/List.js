@@ -5,9 +5,7 @@ const shouldClone = (child) => child && typeof child.type !== 'string'
 
 export default class List extends PureComponent {
   componentWillUnmount () {
-    const { id, parent } = this.props
-
-    navigation.unregister(id, { parent })
+    navigation.unregister(this.props.id)
   }
 
   render () {
@@ -20,8 +18,7 @@ export default class List extends PureComponent {
         id={id}
         className={className}
       >
-        {React.Children.map(children, (child) =>
-          shouldClone(child) ? React.cloneElement(child, { parent: id }) : child)}
+        {React.Children.map(children, (child) => React.cloneElement(child, { parent: id }))}
       </div>
     )
   }
