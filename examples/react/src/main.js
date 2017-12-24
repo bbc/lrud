@@ -53,46 +53,44 @@ render(
         </Button>
       ))}
     </List>
-    <List id='app-ct'>
-      <List
-        id='vlist'
-        className='Vlist'
-      >
-        {[ 1, 2, 3 ].map((text, i) => (
-          <Button
-            key={i}
-            id={`vlist-${i}`}
-            className='Vlist__item'
-          >
-            {text}
-          </Button>
-        ))}
-      </List>
-      <List
-        id='grid'
-        className='Grid'
-        grid
-      >
-        {[[ 1, 2, 3, 4 ], [ 5, 6, 7, 8 ]].map((row, i) => (
-          <List
-            key={i}
-            id={`grid-row-${i}`}
-            className='Grid__row'
-            orientation='horizontal'
-            wrapping
-          >
-            {row.map((text, i) => (
-              <Button
-                key={i}
-                id={`grid-btn-${text}`}
-                className='Grid__item'
-              >
-                {text}
-              </Button>
-            ))}
-          </List>
-        ))}
-      </List>
+    <List
+      id='vlist'
+      className='Vlist'
+    >
+      {[ 1, 2, 3 ].map((text, i) => (
+        <Button
+          key={i}
+          id={`vlist-${i}`}
+          className='Vlist__item'
+        >
+          {text}
+        </Button>
+      ))}
+    </List>
+    <List
+      id='grid'
+      className='Grid'
+      grid
+    >
+      {[[ 1, 2, 3, 4 ], [ 5, 6, 7, 8 ]].map((row, i) => (
+        <List
+          key={i}
+          id={`grid-row-${i}`}
+          className='Grid__row'
+          orientation='horizontal'
+          wrapping
+        >
+          {row.map((text, i) => (
+            <Button
+              key={i}
+              id={`grid-btn-${text}`}
+              className='Grid__item'
+            >
+              {text}
+            </Button>
+          ))}
+        </List>
+      ))}
     </List>
   </List>,
   document.getElementById('app'),
