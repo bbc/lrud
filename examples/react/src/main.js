@@ -3,96 +3,31 @@ import './main.css'
 import React from 'react'
 import { render } from 'react-dom'
 import navigation, { keyCodes } from './navigation'
-import List from './List'
-import Button from './Button'
+import App from './App'
 
-navigation.on('focus', function (id) {
-  const el = document.getElementById(id)
-  if (el) el.classList.add('focused')
-})
+const $id = (id) => document.getElementById(id)
 
-navigation.on('blur', function (id) {
-  const el = document.getElementById(id)
-  if (el) el.classList.remove('focused')
-})
+const addClass = (className) => (id) => {
+  const el = $id(id)
+  el && el.classList.add(className)
+}
 
-navigation.on('activate', function (id) {
-  const el = document.getElementById(id)
-  if (el) el.classList.add('active')
-})
+const removeClass = (className) => (id) => {
+  const el = $id(id)
+  el && el.classList.remove(className)
+}
 
-navigation.on('deactivate', function (id) {
-  const el = document.getElementById(id)
-  if (el) el.classList.remove('active')
-})
+navigation.on('focus', addClass('focused'))
+navigation.on('blur', removeClass('focused'))
+navigation.on('activate', addClass('active'))
+navigation.on('deactivate', removeClass('active'))
+navigation.on('select', (id) => alert(`Selected: ${id}`))
 
-document.onkeydown = function (event) {
+document.onkeydown = (event) => {
   if (keyCodes[event.keyCode]) {
     navigation.handleKeyEvent(event)
     event.preventDefault()
   }
 }
 
-render(
-  <List
-    id='root'
-    orientation='vertical'
-  >
-    <List
-      id='appbar'
-      orientation='horizontal'
-      className='AppBar'
-    >
-      {[ 1, 2, 3, 4, 5 ].map((text, i) => (
-        <Button
-          key={i}
-          id={`appbar-${i}`}
-          className='AppBar__item'
-        >
-          {text}
-        </Button>
-      ))}
-    </List>
-    <List
-      id='vlist'
-      className='Vlist'
-    >
-      {[ 1, 2, 3 ].map((text, i) => (
-        <Button
-          key={i}
-          id={`vlist-${i}`}
-          className='Vlist__item'
-        >
-          {text}
-        </Button>
-      ))}
-    </List>
-    <List
-      id='grid'
-      className='Grid'
-      grid
-    >
-      {[[ 1, 2, 3, 4 ], [ 5, 6, 7, 8 ]].map((row, i) => (
-        <List
-          key={i}
-          id={`grid-row-${i}`}
-          className='Grid__row'
-          orientation='horizontal'
-          wrapping
-        >
-          {row.map((text, i) => (
-            <Button
-              key={i}
-              id={`grid-btn-${text}`}
-              className='Grid__item'
-            >
-              {text}
-            </Button>
-          ))}
-        </List>
-      ))}
-    </List>
-  </List>,
-  document.getElementById('app'),
-  () => navigation.focus('root')
-)
+render(<App />, $id('app'), () => navigation.focus('root'))
