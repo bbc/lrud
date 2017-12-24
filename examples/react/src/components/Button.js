@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import navigation from './navigation'
+import navigation from '../navigation'
 
 export default class Button extends PureComponent {
   componentWillUnmount () {

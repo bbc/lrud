@@ -1,9 +1,4 @@
-import './main.css'
-
-import React from 'react'
-import { render } from 'react-dom'
 import navigation, { keyCodes } from './navigation'
-import App from './components/App'
 
 const $id = (id) => document.getElementById(id)
 
@@ -30,4 +25,16 @@ document.onkeydown = (event) => {
   }
 }
 
-render(<App />, $id('app'), () => navigation.focus('root'))
+function loadFragment(url, callback) {
+  const req = new XMLHttpRequest()
+  req.open('GET', url)
+  req.send()
+  req.onload = () => callback(JSON.parse(req.responseText))
+}
+
+loadFragment('/home', ({ html, nodes, focus }) => {
+  document.getElementById('app').innerHTML = html
+
+  navigation.nodes = nodes
+  navigation.focus(focus)
+})
