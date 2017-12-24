@@ -11,7 +11,7 @@
   },
   "scripts": {
     "prestart": "webpack",
-    "start": "node src"
+    "start": "node src/server"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",

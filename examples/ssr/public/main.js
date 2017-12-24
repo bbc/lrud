@@ -118,7 +118,7 @@ function loadFragment(url, callback) {
   };
 }
 
-loadFragment('/fragment', function (_ref) {
+loadFragment('/home', function (_ref) {
   var html = _ref.html,
       nodes = _ref.nodes,
       focus = _ref.focus;
