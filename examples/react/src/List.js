@@ -1,8 +1,6 @@
 import React, { PureComponent } from 'react'
 import navigation from './navigation'
 
-const shouldClone = (child) => child && typeof child.type !== 'string'
-
 export default class List extends PureComponent {
   componentWillUnmount () {
     navigation.unregister(this.props.id)
