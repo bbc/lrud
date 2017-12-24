@@ -3,7 +3,9 @@
 
 [![Build Status](https://travis-ci.org/stuart-williams/lrud.svg?branch=master)](https://travis-ci.org/stuart-williams/lrud)
 
-*([React Example Project](./examples/react))*
+## Examples
+
+* ([React Example Project](./examples/react))
 
 ## Inspiration
 
