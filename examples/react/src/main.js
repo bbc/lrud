@@ -53,15 +53,12 @@ render(
         </Button>
       ))}
     </List>
-    <List
-      id='app-ct'
-      orientation='horizontal'
-    >
+    <List id='app-ct'>
       <List
         id='vlist'
         className='Vlist'
       >
-        {[ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ].map((text, i) => (
+        {[ 1, 2, 3 ].map((text, i) => (
           <Button
             key={i}
             id={`vlist-${i}`}
@@ -76,12 +73,13 @@ render(
         className='Grid'
         grid
       >
-        {[[ 1, 2, 3, 4 ], [ 5, 6, 7, 8 ], [ 9, 10, 11, 12 ]].map((row, i) => (
+        {[[ 1, 2, 3, 4 ], [ 5, 6, 7, 8 ]].map((row, i) => (
           <List
             key={i}
             id={`grid-row-${i}`}
             className='Grid__row'
             orientation='horizontal'
+            wrapping
           >
             {row.map((text, i) => (
               <Button

@@ -14,10 +14,11 @@ html, body {
   top: 50%;
   margin: -360px auto 0 auto;
   color: white;
+  background-color: black;
 }
 
 .focused {
-  background-color: #7E57C2 !important;
+  background-color: #263238 !important;
 }
 
 .AppBar__item {
@@ -26,44 +27,30 @@ html, body {
   height: 100px;
   line-height: 100px;
   text-align: center;
-  background-color: #37474F;
+  background-color: #607D8B;
   width: 20%;
 }
 
 .AppBar__item.active {
-  background-color: #455A64;
-}
-
-.Vlist {
-  width: 40%;
+  background-color: #78909C;
 }
 
 .Vlist__item {
-  height: 62px;
-  line-height: 62px;
+  height: 100px;
+  line-height: 100px;
   text-align: center;
-  background-color: #607D8B;
-}
-
-.Vlist,
-.Grid {
-  display: inline-block;
-  vertical-align: top;
-}
-
-.Grid {
-  width: 60%;
+  background-color: #90A4AE;
 }
 
 .Grid__row {
-  background-color: #90A4AE;
+  background-color: #B0BEC5;
 }
 
 .Grid__item {
   display: inline-block;
   vertical-align: top;
   width: 25%;
-  height: 207px;
-  line-height: 207px;
+  height: 160px;
+  line-height: 160px;
   text-align: center;
 }
