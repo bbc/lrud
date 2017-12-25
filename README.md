@@ -1,14 +1,23 @@
 # Lrud
-**L**eft, **R**ight, **U**p, **D**own (and select). Framework-agnostic spatial navigation for TV app development
+**L**eft, **R**ight, **U**p, **D**own (and select) takes its inspiration from the BBC's [TAL](http://bbc.github.io/tal/widgets/focus-management.html), an open source library for building applications for connected TV devices. TAL's focus management is baked its 'Widgets' which requires you to opt into the entire application framework. Lrud aims to provide similar functionality without tying you to a particular framework
 
 [![Build Status](https://travis-ci.org/stuart-williams/lrud.svg?branch=master)](https://travis-ci.org/stuart-williams/lrud)
 
 ## Examples
 
-The readme documents the API not necessarily it's intended usage so make sure you check out the example apps. Lrud was built with React in mind but should be flexible enough to fit your framework of choice... maybe
+Lrud was built with React in mind but should be flexible enough to fit your framework of choice... hopefully
 
+View the code:
 * [React](https://github.com/stuart-williams/lrud/tree/master/examples/react)
 * [Server-Side React](https://github.com/stuart-williams/lrud/tree/master/examples/ssr)
+
+Better still, clone and run:
+
+`npm run start:react`
+
+or
+
+`npm run start:ssr`
 
 ## Installation
 
@@ -83,7 +92,7 @@ Lrud.KEY_MAP = {
 
 ### Registering a node
 
-A node can be added to the navigation tree by calling 'register' with the id of the node
+A node can be added to the navigation tree by calling 'register' with the id of the node. See the React [Button](https://github.com/stuart-williams/lrud/blob/master/examples/react/src/components/Button.js) example
 
 ```js
 navigation.register('root')
@@ -100,7 +109,7 @@ navigation.register('root')
 
 #### Parent/child relationship
 
-Create a vertical list with two children
+Create a vertical list with two children. See the React [List](https://github.com/stuart-williams/lrud/blob/master/examples/react/src/components/List.js) example
 
 ```js
 navigation.register('list', { orientation: 'vertical' })
