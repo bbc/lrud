@@ -1,6 +1,6 @@
 {
   "name": "lrud",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "lib/lrud.js",
   "license": "MIT",
   "keywords": [
