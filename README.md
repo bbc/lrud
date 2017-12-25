@@ -12,9 +12,16 @@ The readme documents the API not necessarily it's intended usage so make sure yo
 
 ## Installation
 
+```html
+<script src="//unpkg.com/lrud"></script>
+```
+or via npm
+
 ```bash
 npm install lrud
 ```
+
+or via yarn
 
 ```bash
 yarn add lrud
