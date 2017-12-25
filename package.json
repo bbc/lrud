@@ -36,6 +36,8 @@
     "uglify-js": "^3.2.2"
   },
   "scripts": {
+    "preversion": "npm test",
+    "postversion": "git push && git push --tags",
     "clean": "rimraf lib",
     "lint": "standard src/**/*.js",
     "test": "npm run lint && mocha --require babel-register",
