@@ -3,6 +3,17 @@
   "version": "1.0.1",
   "main": "lib/lrud.js",
   "license": "MIT",
+  "keywords": [
+    "tv",
+    "navigation",
+    "tv-apps",
+    "react",
+    "react-tv",
+    "focus",
+    "focus management",
+    "spatial navigation",
+    "smart tv"
+  ],
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
