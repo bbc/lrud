@@ -1,5 +1,5 @@
 # Lrud
-**L**eft, **R**ight, **U**p, **D**own
+**L**eft, **R**ight, **U**p, **D**own (and select). Framework-agnostic spatial navigation for TV app development
 
 [![Build Status](https://travis-ci.org/stuart-williams/lrud.svg?branch=master)](https://travis-ci.org/stuart-williams/lrud)
 
