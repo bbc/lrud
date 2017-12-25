@@ -1,7 +1,15 @@
 language: node_js
 node_js:
-  - "8"
+- '8'
 install:
-  - yarn
+- yarn
 script:
-  - npm test
+- npm test
+deploy:
+  provider: npm
+  email: stuwilliams47@gmail.com
+  api_key:
+    secure: UEzQvDE/IIPyEb+K2rdKzmLX62hhrsNsm4sAmblsXT9vAlK4xXfB/sEBMQbyIa9UIc5cqvGrxVRB9oGgvtf7wbfLksqHX2ZpSocsZwva+134yzf40FmKAljajaIZ58nKiZUceUVLcQY8kOwe0xwWEZOqOOkdSirD4kmGLYbXFyJpXQcW16UULrRjkbK+FzZOBLWwcR+0EI8CVCrTS1Mqdk7tV6ciO1mjzEMJ2//0X6ATg90t3UKewRYFP17DBueOjWDlgFFo6ysBS3N0Jxn91C2mve4kr6Ul6hY079lplfto9mam7/2L4PnIQyxJZL+2cWyCzmE0/tMZ4MNei+aOOZBYe01ZbNMUp3n9WB9G7Pc57AOEY0Y9y8eyehtlahIDEt27m801yiWmGzqN1BppLiwATsbn99BAIM/TYZ7qzENNIiarjgsUoRZcpkIE5XwGPtD1lrZMLsCC8BEZaKOmB3zjLvXf9ybKY+yoA6VKgcSHPu2OVrAH5xBYdJIdopQvupwWxh7iHnmokkj0ipRzkscZwGBOU/rp9jBCw/7NcESZqHrlEpTzzezJZr8iKcxGzXMcxQAI9VyRg4GyjNUSoZ3RKzQSc8x9Jz7t28L0IF/BQHBnMRIY/rKi82BDIHDRQtr5vbFD9BrqKOwiJmZ6x1zmbcVMGC1AVbuH0kaogh8=
+  on:
+    tags: true
+    repo: stuart-williams/lrud
