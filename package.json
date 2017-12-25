@@ -1,7 +1,12 @@
 {
   "name": "lrud",
   "version": "1.0.4",
+  "description": "Left, Right, Up, Down (and select). Framework-agnostic spatial navigation for TV app development",
   "main": "lib/lrud.js",
+  "author": {
+    "name": "Stuart Williams",
+    "url": "https://github.com/stuart-williams"
+  },
   "license": "MIT",
   "keywords": [
     "tv",
@@ -14,6 +19,10 @@
     "spatial navigation",
     "smart tv"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:stuart-williams/lrud.git"
+  },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-preset-env": "^1.6.1",
