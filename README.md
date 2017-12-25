@@ -5,10 +5,20 @@
 
 ## Examples
 
+The readme documents the API not necessarily it's intended usage so make sure you check out the example apps. Lrud was built with React in mind but should be flexible enough to fit your framework of choice... maybe
+
 * [React](./examples/react)
 * [Server-Side React](./examples/ssr)
 
 ## Installation
+
+```bash
+npm install lrud
+```
+
+```bash
+yarn add lrud
+```
 
 ## Usage
 
@@ -44,7 +54,7 @@ DEFAULT_KEY_MAP = {
 }
 ```
 
-Your configuration might look different, so override them...
+Your configuration might look different, so override them!
 
 ```js
 Lrud.KEY_CODES = {
@@ -146,17 +156,79 @@ navigation.unregister('list')
 {}
 ```
 
+### Focus
+You can give focus to a particular node by calling 'focus' with the node id
+
+```js
+navigation.focus('list')
+```
+
 ### Handling Key Events
 
 You can pass key events into Lrud using the 'handleKeyEvent' function
 
 ```js
-document.onkeydown = (event) => {
+document.onkeydown = function (event) {
   if (Lrud.KEY_CODES[event.keyCode]) {
     navigation.handleKeyEvent(event)
     event.preventDefault()
   }
 }
+```
+
+### Events
+
+Lrud emits events in response to key events
+
+* See the [node.js event emitter docs](http://nodejs.org/api/events.html)
+* See the [TAL docs](http://bbc.github.io/tal/widgets/focus-management.html) for an explanation of 'focused' and 'active' nodes
+
+### Events API
+
+* `navigation.on('focus', function)` - Focus was given to a node
+* `navigation.on('blur', function)` - Focus was taken from a node
+* `navigation.on('activate', function)` - The node has become active
+* `navigation.on('deactivate', function)` - The node has become inactive
+* `navigation.on('select', function)` - The current focused node was selected
+* `navigation.on('move', function)` - Triggered when focus is changed within a list. Think carousel...
+
+#### Example usage
+
+```js
+navigation.on('focus', function (id) {
+  // Focus could be as simple as adding a class
+  document.getElementById(id).classList.add('focused')
+  // Or dispatching a redux action
+  store.dispatch({ type: 'FOCUS', payload: id })
+  // Or whatever
+})
+
+navigation.on('blur', function (id) {
+  document.getElementById(id).classList.remove('focused')
+})
+
+navigation.on('activate', function (id) {
+  document.getElementById(id).classList.add('active')
+})
+
+navigation.on('deactivate', function (id) {
+  document.getElementById(id).classList.remove('active')
+})
+
+navigation.on('select', function (id) {
+  // Do something, maybe trigger a route change...
+  var node = navigation.nodes[id]
+  router.navigate(node.data.route)
+})
+
+navigation.on('move', function (event) {
+  // event.id - id of the list
+  // event.orientation - you guessed it
+  // event.carousel - is it a carousel?
+  // event.offset - Direction of travel (depending on orientation): -1 = LEFT/UP, 1 = RIGHT/DOWN
+  // event.enter - { id, index } of the node we're navigating into
+  // event.leave - { id, index } of the node we're leaving
+})
 ```
 
 ## Inspiration
