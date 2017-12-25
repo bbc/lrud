@@ -7,8 +7,8 @@
 
 The readme documents the API not necessarily it's intended usage so make sure you check out the example apps. Lrud was built with React in mind but should be flexible enough to fit your framework of choice... maybe
 
-* [React](./examples/react)
-* [Server-Side React](./examples/ssr)
+* [React](https://github.com/stuart-williams/lrud/tree/master/examples/react)
+* [Server-Side React](https://github.com/stuart-williams/lrud/tree/master/examples/ssr)
 
 ## Installation
 
