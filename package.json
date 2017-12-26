@@ -1,6 +1,6 @@
 {
   "name": "lrud",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "description": "Left, Right, Up, Down (and select). Framework-agnostic spatial navigation for TV app development",
   "main": "lib/lrud.js",
   "author": {
