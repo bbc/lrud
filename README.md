@@ -92,7 +92,7 @@ Lrud.KEY_MAP = {
 
 ### Registering a node
 
-A node can be added to the navigation tree by calling 'register' with the id of the node. See the React [Button](https://github.com/stuart-williams/lrud/blob/master/examples/react/src/components/Button.js) example
+A node can be added to the navigation tree by calling 'register' with the id of the node
 
 ```js
 navigation.register('root')
@@ -107,9 +107,28 @@ navigation.register('root')
 }
 ```
 
+See the React [Button example](https://github.com/stuart-williams/lrud/blob/master/examples/react/src/components/Button.js)
+
+```js
+class Button extends React.Component {
+  render () {
+    const { id, parent, children, onFocus, onBlur, onSelect } = this.props
+
+    navigation.register(id, { parent, onFocus, onBlur, onSelect })
+
+    return (
+      <div id={id}>
+        {children}
+      </div>
+    )
+  }
+}
+
+```
+
 #### Parent/child relationship
 
-Create a vertical list with two children. See the React [List](https://github.com/stuart-williams/lrud/blob/master/examples/react/src/components/List.js) example
+Create a vertical list with two children
 
 ```js
 navigation.register('list', { orientation: 'vertical' })
@@ -138,6 +157,25 @@ navigation.register('list-item-2', { parent: 'list' })
 }
 ```
 
+See the React [List example](https://github.com/stuart-williams/lrud/blob/master/examples/react/src/components/List.js)
+
+```js
+class List extends React.Component {
+  render () {
+    const { id, parent, children, orientation, wrapping, grid, onMove } = this.props
+
+    navigation.register(id, { parent, orientation, wrapping, grid, onMove })
+
+    return (
+      <div id={id}>
+        {/* Clone children passing them the id of the list as it's 'parent' prop */}
+        {React.Children.map(children, (child) => React.cloneElement(child, { parent: id }))}
+      </div>
+    )
+  }
+}
+```
+
 ### Unregistering a node
 
 A node can be removed from the navigation tree by calling 'unregister' with the id of the node
@@ -159,6 +197,17 @@ navigation.unregister('list-item-1')
     "children": []
   }
 }
+```
+
+See the React [Button example](https://github.com/stuart-williams/lrud/blob/master/examples/react/src/components/Button.js)
+
+```js
+class Button extends React.Component {
+  componentWillUnmount () {
+    navigation.unregister(this.props.id)
+  }
+}
+
 ```
 
 Unregistering a node will also remove all of its children
@@ -203,8 +252,8 @@ Lrud emits events in response to key events
 
 * `navigation.on('focus', function)` - Focus was given to a node
 * `navigation.on('blur', function)` - Focus was taken from a node
-* `navigation.on('activate', function)` - The node has become active
-* `navigation.on('deactivate', function)` - The node has become inactive
+* `navigation.on('active', function)` - The node has become active
+* `navigation.on('inactive', function)` - The node has become inactive
 * `navigation.on('select', function)` - The current focused node was selected
 * `navigation.on('move', function)` - Triggered when focus is changed within a list
 
@@ -223,18 +272,18 @@ navigation.on('blur', function (id) {
   document.getElementById(id).classList.remove('focused')
 })
 
-navigation.on('activate', function (id) {
+navigation.on('active', function (id) {
   document.getElementById(id).classList.add('active')
 })
 
-navigation.on('deactivate', function (id) {
+navigation.on('inactive', function (id) {
   document.getElementById(id).classList.remove('active')
 })
 
 navigation.on('select', function (id) {
-  // Do something, maybe trigger a route change...
+  // Could call the React component 'onSelect' prop we registered in the Button example
   var node = navigation.nodes[id]
-  router.navigate(node.data.route)
+  node.onSelect && node.onSelect(node)
 })
 
 navigation.on('move', function (event) {
@@ -242,6 +291,9 @@ navigation.on('move', function (event) {
   // event.offset - Direction of travel (depending on orientation): -1 = LEFT/UP, 1 = RIGHT/DOWN
   // event.enter - { id, index } of the node we're navigating into
   // event.leave - { id, index } of the node we're leaving
+
+  // We might want to act on a move event e.g. move a carousel
+  node.onMove && node.onMove(event, node)
 })
 ```
 

@@ -189,10 +189,10 @@ Lrud.prototype._setActiveChild = function (id, nextActiveChild) {
 
   if (activeChild !== nextActiveChild) {
     if (activeChild) {
-      this.emit('deactivate', activeChild)
+      this.emit('inactive', activeChild)
     }
 
-    this.emit('activate', nextActiveChild)
+    this.emit('active', nextActiveChild)
     this.nodes[id].activeChild = nextActiveChild
   }
 }

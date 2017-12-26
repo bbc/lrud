@@ -14,8 +14,8 @@ const removeClass = (className) => (id) => {
 
 navigation.on('focus', addClass('focused'))
 navigation.on('blur', removeClass('focused'))
-navigation.on('activate', addClass('active'))
-navigation.on('deactivate', removeClass('active'))
+navigation.on('active', addClass('active'))
+navigation.on('inactive', removeClass('active'))
 navigation.on('select', (id) => alert(`Selected: ${id}`))
 
 document.onkeydown = (event) => {

@@ -237,10 +237,10 @@ describe('Given an instance of Lrud', () => {
       expect(navigation.nodes.root.activeChild).to.equal('child2')
     })
 
-    it('should emit the activate event as expected', () => {
+    it('should emit the active event as expected', () => {
       const spy = sinon.spy()
 
-      navigation.on('activate', spy)
+      navigation.on('active', spy)
 
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
@@ -253,10 +253,10 @@ describe('Given an instance of Lrud', () => {
       expect(spy.secondCall.calledWith('child')).to.equal(true)
     })
 
-    it('should emit the deactivate event as expected', () => {
+    it('should emit the inactive event as expected', () => {
       const spy = sinon.spy()
 
-      navigation.on('deactivate', spy)
+      navigation.on('inactive', spy)
 
       navigation.register('root')
       navigation.register('child', { parent: 'root' })

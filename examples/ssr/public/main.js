@@ -96,8 +96,8 @@ var removeClass = function removeClass(className) {
 
 _navigation2.default.on('focus', addClass('focused'));
 _navigation2.default.on('blur', removeClass('focused'));
-_navigation2.default.on('activate', addClass('active'));
-_navigation2.default.on('deactivate', removeClass('active'));
+_navigation2.default.on('active', addClass('active'));
+_navigation2.default.on('inactive', removeClass('active'));
 _navigation2.default.on('select', function (id) {
   return alert('Selected: ' + id);
 });
@@ -176,17 +176,9 @@ function Lrud() {
 
 function newNode(props) {
   props = props || {};
+  props.children = props.children || [];
 
-  return {
-    parent: props.parent,
-    children: props.children || [],
-    activeChild: props.activeChild,
-    orientation: props.orientation,
-    wrapping: props.wrapping,
-    grid: props.grid,
-    carousel: props.carousel,
-    data: props.data
-  };
+  return props;
 }
 
 Lrud.prototype = Object.create(_events2.default.prototype);
@@ -328,8 +320,6 @@ Lrud.prototype._bubbleKeyEvent = function (event, id) {
 
       this.emit('move', {
         id: id,
-        orientation: node.orientation,
-        carousel: node.carousel,
         offset: offset,
         enter: { id: nextChild, index: nextIndex },
         leave: { id: activeChild, index: activeIndex }
@@ -349,10 +339,10 @@ Lrud.prototype._setActiveChild = function (id, nextActiveChild) {
 
   if (activeChild !== nextActiveChild) {
     if (activeChild) {
-      this.emit('deactivate', activeChild);
+      this.emit('inactive', activeChild);
     }
 
-    this.emit('activate', nextActiveChild);
+    this.emit('active', nextActiveChild);
     this.nodes[id].activeChild = nextActiveChild;
   }
 };
@@ -690,10 +680,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var DEFAULT_KEY_CODES = exports.DEFAULT_KEY_CODES = {
-  38: 'UP',
-  40: 'DOWN',
   37: 'LEFT',
   39: 'RIGHT',
+  38: 'UP',
+  40: 'DOWN',
   13: 'ENTER'
 };
 
