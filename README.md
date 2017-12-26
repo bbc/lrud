@@ -249,3 +249,10 @@ navigation.on('move', function (event) {
 
 * [BBC - TV Application Layer (TAL)](http://bbc.github.io/tal/widgets/focus-management.html)
 * [Netflix - Pass the Remote](https://medium.com/netflix-techblog/pass-the-remote-user-input-on-tv-devices-923f6920c9a8)
+* [Mozilla - Implementing TV remote control navigation](https://developer.mozilla.org/en-US/docs/Mozilla/Firefox_OS_for_TV/TV_remote_control_navigation)
+
+### Alternatives
+
+* [react-key-navigation](https://github.com/dead/react-key-navigation)
+* [JavaScript SpatialNavigation](https://github.com/luke-chang/js-spatial-navigation)
+* [TAL](https://github.com/bbc/tal)
