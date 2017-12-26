@@ -206,7 +206,7 @@ Lrud emits events in response to key events
 * `navigation.on('activate', function)` - The node has become active
 * `navigation.on('deactivate', function)` - The node has become inactive
 * `navigation.on('select', function)` - The current focused node was selected
-* `navigation.on('move', function)` - Triggered when focus is changed within a list. Think carousel...
+* `navigation.on('move', function)` - Triggered when focus is changed within a list
 
 #### Example usage
 
@@ -239,8 +239,6 @@ navigation.on('select', function (id) {
 
 navigation.on('move', function (event) {
   // event.id - id of the list
-  // event.orientation - you guessed it
-  // event.carousel - is it a carousel?
   // event.offset - Direction of travel (depending on orientation): -1 = LEFT/UP, 1 = RIGHT/DOWN
   // event.enter - { id, index } of the node we're navigating into
   // event.leave - { id, index } of the node we're leaving

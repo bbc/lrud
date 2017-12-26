@@ -5,10 +5,7 @@ import Button from './Button'
 export default class App extends PureComponent {
   render () {
     return (
-      <List
-        id='root'
-        orientation='vertical'
-      >
+      <List id='root'>
         <List
           id='appbar'
           orientation='horizontal'

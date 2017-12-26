@@ -7,9 +7,9 @@ export default class List extends PureComponent {
   }
 
   render () {
-    const { id, parent, className, children, orientation = 'vertical', wrapping, grid, carousel } = this.props
+    const { id, parent, className, children, orientation = 'vertical', wrapping, grid } = this.props
 
-    navigation.register(id, { parent, orientation, wrapping, grid, carousel })
+    navigation.register(id, { parent, orientation, wrapping, grid })
 
     return (
       <div

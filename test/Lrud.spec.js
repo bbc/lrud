@@ -32,32 +32,6 @@ describe('Given an instance of Lrud', () => {
       })
     })
 
-    it('should register a node passing through only the white listed props', () => {
-      navigation.register('root', {
-        orientation: 'vertical',
-        wrapping: true,
-        grid: true,
-        carousel: true,
-        data: {
-          hi: true
-        },
-        imposter: true
-      })
-
-      expect(toJSON(navigation.nodes)).to.deep.equal({
-        root: {
-          children: [],
-          orientation: 'vertical',
-          wrapping: true,
-          grid: true,
-          carousel: true,
-          data: {
-            hi: true
-          }
-        }
-      })
-    })
-
     it('should crate the parent/child relationship as expected', () => {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })

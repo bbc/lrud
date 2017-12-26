@@ -7,9 +7,9 @@ export default class Button extends PureComponent {
   }
 
   render () {
-    const { id, parent, data, className, children } = this.props
+    const { id, parent, className, children, onFocus, onBlur } = this.props
 
-    navigation.register(id, { parent, data })
+    navigation.register(id, { parent, onFocus, onBlur })
 
     return (
       <div

@@ -3,7 +3,6 @@
     [
       {
         "id": "root",
-        "orientation": "horizontal",
         "offset": 1,
         "enter": {
           "id": "child2",
@@ -18,7 +17,6 @@
     [
       {
         "id": "root",
-        "orientation": "horizontal",
         "offset": 1,
         "enter": {
           "id": "child3",
@@ -33,7 +31,6 @@
     [
       {
         "id": "root",
-        "orientation": "horizontal",
         "offset": -1,
         "enter": {
           "id": "child2",
@@ -48,7 +45,6 @@
     [
       {
         "id": "root",
-        "orientation": "horizontal",
         "offset": -1,
         "enter": {
           "id": "child1",
@@ -65,7 +61,6 @@
     [
       {
         "id": "root",
-        "orientation": "vertical",
         "offset": 1,
         "enter": {
           "id": "child2",
@@ -80,7 +75,6 @@
     [
       {
         "id": "root",
-        "orientation": "vertical",
         "offset": 1,
         "enter": {
           "id": "child3",
@@ -95,7 +89,6 @@
     [
       {
         "id": "root",
-        "orientation": "vertical",
         "offset": -1,
         "enter": {
           "id": "child2",
@@ -110,7 +103,6 @@
     [
       {
         "id": "root",
-        "orientation": "vertical",
         "offset": -1,
         "enter": {
           "id": "child1",

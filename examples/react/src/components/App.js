@@ -5,10 +5,7 @@ import Button from './Button'
 export default class App extends PureComponent {
   render () {
     return (
-      <List
-        id='root'
-        orientation='vertical'
-      >
+      <List id='root'>
         <List
           id='appbar'
           orientation='horizontal'
@@ -19,6 +16,8 @@ export default class App extends PureComponent {
               key={i}
               id={`appbar-${i}`}
               className='AppBar__item'
+              onFocus={(id) => console.log('Focus', id)}
+              onBlur={(id) => console.log('Blur', id)}
             >
               {text}
             </Button>

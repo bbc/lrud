@@ -8,17 +8,9 @@ function Lrud () {
 
 function newNode (props) {
   props = props || {}
+  props.children = props.children || []
 
-  return {
-    parent: props.parent,
-    children: props.children || [],
-    activeChild: props.activeChild,
-    orientation: props.orientation,
-    wrapping: props.wrapping,
-    grid: props.grid,
-    carousel: props.carousel,
-    data: props.data
-  }
+  return props
 }
 
 Lrud.prototype = Object.create(EventEmitter.prototype)
@@ -178,8 +170,6 @@ Lrud.prototype._bubbleKeyEvent = function (event, id) {
 
       this.emit('move', {
         id: id,
-        orientation: node.orientation,
-        carousel: node.carousel,
         offset: offset,
         enter: { id: nextChild, index: nextIndex },
         leave: { id: activeChild, index: activeIndex }
