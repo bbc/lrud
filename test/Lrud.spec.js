@@ -412,6 +412,22 @@ describe('Given an instance of Lrud', () => {
     })
   })
 
+  describe('destroy', () => {
+    it('should reset nodes and currentFocus and remove remove all event listeners', () => {
+      navigation.on('focus', () => {})
+      navigation.on('blur', () => {})
+
+      navigation.register('root')
+      navigation.currentFocus = 'root'
+
+      navigation.destroy()
+
+      expect(navigation.nodes).to.deep.equal({})
+      expect(navigation.currentFocus).to.equal(null)
+      expect(navigation.eventNames()).to.deep.equal([])
+    })
+  })
+
   describe('Overriding static KEY_CODES/KEY_MAP properties', () => {
     it('should emit the select event as expected', () => {
       Lrud.KEY_CODES = { 1: 'Enter' }
