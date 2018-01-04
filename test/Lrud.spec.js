@@ -32,6 +32,18 @@ describe('Given an instance of Lrud', () => {
       })
     })
 
+    it('should assign new props on subsequent registrations', () => {
+      navigation.register('root')
+      navigation.register('root', { orientation: 'horizontal' })
+
+      expect(toJSON(navigation.nodes)).to.deep.equal({
+        root: {
+          children: [],
+          orientation: 'horizontal'
+        }
+      })
+    })
+
     it('should crate the parent/child relationship as expected', () => {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
