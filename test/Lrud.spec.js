@@ -2,7 +2,7 @@
 
 import { expect } from 'chai'
 import sinon from 'sinon'
-import Lrud from '../src'
+import Lrud from '../lib/lrud'
 import { DEFAULT_KEY_CODES, DEFAULT_KEY_MAP } from '../src/constants'
 import data from './data.json'
 
@@ -426,17 +426,25 @@ describe('Given an instance of Lrud', () => {
 
   describe('destroy', () => {
     it('should reset nodes and currentFocus and remove remove all event listeners', () => {
-      navigation.on('focus', () => {})
-      navigation.on('blur', () => {})
+      const focusSpy = sinon.spy()
+      const blurSpy = sinon.spy()
+
+      navigation.on('focus', focusSpy)
+      navigation.on('blur', blurSpy)
 
       navigation.register('root')
       navigation.currentFocus = 'root'
 
       navigation.destroy()
 
+      navigation.emit('focus')
+      navigation.emit('blur')
+
       expect(navigation.nodes).to.deep.equal({})
       expect(navigation.currentFocus).to.equal(null)
-      expect(navigation.eventNames()).to.deep.equal([])
+
+      expect(focusSpy.called).to.equal(false)
+      expect(blurSpy.called).to.equal(false)
     })
   })
 

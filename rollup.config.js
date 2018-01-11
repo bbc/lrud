@@ -1,4 +1,5 @@
-import builtins from 'rollup-plugin-node-builtins'
+import commonjs from 'rollup-plugin-commonjs'
+import nodeResolve from 'rollup-plugin-node-resolve'
 
 export default {
   input: 'src/index.js',
@@ -8,6 +9,7 @@ export default {
     name: 'Lrud'
   },
   plugins: [
-    builtins()
+    nodeResolve(),
+    commonjs()
   ]
 }

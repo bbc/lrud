@@ -1,4 +1,4 @@
-import EventEmitter from 'events'
+import EventEmitter from 'tiny-emitter'
 import { DEFAULT_KEY_CODES, DEFAULT_KEY_MAP } from './constants'
 
 function Lrud () {
@@ -102,7 +102,7 @@ Lrud.prototype.handleKeyEvent = function (event) {
 }
 
 Lrud.prototype.destroy = function () {
-  this.removeAllListeners()
+  this.e = {}
   this.nodes = {}
   this.currentFocus = null
 }
