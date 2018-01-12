@@ -232,6 +232,7 @@ navigation.on('move', function (event) {
   // event.leave - { id, index } of the node we're leaving
 
   // We might want to act on a move event e.g. move a carousel
+  var node = navigation.nodes[event.id]
   node.onMove && node.onMove(event, node)
 })
 ```
