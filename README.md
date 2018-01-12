@@ -5,19 +5,8 @@
 
 ## Examples
 
-Lrud was built with React in mind but should be flexible enough to fit your framework of choice... hopefully
-
-View the code:
-* [React](https://github.com/stuart-williams/lrud/tree/master/examples/react)
-* [Server-Side React](https://github.com/stuart-williams/lrud/tree/master/examples/ssr)
-
-Better still, clone and run:
-
-`npm run start:react`
-
-or
-
-`npm run start:ssr`
+* [React Example - Repo](https://github.com/stuart-williams/lrud-react-example)
+* [React Example - Live Demo!](http://lrud-react-example.s3-website-eu-west-1.amazonaws.com/)
 
 ## Installation
 
@@ -107,25 +96,6 @@ navigation.register('root')
 }
 ```
 
-See the React [Button example](https://github.com/stuart-williams/lrud/blob/master/examples/react/src/components/Button.js)
-
-```js
-class Button extends React.Component {
-  render () {
-    const { id, parent, children, onFocus, onBlur, onSelect } = this.props
-
-    navigation.register(id, { parent, onFocus, onBlur, onSelect })
-
-    return (
-      <div id={id}>
-        {children}
-      </div>
-    )
-  }
-}
-
-```
-
 #### Parent/child relationship
 
 Create a vertical list with two children
@@ -157,25 +127,6 @@ navigation.register('list-item-2', { parent: 'list' })
 }
 ```
 
-See the React [List example](https://github.com/stuart-williams/lrud/blob/master/examples/react/src/components/List.js)
-
-```js
-class List extends React.Component {
-  render () {
-    const { id, parent, children, orientation, wrapping, grid, onMove } = this.props
-
-    navigation.register(id, { parent, orientation, wrapping, grid, onMove })
-
-    return (
-      <div id={id}>
-        {/* Clone children passing them the id of the list as it's 'parent' prop */}
-        {React.Children.map(children, (child) => React.cloneElement(child, { parent: id }))}
-      </div>
-    )
-  }
-}
-```
-
 ### Unregistering a node
 
 A node can be removed from the navigation tree by calling 'unregister' with the id of the node
@@ -197,17 +148,6 @@ navigation.unregister('list-item-1')
     "children": []
   }
 }
-```
-
-See the React [Button example](https://github.com/stuart-williams/lrud/blob/master/examples/react/src/components/Button.js)
-
-```js
-class Button extends React.Component {
-  componentWillUnmount () {
-    navigation.unregister(this.props.id)
-  }
-}
-
 ```
 
 Unregistering a node will also remove all of its children
@@ -281,7 +221,6 @@ navigation.on('inactive', function (id) {
 })
 
 navigation.on('select', function (id) {
-  // Could call the React component 'onSelect' prop we registered in the Button example
   var node = navigation.nodes[id]
   node.onSelect && node.onSelect(node)
 })
