@@ -187,7 +187,6 @@ document.onkeydown = function (event) {
 
 Lrud emits events in response to key events
 
-* See the [node.js event emitter docs](http://nodejs.org/api/events.html)
 * See the [TAL docs](http://bbc.github.io/tal/widgets/focus-management.html) for an explanation of 'focused' and 'active' nodes
 
 ### Events API
