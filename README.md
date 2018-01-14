@@ -1,5 +1,5 @@
 # Lrud
-**L**eft, **R**ight, **U**p, **D**own (and select)
+**L**eft, **R**ight, **U**p, **D**own is a navigation and focus management library for devices with input via directional controls i.e. smart TV appliactions.
 
 [![Build Status](https://travis-ci.org/stuart-williams/lrud.svg?branch=master)](https://travis-ci.org/stuart-williams/lrud)
 
