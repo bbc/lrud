@@ -1,5 +1,5 @@
 # Lrud
-**L**eft, **R**ight, **U**p, **D**own (and select) takes its inspiration from the BBC's [TAL](http://bbc.github.io/tal/widgets/focus-management.html), an open source library for building applications for connected TV devices. TAL's focus management is baked its 'Widgets' which requires you to opt into the entire application framework. Lrud aims to provide similar functionality without tying you to a particular framework
+**L**eft, **R**ight, **U**p, **D**own (and select)
 
 [![Build Status](https://travis-ci.org/stuart-williams/lrud.svg?branch=master)](https://travis-ci.org/stuart-williams/lrud)
 
