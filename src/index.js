@@ -1,5 +1,4 @@
 import EventEmitter from 'tiny-emitter'
-import { DEFAULT_KEY_CODES, DEFAULT_KEY_MAP } from './constants'
 
 function Lrud () {
   this.nodes = {}
@@ -223,7 +222,20 @@ Lrud.prototype._bubbleActive = function (id) {
   }
 }
 
-Lrud.KEY_CODES = DEFAULT_KEY_CODES
-Lrud.KEY_MAP = DEFAULT_KEY_MAP
+Lrud.KEY_CODES = {
+  37: 'LEFT',
+  39: 'RIGHT',
+  38: 'UP',
+  40: 'DOWN',
+  13: 'ENTER'
+}
+
+Lrud.KEY_MAP = {
+  LEFT: 'LEFT',
+  RIGHT: 'RIGHT',
+  UP: 'UP',
+  DOWN: 'DOWN',
+  ENTER: 'ENTER'
+}
 
 export default Lrud

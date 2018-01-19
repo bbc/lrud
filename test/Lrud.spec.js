@@ -1,28 +1,39 @@
 /* eslint-env mocha, chai */
 
-import { expect } from 'chai'
-import sinon from 'sinon'
-import Lrud from '../lib/lrud'
-import { DEFAULT_KEY_CODES, DEFAULT_KEY_MAP } from '../src/constants'
-import data from './data.json'
+var expect = require('chai').expect
+var sinon = require('sinon')
+var Lrud = require('../lib/lrud')
+var data = require('./data.json')
 
-describe('Given an instance of Lrud', () => {
-  let navigation
+describe('Given an instance of Lrud', function () {
+  var navigation
 
-  beforeEach(() => {
-    Lrud.KEY_CODES = DEFAULT_KEY_CODES
-    Lrud.KEY_MAP = DEFAULT_KEY_MAP
+  beforeEach(function () {
+    Lrud.KEY_CODES = {
+      37: 'LEFT',
+      39: 'RIGHT',
+      38: 'UP',
+      40: 'DOWN',
+      13: 'ENTER'
+    }
+    Lrud.KEY_MAP = {
+      LEFT: 'LEFT',
+      RIGHT: 'RIGHT',
+      UP: 'UP',
+      DOWN: 'DOWN',
+      ENTER: 'ENTER'
+    }
     navigation = new Lrud()
   })
 
-  const toJSON = (o) => JSON.parse(JSON.stringify(o))
+  var toJSON = function (o) { return JSON.parse(JSON.stringify(o)) }
 
-  describe('register', () => {
-    it('should throw an error when attempting to register without an id', () => {
-      expect(() => navigation.register()).to.throw('Attempting to register with an invalid id')
+  describe('register', function () {
+    it('should throw an error when attempting to register without an id', function () {
+      expect(function () { navigation.register() }).to.throw('Attempting to register with an invalid id')
     })
 
-    it('should register a node as expected', () => {
+    it('should register a node as expected', function () {
       navigation.register('root')
 
       expect(toJSON(navigation.nodes)).to.deep.equal({
@@ -32,7 +43,7 @@ describe('Given an instance of Lrud', () => {
       })
     })
 
-    it('should assign new props on subsequent registrations', () => {
+    it('should assign new props on subsequent registrations', function () {
       navigation.register('root')
       navigation.register('root', { orientation: 'horizontal' })
 
@@ -44,7 +55,7 @@ describe('Given an instance of Lrud', () => {
       })
     })
 
-    it('should crate the parent/child relationship as expected', () => {
+    it('should crate the parent/child relationship as expected', function () {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
 
@@ -52,7 +63,7 @@ describe('Given an instance of Lrud', () => {
       expect(navigation.nodes.child.parent).to.equal('root')
     })
 
-    it('should maintain the child order if a node is registered multiple times', () => {
+    it('should maintain the child order if a node is registered multiple times', function () {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
@@ -65,15 +76,15 @@ describe('Given an instance of Lrud', () => {
     })
   })
 
-  describe('unregister', () => {
-    it('should remove a node as expected', () => {
+  describe('unregister', function () {
+    it('should remove a node as expected', function () {
       navigation.register('root')
       navigation.unregister('root')
 
       expect(navigation.nodes.root).to.equal(undefined)
     })
 
-    it('should undo the parent/child relationship as expected', () => {
+    it('should undo the parent/child relationship as expected', function () {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.unregister('child')
@@ -81,7 +92,7 @@ describe('Given an instance of Lrud', () => {
       expect(navigation.nodes.root.children).to.deep.equal([])
     })
 
-    it('should remove the children of the unregistered node', () => {
+    it('should remove the children of the unregistered node', function () {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
@@ -91,8 +102,8 @@ describe('Given an instance of Lrud', () => {
       expect(navigation.nodes.child2).to.equal(undefined)
     })
 
-    it('should blur the \'currentFocus\' node if it is the node being unregistered', () => {
-      const spy = sinon.spy()
+    it('should blur the \'currentFocus\' node if it is the node being unregistered', function () {
+      var spy = sinon.spy()
 
       navigation.on('blur', spy)
 
@@ -104,8 +115,8 @@ describe('Given an instance of Lrud', () => {
       expect(spy.calledWith('root')).to.equal(true)
     })
 
-    it('should not blur the \'currentFocus\' node if it is not the node being unregistered', () => {
-      const spy = sinon.spy()
+    it('should not blur the \'currentFocus\' node if it is not the node being unregistered', function () {
+      var spy = sinon.spy()
 
       navigation.currentFocus = 'child'
 
@@ -120,7 +131,7 @@ describe('Given an instance of Lrud', () => {
       expect(spy.notCalled).to.equal(true)
     })
 
-    it('should unset the \'activeChild\' of the parent if the unregisted node is the currect active child', () => {
+    it('should unset the \'activeChild\' of the parent if the unregisted node is the currect active child', function () {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
@@ -131,9 +142,9 @@ describe('Given an instance of Lrud', () => {
     })
   })
 
-  describe('blur', () => {
-    it('should emit the blur event with node id as expected', () => {
-      const spy = sinon.spy()
+  describe('blur', function () {
+    it('should emit the blur event with node id as expected', function () {
+      var spy = sinon.spy()
 
       navigation.on('blur', spy)
 
@@ -144,8 +155,8 @@ describe('Given an instance of Lrud', () => {
       expect(spy.calledWith('root')).to.equal(true)
     })
 
-    it('should blur the \'currentFocus\' node if no arguments are provided', () => {
-      const spy = sinon.spy()
+    it('should blur the \'currentFocus\' node if no arguments are provided', function () {
+      var spy = sinon.spy()
 
       navigation.currentFocus = 'child'
 
@@ -160,9 +171,9 @@ describe('Given an instance of Lrud', () => {
     })
   })
 
-  describe('focus', () => {
-    it('should emit the focus event with node id as expected', () => {
-      const spy = sinon.spy()
+  describe('focus', function () {
+    it('should emit the focus event with node id as expected', function () {
+      var spy = sinon.spy()
 
       navigation.on('focus', spy)
 
@@ -173,8 +184,8 @@ describe('Given an instance of Lrud', () => {
       expect(spy.calledWith('root')).to.equal(true)
     })
 
-    it('should focus down the tree to the first focusable child', () => {
-      const spy = sinon.spy()
+    it('should focus down the tree to the first focusable child', function () {
+      var spy = sinon.spy()
 
       navigation.on('focus', spy)
 
@@ -186,8 +197,8 @@ describe('Given an instance of Lrud', () => {
       expect(spy.calledWith('child')).to.equal(true)
     })
 
-    it('should update the \'currentFocus\' prop as expected', () => {
-      const spy = sinon.spy()
+    it('should update the \'currentFocus\' prop as expected', function () {
+      var spy = sinon.spy()
 
       navigation.on('focus', spy)
 
@@ -201,8 +212,8 @@ describe('Given an instance of Lrud', () => {
       expect(navigation.currentFocus).to.equal('child')
     })
 
-    it('should focus the \'currentFocus\' node if no arguments are provided', () => {
-      const spy = sinon.spy()
+    it('should focus the \'currentFocus\' node if no arguments are provided', function () {
+      var spy = sinon.spy()
 
       navigation.currentFocus = 'child2'
 
@@ -217,8 +228,8 @@ describe('Given an instance of Lrud', () => {
       expect(spy.calledWith('child2')).to.equal(true)
     })
 
-    it('should emit a blur event for the previously focused node', () => {
-      const spy = sinon.spy()
+    it('should emit a blur event for the previously focused node', function () {
+      var spy = sinon.spy()
 
       navigation.currentFocus = 'child'
 
@@ -233,7 +244,7 @@ describe('Given an instance of Lrud', () => {
       expect(spy.calledWith('child')).to.equal(true)
     })
 
-    it('should set the \'activeChild\' property up the tree as expected', () => {
+    it('should set the \'activeChild\' property up the tree as expected', function () {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
@@ -249,8 +260,8 @@ describe('Given an instance of Lrud', () => {
       expect(navigation.nodes.root.activeChild).to.equal('child2')
     })
 
-    it('should emit the active event as expected', () => {
-      const spy = sinon.spy()
+    it('should emit the active event as expected', function () {
+      var spy = sinon.spy()
 
       navigation.on('active', spy)
 
@@ -265,8 +276,8 @@ describe('Given an instance of Lrud', () => {
       expect(spy.secondCall.calledWith('child')).to.equal(true)
     })
 
-    it('should emit the inactive event as expected', () => {
-      const spy = sinon.spy()
+    it('should emit the inactive event as expected', function () {
+      var spy = sinon.spy()
 
       navigation.on('inactive', spy)
 
@@ -282,9 +293,9 @@ describe('Given an instance of Lrud', () => {
     })
   })
 
-  describe('handleKeyEvent', () => {
-    it('should emit the select event as expected', () => {
-      const spy = sinon.spy()
+  describe('handleKeyEvent', function () {
+    it('should emit the select event as expected', function () {
+      var spy = sinon.spy()
 
       navigation.on('select', spy)
 
@@ -299,10 +310,10 @@ describe('Given an instance of Lrud', () => {
       expect(spy.calledWith('child')).to.equal(true)
     })
 
-    it('should move through a horizontal list as expected', () => {
-      const stopPropagationSpy = sinon.spy()
-      const focusSpy = sinon.spy()
-      const moveSpy = sinon.spy()
+    it('should move through a horizontal list as expected', function () {
+      var stopPropagationSpy = sinon.spy()
+      var focusSpy = sinon.spy()
+      var moveSpy = sinon.spy()
 
       navigation.currentFocus = 'child1'
 
@@ -334,10 +345,10 @@ describe('Given an instance of Lrud', () => {
       expect(toJSON(moveSpy.args)).to.deep.equal(data.horizontalMove)
     })
 
-    it('should move through a vertical list as expected', () => {
-      const stopPropagationSpy = sinon.spy()
-      const focusSpy = sinon.spy()
-      const moveSpy = sinon.spy()
+    it('should move through a vertical list as expected', function () {
+      var stopPropagationSpy = sinon.spy()
+      var focusSpy = sinon.spy()
+      var moveSpy = sinon.spy()
 
       navigation.currentFocus = 'child1'
 
@@ -369,8 +380,8 @@ describe('Given an instance of Lrud', () => {
       expect(toJSON(moveSpy.args)).to.deep.equal(data.verticalMove)
     })
 
-    it('should move through a wrapping list as expected', () => {
-      const focusSpy = sinon.spy()
+    it('should move through a wrapping list as expected', function () {
+      var focusSpy = sinon.spy()
 
       navigation.currentFocus = 'child1'
 
@@ -382,9 +393,9 @@ describe('Given an instance of Lrud', () => {
       navigation.register('child3', { parent: 'root' })
 
       // RIGHT
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: () => {} }) // Focus child2
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: () => {} }) // Focus child3
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: () => {} }) // Focus child1
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: function () {} }) // Focus child2
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: function () {} }) // Focus child3
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: function () {} }) // Focus child1
 
       expect(focusSpy.args).to.deep.equal([
         [ 'child2' ],
@@ -393,8 +404,8 @@ describe('Given an instance of Lrud', () => {
       ])
     })
 
-    it('should move through a grid as expected', () => {
-      const focusSpy = sinon.spy()
+    it('should move through a grid as expected', function () {
+      var focusSpy = sinon.spy()
 
       navigation.currentFocus = 'row1-child1'
 
@@ -410,10 +421,10 @@ describe('Given an instance of Lrud', () => {
       navigation.register('row2-child2', { parent: 'row2' })
       navigation.register('row2-child3', { parent: 'row2' })
 
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: () => {} }) // RIGHT
-      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: () => {} }) // DOWN
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: () => {} }) // RIGHT
-      navigation.handleKeyEvent({ keyCode: 38, stopPropagation: () => {} }) // UP
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: function () {} }) // RIGHT
+      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: function () {} }) // DOWN
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: function () {} }) // RIGHT
+      navigation.handleKeyEvent({ keyCode: 38, stopPropagation: function () {} }) // UP
 
       expect(focusSpy.args).to.deep.equal([
         [ 'row1-child2' ],
@@ -424,10 +435,10 @@ describe('Given an instance of Lrud', () => {
     })
   })
 
-  describe('destroy', () => {
-    it('should reset nodes and currentFocus and remove remove all event listeners', () => {
-      const focusSpy = sinon.spy()
-      const blurSpy = sinon.spy()
+  describe('destroy', function () {
+    it('should reset nodes and currentFocus and remove remove all event listeners', function () {
+      var focusSpy = sinon.spy()
+      var blurSpy = sinon.spy()
 
       navigation.on('focus', focusSpy)
       navigation.on('blur', blurSpy)
@@ -448,12 +459,12 @@ describe('Given an instance of Lrud', () => {
     })
   })
 
-  describe('Overriding static KEY_CODES/KEY_MAP properties', () => {
-    it('should emit the select event as expected', () => {
+  describe('Overriding static KEY_CODES/KEY_MAP properties', function () {
+    it('should emit the select event as expected', function () {
       Lrud.KEY_CODES = { 1: 'Enter' }
       Lrud.KEY_MAP = { ENTER: 'Enter' }
 
-      const spy = sinon.spy()
+      var spy = sinon.spy()
 
       navigation.on('select', spy)
 
