@@ -189,11 +189,7 @@ document.onkeydown = function (event) {
 
 ## Events
 
-Lrud emits events in response to key events
-
-* See the [TAL docs](http://bbc.github.io/tal/widgets/focus-management.html) for an explanation of 'focused' and 'active' nodes
-
-## Events API
+Lrud emits events in response to key events. See the [TAL docs](http://bbc.github.io/tal/widgets/focus-management.html) for an explanation of 'focused' and 'active' nodes
 
 * `navigation.on('focus', function)` - Focus was given to a node
 * `navigation.on('blur', function)` - Focus was taken from a node
