@@ -1,5 +1,5 @@
 # Lrud
-A spatial navigation library for devices with input via directional controls i.e. smart TV appliactions
+A spatial navigation library for devices with input via directional controls i.e. smart TV applications
 
 [![Build Status](https://travis-ci.org/stuart-williams/lrud.svg?branch=master)](https://travis-ci.org/stuart-williams/lrud)
 
@@ -27,39 +27,15 @@ or via yarn
 yarn add lrud
 ```
 
-## Usage
-
-### Initialisation
+## Initialisation
 
 ```js
 var navigation = new Lrud()
 ```
 
-### Configuration
+## Configuration
 
 Lrud comes with a default map of key codes (based on [TAL's device configuration](https://github.com/bbc/tal/blob/master/config/devices)) that should work in your browser
-
-```js
-DEFAULT_KEY_CODES = {
-  37: 'LEFT',
-  39: 'RIGHT',
-  38: 'UP',
-  40: 'DOWN',
-  13: 'ENTER'
-}
-```
-
-The key map allows Lrud to know what's what
-
-```js
-DEFAULT_KEY_MAP = {
-  LEFT: 'LEFT',
-  RIGHT: 'RIGHT',
-  UP: 'UP',
-  DOWN: 'DOWN',
-  ENTER: 'ENTER'
-}
-```
 
 Your configuration might look different, so override them!
 
@@ -81,7 +57,7 @@ Lrud.KEY_MAP = {
 }
 ```
 
-### Registering a node
+## Registering a node
 
 A node can be added to the navigation tree by calling 'register' with the id of the node
 
@@ -98,7 +74,27 @@ navigation.register('root')
 }
 ```
 
-#### Parent/child relationship
+## Options
+
+### `orientation`
+
+`"vertical" | "horizontal"`
+
+A node (list) of vertical orientation will handle up and down key events while a horizontal list will handle left and right key events
+
+### `wrapping`
+
+`boolean`
+
+To be used in conjunction with orientation to make a list wrap at the top/bottom or left/right depending on orientation
+
+### `grid`
+
+`boolean`
+
+To be used in conjunction with orientation to give a list of lists grid navigation
+
+### Parent/child relationship
 
 Create a vertical list with two children
 
@@ -129,7 +125,7 @@ navigation.register('list-item-2', { parent: 'list' })
 }
 ```
 
-### Unregistering a node
+## Unregistering a node
 
 A node can be removed from the navigation tree by calling 'unregister' with the id of the node
 
@@ -163,14 +159,22 @@ navigation.unregister('list')
 {}
 ```
 
-### Focus
+## Focus
 You can give focus to a particular node by calling 'focus' with the node id
 
 ```js
 navigation.focus('list')
 ```
 
-### Handling Key Events
+## Destroy
+
+An Lrud instance can be torn down, removing all event listeners, nodes and current focus
+
+```js
+navigation.destroy()
+```
+
+## Handling Key Events
 
 You can pass key events into Lrud using the 'handleKeyEvent' function
 
@@ -183,13 +187,13 @@ document.onkeydown = function (event) {
 }
 ```
 
-### Events
+## Events
 
 Lrud emits events in response to key events
 
 * See the [TAL docs](http://bbc.github.io/tal/widgets/focus-management.html) for an explanation of 'focused' and 'active' nodes
 
-### Events API
+## Events API
 
 * `navigation.on('focus', function)` - Focus was given to a node
 * `navigation.on('blur', function)` - Focus was taken from a node
@@ -197,8 +201,6 @@ Lrud emits events in response to key events
 * `navigation.on('inactive', function)` - The node has become inactive
 * `navigation.on('select', function)` - The current focused node was selected
 * `navigation.on('move', function)` - Triggered when focus is changed within a list
-
-#### Example usage
 
 ```js
 navigation.on('focus', function (id) {
@@ -243,7 +245,7 @@ navigation.on('move', function (event) {
 * [Netflix - Pass the Remote](https://medium.com/netflix-techblog/pass-the-remote-user-input-on-tv-devices-923f6920c9a8)
 * [Mozilla - Implementing TV remote control navigation](https://developer.mozilla.org/en-US/docs/Mozilla/Firefox_OS_for_TV/TV_remote_control_navigation)
 
-### Alternatives
+## Alternatives
 
 * [react-key-navigation](https://github.com/dead/react-key-navigation)
 * [JavaScript SpatialNavigation](https://github.com/luke-chang/js-spatial-navigation)
