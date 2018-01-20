@@ -92,7 +92,7 @@ To be used in conjunction with orientation to make a list wrap at the top/bottom
 
 `boolean`
 
-To be used in conjunction with orientation to give a list of lists grid navigation
+To be used in conjunction with orientation to give a list of lists grid functionality
 
 ### Parent/child relationship
 
