@@ -80,7 +80,7 @@ navigation.register('root')
 
 `"vertical" | "horizontal"`
 
-A node (list) of vertical orientation will handle up and down key events while a horizontal list will handle left and right key events
+A node (list) of vertical orientation will handle up/down key events while a horizontal list will handle left/right key events
 
 ### `wrapping`
 
