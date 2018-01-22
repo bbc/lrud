@@ -7,6 +7,7 @@ A spatial navigation library for devices with input via directional controls i.e
 
 * [React Example - Repo](https://github.com/stuart-williams/lrud-react-example)
 * [React Example - Live Demo!](http://lrud-react-example.s3-website-eu-west-1.amazonaws.com/)
+* [Device Identification Example](https://github.com/stuart-williams/lrud-device-identification-example)
 
 ![React Example](https://raw.githubusercontent.com/stuart-williams/lrud/master/assets/lrud-react-example.gif)
 
