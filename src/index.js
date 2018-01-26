@@ -128,7 +128,7 @@ Lrud.prototype._isValidLRUDEvent = function (event, node) {
 }
 
 Lrud.prototype._createNode = function (id, props) {
-  return merge({ children: [] }, this.nodes[id] || {}, props || {})
+  return merge({ id: id, children: [] }, this.nodes[id] || {}, props || {})
 }
 
 Lrud.prototype._getNextActiveIndex = function (node, activeIndex, offset) {
