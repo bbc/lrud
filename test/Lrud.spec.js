@@ -38,6 +38,7 @@ describe('Given an instance of Lrud', function () {
 
       expect(toJSON(navigation.nodes)).to.deep.equal({
         root: {
+          id: 'root',
           children: []
         }
       })
@@ -49,6 +50,7 @@ describe('Given an instance of Lrud', function () {
 
       expect(toJSON(navigation.nodes)).to.deep.equal({
         root: {
+          id: 'root',
           children: [],
           orientation: 'horizontal'
         }
