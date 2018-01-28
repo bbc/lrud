@@ -2,7 +2,7 @@
   "name": "lrud",
   "version": "1.3.11",
   "description": "Left, Right, Up, Down. A spatial navigation library for devices with input via directional controls",
-  "main": "lib/lrud.js",
+  "main": "lrud.js",
   "author": {
     "name": "Stuart Williams",
     "url": "https://github.com/stuart-williams"
@@ -24,13 +24,11 @@
     "url": "git@github.com:stuart-williams/lrud.git"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "mocha": "^4.0.1",
+    "jest": "^22.1.4",
     "rimraf": "^2.6.2",
     "rollup": "^0.53.0",
     "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-node-resolve": "^3.0.2",
-    "sinon": "^4.1.3",
     "standard": "^10.0.3",
     "uglify-js": "^3.2.2"
   },
@@ -41,10 +39,10 @@
     "preversion": "npm test",
     "postversion": "git push && git push --tags",
     "clean": "rimraf lib",
-    "lint": "standard src/*.js",
+    "lint": "standard lrud.js",
     "pretest": "npm run lint && npm run build",
-    "test": "mocha",
-    "minify": "uglifyjs lib/lrud.js --compress --mangle --output lib/lrud.min.js",
+    "test": "jest",
+    "minify": "uglifyjs dist/lrud.js --compress --mangle --output dist/lrud.min.js",
     "prebuild": "npm run clean",
     "build": "rollup -c",
     "postbuild": "npm run minify"

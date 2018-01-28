@@ -309,6 +309,8 @@ Lrud.KEY_MAP = {
   ENTER: 'ENTER'
 };
 
-return Lrud;
+var lrud = Lrud;
+
+return lrud;
 
 })));

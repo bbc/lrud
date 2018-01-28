@@ -1,4 +1,4 @@
-import EventEmitter from 'tiny-emitter'
+const EventEmitter = require('tiny-emitter')
 
 function Lrud () {
   this.nodes = {}
@@ -238,4 +238,4 @@ Lrud.KEY_MAP = {
   ENTER: 'ENTER'
 }
 
-export default Lrud
+module.exports = Lrud
