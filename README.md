@@ -61,7 +61,7 @@ Lrud.KEY_MAP = {
 
 ## Registering a node
 
-A node can be added to the navigation tree by calling 'register' with the id of the node
+A node can be added to the navigation tree by calling `navigation.register` with the id of the node
 
 ```js
 navigation.register('root')
@@ -129,7 +129,7 @@ navigation.register('list-item-2', { parent: 'list' })
 
 ## Unregistering a node
 
-A node can be removed from the navigation tree by calling 'unregister' with the id of the node
+A node can be removed from the navigation tree by calling `navigation.unregister` with the id of the node
 
 ```js
 navigation.unregister('list-item-1')
@@ -162,10 +162,32 @@ navigation.unregister('list')
 ```
 
 ## Focus
-You can give focus to a particular node by calling 'focus' with the node id
+You can give focus to a particular node by calling `navigation.focus` with the node id
 
 ```js
 navigation.focus('list')
+```
+
+Calling `navigation.focus` without an id will focus the root node
+
+```js
+navigation.focus()
+```
+
+## setActiveChild
+
+Manually set the active child of a node by its id
+
+```js
+navigation.setActiveChild(id, child)
+```
+
+## setActiveIndex
+
+Manually set the active child of a node by its index in `parent.children`
+
+```js
+navigation.setActiveIndex(id, index)
 ```
 
 ## Destroy
@@ -178,7 +200,7 @@ navigation.destroy()
 
 ## Handling Key Events
 
-You can pass key events into Lrud using the 'handleKeyEvent' function
+You can pass key events into Lrud using the `navigation.handleKeyEvent` function
 
 ```js
 document.onkeydown = function (event) {
@@ -237,6 +259,10 @@ navigation.on('move', function (event) {
   node.onMove && node.onMove(event)
 })
 ```
+
+## React Integration
+
+Lrud doesn't ship with a React integration but check out the [Focusable](https://github.com/stuart-williams/lrud-react-example/blob/master/src/components/Focusable.js) component in the React example app
 
 ## Inspiration
 
