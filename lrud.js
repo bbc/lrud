@@ -101,10 +101,9 @@ Lrud.prototype = assign(Lrud.prototype, {
   blur: function (id) {
     id = id || this.currentFocus
 
-    var node = this.nodes[id]
-    if (!node) return
-
-    this.emit('blur', id)
+    if (this.nodes[id]) {
+      this.emit('blur', id)
+    }
   },
 
   focus: function (id) {
@@ -197,13 +196,20 @@ Lrud.prototype = assign(Lrud.prototype, {
         this.emit('move', {
           id: id,
           offset: offset,
-          enter: { id: nextChild, index: nextIndex },
-          leave: { id: activeChild, index: activeIndex }
+          orientation: node.orientation,
+          enter: {
+            id: nextChild,
+            index: nextIndex
+          },
+          leave: {
+            id: activeChild,
+            index: activeIndex
+          }
         })
 
         this.focus(nextChild)
-
-        return event.stopPropagation()
+        event.stopPropagation()
+        return
       }
     }
 

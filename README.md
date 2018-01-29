@@ -227,8 +227,9 @@ navigation.on('select', function (id) {
 })
 
 navigation.on('move', function (event) {
-  // event.id - id of the list
+  // event.id
   // event.offset - Direction of travel (depending on orientation): -1 = LEFT/UP, 1 = RIGHT/DOWN
+  // event.orientation
   // event.enter - { id, index } of the node we're navigating into
   // event.leave - { id, index } of the node we're leaving
 
