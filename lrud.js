@@ -106,6 +106,29 @@ Lrud.prototype.destroy = function () {
   this.currentFocus = null
 }
 
+Lrud.prototype.setActiveChild = function (id, child) {
+  var node = this.nodes[id]
+  if (!node || node.children.indexOf(child) === -1) return
+
+  var activeChild = node.activeChild
+
+  if (activeChild !== child) {
+    if (activeChild) {
+      this.emit('inactive', activeChild)
+    }
+
+    this.emit('active', child)
+    node.activeChild = child
+  }
+}
+
+Lrud.prototype.setActiveIndex = function (id, index) {
+  var node = this.nodes[id]
+  if (!node || !node.children[index]) return
+
+  this.setActiveChild(id, node.children[index])
+}
+
 Lrud.prototype._isValidLRUDEvent = function (event, node) {
   var keyCode = event.keyCode
 
@@ -160,7 +183,7 @@ Lrud.prototype._updateGrid = function (node) {
 
   node.children.forEach(function (id) {
     var node = self.nodes[id]
-    self._setActiveChild(id, node.children[activeIndex] || node.activeChild)
+    self.setActiveChild(id, node.children[activeIndex] || node.activeChild)
   })
 }
 
@@ -200,24 +223,11 @@ Lrud.prototype._bubbleKeyEvent = function (event, id) {
   this._bubbleKeyEvent(event, node.parent)
 }
 
-Lrud.prototype._setActiveChild = function (id, nextActiveChild) {
-  var activeChild = this.nodes[id].activeChild
-
-  if (activeChild !== nextActiveChild) {
-    if (activeChild) {
-      this.emit('inactive', activeChild)
-    }
-
-    this.emit('active', nextActiveChild)
-    this.nodes[id].activeChild = nextActiveChild
-  }
-}
-
 Lrud.prototype._bubbleActive = function (id) {
   var node = this.nodes[id]
 
   if (node.parent) {
-    this._setActiveChild(node.parent, id)
+    this.setActiveChild(node.parent, id)
     this._bubbleActive(node.parent)
   }
 }

@@ -103,7 +103,7 @@ describe('Given an instance of Lrud', function () {
       expect(navigation.nodes.child2).toBeUndefined()
     })
 
-    it('should blur the \'currentFocus\' node if it is the node being unregistered', function () {
+    it('should blur the currentFocus node if it is the node being unregistered', function () {
       var spy = jest.fn()
 
       navigation.on('blur', spy)
@@ -116,7 +116,7 @@ describe('Given an instance of Lrud', function () {
       expect(spy).toHaveBeenCalledWith('root')
     })
 
-    it('should not blur the \'currentFocus\' node if it is not the node being unregistered', function () {
+    it('should not blur the currentFocus node if it is not the node being unregistered', function () {
       var spy = jest.fn()
 
       navigation.currentFocus = 'child'
@@ -132,7 +132,7 @@ describe('Given an instance of Lrud', function () {
       expect(spy).not.toHaveBeenCalled()
     })
 
-    it('should unset the \'activeChild\' of the parent if the unregisted node is the currect active child', function () {
+    it('should unset the activeChild of the parent if the unregisted node is the currect active child', function () {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
@@ -156,7 +156,7 @@ describe('Given an instance of Lrud', function () {
       expect(spy).toHaveBeenCalledWith('root')
     })
 
-    it('should blur the \'currentFocus\' node if no arguments are provided', function () {
+    it('should blur the currentFocus node if no arguments are provided', function () {
       var spy = jest.fn()
 
       navigation.currentFocus = 'child'
@@ -198,7 +198,7 @@ describe('Given an instance of Lrud', function () {
       expect(spy).toHaveBeenCalledWith('child')
     })
 
-    it('should update the \'currentFocus\' prop as expected', function () {
+    it('should update the currentFocus prop as expected', function () {
       var spy = jest.fn()
 
       navigation.on('focus', spy)
@@ -213,7 +213,7 @@ describe('Given an instance of Lrud', function () {
       expect(navigation.currentFocus).toEqual('child')
     })
 
-    it('should focus the \'currentFocus\' node if no arguments are provided', function () {
+    it('should focus the currentFocus node if no arguments are provided', function () {
       var spy = jest.fn()
 
       navigation.currentFocus = 'child2'
@@ -245,7 +245,7 @@ describe('Given an instance of Lrud', function () {
       expect(spy).toHaveBeenCalledWith('child')
     })
 
-    it('should set the \'activeChild\' property up the tree as expected', function () {
+    it('should set the activeChild property up the tree as expected', function () {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
@@ -405,6 +405,7 @@ describe('Given an instance of Lrud', function () {
       ])
     })
 
+    // TODO: Fix bug where grid doesn't correctly handle rows with fewer items
     it('should move through a grid as expected', function () {
       var focusSpy = jest.fn()
 
@@ -457,6 +458,53 @@ describe('Given an instance of Lrud', function () {
 
       expect(focusSpy).not.toHaveBeenCalled()
       expect(blurSpy).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('setActiveChild', function () {
+    it('should set the activeChild as expected', function () {
+      navigation.register('root')
+      navigation.register('child1', { parent: 'root' })
+      navigation.register('child2', { parent: 'root' })
+
+      navigation.setActiveChild('root', 'child2')
+
+      expect(navigation.nodes.root.activeChild).toEqual('child2')
+    })
+
+    it('should not set the activeChild if it is invalid', function () {
+      navigation.register('root')
+      navigation.register('child1', { parent: 'root' })
+
+      navigation.setActiveChild('root', 'child2')
+
+      expect(navigation.nodes.root.activeChild).toBeFalsy()
+    })
+  })
+
+  describe('setActiveIndex', function () {
+    it('should call through to setActiveChild as expected', function () {
+      navigation.setActiveChild = jest.fn()
+
+      navigation.register('root')
+      navigation.register('child1', { parent: 'root' })
+      navigation.register('child2', { parent: 'root' })
+
+      navigation.setActiveIndex('root', 1)
+
+      expect(navigation.setActiveChild).toHaveBeenCalledWith('root', 'child2')
+    })
+
+    it('should not call through to setActiveChild when the index is out of range', function () {
+      navigation.setActiveChild = jest.fn()
+
+      navigation.register('root')
+      navigation.register('child1', { parent: 'root' })
+      navigation.register('child2', { parent: 'root' })
+
+      navigation.setActiveIndex('root', 2)
+
+      expect(navigation.setActiveChild).not.toHaveBeenCalled()
     })
   })
 
