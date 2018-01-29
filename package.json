@@ -23,6 +23,9 @@
     "type": "git",
     "url": "git@github.com:stuart-williams/lrud.git"
   },
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "jest": "^22.1.4",
     "rimraf": "^2.6.2",
