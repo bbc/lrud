@@ -1,5 +1,6 @@
 # Lrud
-A spatial navigation library for devices with input via directional controls i.e. smart TV applications
+
+A spatial navigation library for devices with input via directional controls
 
 [![Build Status](https://travis-ci.org/stuart-williams/lrud.svg?branch=master)](https://travis-ci.org/stuart-williams/lrud)
 

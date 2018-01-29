@@ -1,4 +1,4 @@
-const EventEmitter = require('tiny-emitter')
+var EventEmitter = require('tiny-emitter')
 
 function Lrud () {
   this.nodes = {}
