@@ -15,7 +15,7 @@ A spatial navigation library for devices with input via directional controls
 ## Installation
 
 ```html
-<script src="//unpkg.com/lrud/dist/lrud.min.js"></script>
+<script src="https://unpkg.com/lrud"></script>
 ```
 or via npm
 

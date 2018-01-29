@@ -3,6 +3,10 @@
   "version": "1.4.5",
   "description": "Left, Right, Up, Down. A spatial navigation library for devices with input via directional controls",
   "main": "lrud.js",
+  "unpkg": "dist/lrud.min.js",
+  "files": [
+    "dist"
+  ],
   "author": {
     "name": "Stuart Williams",
     "url": "https://github.com/stuart-williams"
@@ -23,9 +27,6 @@
     "type": "git",
     "url": "git@github.com:stuart-williams/lrud.git"
   },
-  "files": [
-    "dist"
-  ],
   "devDependencies": {
     "jest": "^22.1.4",
     "rimraf": "^2.6.2",
