@@ -246,6 +246,7 @@ navigation.on('move', function (event) {
 
 ## Alternatives
 
+* [react-tv-navigation](https://github.com/react-tv/react-tv-navigation)
 * [react-key-navigation](https://github.com/dead/react-key-navigation)
-* [JavaScript SpatialNavigation](https://github.com/luke-chang/js-spatial-navigation)
-* [TAL](https://github.com/bbc/tal)
+* [js-spatial-navigation](https://github.com/luke-chang/js-spatial-navigation)
+* [tal](https://github.com/bbc/tal)
