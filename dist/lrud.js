@@ -163,6 +163,7 @@ var objectAssign = shouldUseNative() ? Object.assign : function (target, source)
 
 function Lrud () {
   this.nodes = {};
+  this.root = null;
   this.currentFocus = null;
 }
 
@@ -228,6 +229,8 @@ Lrud.prototype = objectAssign(Lrud.prototype, {
       }
 
       this.nodes[node.parent] = parentNode;
+    } else {
+      this.root = id;
     }
 
     this.nodes[id] = node;
@@ -267,7 +270,7 @@ Lrud.prototype = objectAssign(Lrud.prototype, {
   },
 
   focus: function (id) {
-    id = id || this.currentFocus;
+    id = id || this.currentFocus || this.root;
 
     var node = this.nodes[id];
     if (!node) return
