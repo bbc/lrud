@@ -25,6 +25,7 @@ describe('Given an instance of Lrud', function () {
   })
 
   var toJSON = function (o) { return JSON.parse(JSON.stringify(o)) }
+  var noop = function () {}
 
   describe('register', function () {
     it('should throw an error when attempting to register without an id', function () {
@@ -128,7 +129,7 @@ describe('Given an instance of Lrud', function () {
       navigation.unregister('child2')
 
       expect(navigation.currentFocus).toEqual('child')
-      expect(spy).not.toBeCalled()
+      expect(spy).not.toHaveBeenCalled()
     })
 
     it('should unset the \'activeChild\' of the parent if the unregisted node is the currect active child', function () {
@@ -393,9 +394,9 @@ describe('Given an instance of Lrud', function () {
       navigation.register('child3', { parent: 'root' })
 
       // RIGHT
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: function () {} }) // Focus child2
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: function () {} }) // Focus child3
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: function () {} }) // Focus child1
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child2
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child3
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child1
 
       expect(focusSpy.mock.calls).toEqual([
         [ 'child2' ],
@@ -421,10 +422,10 @@ describe('Given an instance of Lrud', function () {
       navigation.register('row2-child2', { parent: 'row2' })
       navigation.register('row2-child3', { parent: 'row2' })
 
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: function () {} }) // RIGHT
-      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: function () {} }) // DOWN
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: function () {} }) // RIGHT
-      navigation.handleKeyEvent({ keyCode: 38, stopPropagation: function () {} }) // UP
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // RIGHT
+      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: noop }) // DOWN
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // RIGHT
+      navigation.handleKeyEvent({ keyCode: 38, stopPropagation: noop }) // UP
 
       expect(focusSpy.mock.calls).toEqual([
         [ 'row1-child2' ],
