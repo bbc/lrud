@@ -71,136 +71,106 @@ E.prototype = {
 
 var tinyEmitter = E;
 
+/*
+object-assign
+(c) Sindre Sorhus
+@license MIT
+*/
+
+/* eslint-disable no-unused-vars */
+var getOwnPropertySymbols = Object.getOwnPropertySymbols;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+
+function toObject(val) {
+	if (val === null || val === undefined) {
+		throw new TypeError('Object.assign cannot be called with null or undefined');
+	}
+
+	return Object(val);
+}
+
+function shouldUseNative() {
+	try {
+		if (!Object.assign) {
+			return false;
+		}
+
+		// Detect buggy property enumeration order in older V8 versions.
+
+		// https://bugs.chromium.org/p/v8/issues/detail?id=4118
+		var test1 = new String('abc');  // eslint-disable-line no-new-wrappers
+		test1[5] = 'de';
+		if (Object.getOwnPropertyNames(test1)[0] === '5') {
+			return false;
+		}
+
+		// https://bugs.chromium.org/p/v8/issues/detail?id=3056
+		var test2 = {};
+		for (var i = 0; i < 10; i++) {
+			test2['_' + String.fromCharCode(i)] = i;
+		}
+		var order2 = Object.getOwnPropertyNames(test2).map(function (n) {
+			return test2[n];
+		});
+		if (order2.join('') !== '0123456789') {
+			return false;
+		}
+
+		// https://bugs.chromium.org/p/v8/issues/detail?id=3056
+		var test3 = {};
+		'abcdefghijklmnopqrst'.split('').forEach(function (letter) {
+			test3[letter] = letter;
+		});
+		if (Object.keys(Object.assign({}, test3)).join('') !==
+				'abcdefghijklmnopqrst') {
+			return false;
+		}
+
+		return true;
+	} catch (err) {
+		// We don't expect any of the above to throw, but better to be safe.
+		return false;
+	}
+}
+
+var objectAssign = shouldUseNative() ? Object.assign : function (target, source) {
+	var from;
+	var to = toObject(target);
+	var symbols;
+
+	for (var s = 1; s < arguments.length; s++) {
+		from = Object(arguments[s]);
+
+		for (var key in from) {
+			if (hasOwnProperty.call(from, key)) {
+				to[key] = from[key];
+			}
+		}
+
+		if (getOwnPropertySymbols) {
+			symbols = getOwnPropertySymbols(from);
+			for (var i = 0; i < symbols.length; i++) {
+				if (propIsEnumerable.call(from, symbols[i])) {
+					to[symbols[i]] = from[symbols[i]];
+				}
+			}
+		}
+	}
+
+	return to;
+};
+
 function Lrud () {
   this.nodes = {};
   this.currentFocus = null;
 }
 
-function merge () {
-  var merged = {};
-
-  for (var i = 0; i < arguments.length; i++) {
-    var obj = arguments[i];
-    for (var prop in obj) {
-      if (obj.hasOwnProperty(prop)) {
-        merged[prop] = obj[prop];
-      }
-    }
-  }
-
-  return merged
+function createNode (ctx, id, props) {
+  return objectAssign({ id: id, children: [] }, ctx.nodes[id] || {}, props || {})
 }
 
-Lrud.prototype = Object.create(tinyEmitter.prototype);
-
-Lrud.prototype.register = function (id, props) {
-  props = props || {};
-
-  if (!id) {
-    throw new Error('Attempting to register with an invalid id')
-  }
-
-  var node = this._createNode(id, props);
-
-  if (node.parent) {
-    var parentNode = this._createNode(node.parent);
-
-    if (parentNode.children.indexOf(id) === -1) {
-      parentNode.children.push(id);
-    }
-
-    this.nodes[node.parent] = parentNode;
-  }
-
-  this.nodes[id] = node;
-};
-
-Lrud.prototype.unregister = function (id) {
-  var node = this.nodes[id];
-  if (!node) return
-
-  var parentNode = this.nodes[node.parent];
-
-  if (parentNode) {
-    parentNode.children = parentNode.children.filter(function (cid) {
-      return cid !== id
-    });
-
-    if (parentNode.activeChild === id) {
-      parentNode.activeChild = undefined;
-    }
-  }
-
-  if (this.currentFocus === id) {
-    this.blur(id);
-    this.currentFocus = undefined;
-  }
-
-  delete this.nodes[id];
-  node.children.forEach(this.unregister.bind(this));
-};
-
-Lrud.prototype.blur = function (id) {
-  id = id || this.currentFocus;
-
-  var node = this.nodes[id];
-  if (!node) return
-
-  this.emit('blur', id);
-};
-
-Lrud.prototype.focus = function (id) {
-  id = id || this.currentFocus;
-
-  var node = this.nodes[id];
-  if (!node) return
-
-  var activeChild = node.activeChild || node.children[0];
-
-  if (activeChild) {
-    return this.focus(activeChild)
-  }
-
-  this.blur();
-  this.currentFocus = id;
-  this.emit('focus', id);
-  this._bubbleActive(id);
-};
-
-Lrud.prototype.handleKeyEvent = function (event) {
-  this._bubbleKeyEvent(event, this.currentFocus);
-};
-
-Lrud.prototype.destroy = function () {
-  this.e = {};
-  this.nodes = {};
-  this.currentFocus = null;
-};
-
-Lrud.prototype.setActiveChild = function (id, child) {
-  var node = this.nodes[id];
-  if (!node || node.children.indexOf(child) === -1) return
-
-  var activeChild = node.activeChild;
-
-  if (activeChild !== child) {
-    if (activeChild) {
-      this.emit('inactive', activeChild);
-    }
-
-    this.emit('active', child);
-    node.activeChild = child;
-  }
-};
-
-Lrud.prototype.setActiveIndex = function (id, index) {
-  var node = this.nodes[id];
-  if (!node || !node.children[index]) return
-
-  this.setActiveChild(id, node.children[index]);
-};
-
-Lrud.prototype._isValidLRUDEvent = function (event, node) {
+function isValidLRUDEvent (event, node) {
   var keyCode = event.keyCode;
 
   return (
@@ -219,13 +189,16 @@ Lrud.prototype._isValidLRUDEvent = function (event, node) {
       )
     )
   )
-};
+}
 
-Lrud.prototype._createNode = function (id, props) {
-  return merge({ id: id, children: [] }, this.nodes[id] || {}, props || {})
-};
+function getEventOffset (event) {
+  return (
+    Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.RIGHT ||
+    Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.DOWN
+  ) ? 1 : -1
+}
 
-Lrud.prototype._getNextActiveIndex = function (node, activeIndex, offset) {
+function getNextActiveIndex (node, activeIndex, offset) {
   var nextIndex = activeIndex + offset;
   var size = node.children.length;
 
@@ -233,75 +206,179 @@ Lrud.prototype._getNextActiveIndex = function (node, activeIndex, offset) {
   if (node.wrapping && nextIndex === size) return 0
 
   return nextIndex
-};
+}
 
-Lrud.prototype._getEventOffset = function (event) {
-  return (
-    Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.RIGHT ||
-    Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.DOWN
-  ) ? 1 : -1
-};
+Lrud.prototype = Object.create(tinyEmitter.prototype);
 
-Lrud.prototype._updateGrid = function (node) {
-  var self = this;
-  var rowId = node.activeChild || node.children[0];
-  var rowNode = this.nodes[rowId];
-  var activeChild = rowNode.activeChild || rowNode.children[0];
+Lrud.prototype = objectAssign(Lrud.prototype, {
+  register: function (id, props) {
+    props = props || {};
 
-  if (!activeChild) return
+    if (!id) {
+      throw new Error('Attempting to register with an invalid id')
+    }
 
-  var activeIndex = rowNode.children.indexOf(activeChild);
+    var node = createNode(this, id, props);
 
-  node.children.forEach(function (id) {
-    var node = self.nodes[id];
-    self.setActiveChild(id, node.children[activeIndex] || node.activeChild);
-  });
-};
+    if (node.parent) {
+      var parentNode = createNode(this, node.parent);
 
-Lrud.prototype._bubbleKeyEvent = function (event, id) {
-  var node = this.nodes[id];
-  if (!node) return
-
-  if (Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.ENTER) {
-    return this.emit('select', id)
-  }
-
-  if (this._isValidLRUDEvent(event, node)) {
-    var activeChild = node.activeChild || node.children[0];
-    var activeIndex = node.children.indexOf(activeChild);
-    var offset = this._getEventOffset(event);
-    var nextIndex = this._getNextActiveIndex(node, activeIndex, offset);
-    var nextChild = node.children[nextIndex];
-
-    if (nextChild) {
-      if (node.grid) {
-        this._updateGrid(node);
+      if (parentNode.children.indexOf(id) === -1) {
+        parentNode.children.push(id);
       }
 
-      this.emit('move', {
-        id: id,
-        offset: offset,
-        enter: { id: nextChild, index: nextIndex },
-        leave: { id: activeChild, index: activeIndex }
+      this.nodes[node.parent] = parentNode;
+    }
+
+    this.nodes[id] = node;
+  },
+
+  unregister: function (id) {
+    var node = this.nodes[id];
+    if (!node) return
+
+    var parentNode = this.nodes[node.parent];
+
+    if (parentNode) {
+      parentNode.children = parentNode.children.filter(function (cid) {
+        return cid !== id
       });
 
-      this.focus(nextChild);
+      if (parentNode.activeChild === id) {
+        parentNode.activeChild = undefined;
+      }
+    }
 
-      return event.stopPropagation()
+    if (this.currentFocus === id) {
+      this.blur(id);
+      this.currentFocus = undefined;
+    }
+
+    delete this.nodes[id];
+    node.children.forEach(this.unregister.bind(this));
+  },
+
+  blur: function (id) {
+    id = id || this.currentFocus;
+
+    var node = this.nodes[id];
+    if (!node) return
+
+    this.emit('blur', id);
+  },
+
+  focus: function (id) {
+    id = id || this.currentFocus;
+
+    var node = this.nodes[id];
+    if (!node) return
+
+    var activeChild = node.activeChild || node.children[0];
+
+    if (activeChild) {
+      return this.focus(activeChild)
+    }
+
+    this.blur();
+    this.currentFocus = id;
+    this.emit('focus', id);
+    this._bubbleActive(id);
+  },
+
+  handleKeyEvent: function (event) {
+    this._bubbleKeyEvent(event, this.currentFocus);
+  },
+
+  destroy: function () {
+    this.e = {};
+    this.nodes = {};
+    this.currentFocus = null;
+  },
+
+  setActiveChild: function (id, child) {
+    var node = this.nodes[id];
+    if (!node || node.children.indexOf(child) === -1) return
+
+    var activeChild = node.activeChild;
+
+    if (activeChild !== child) {
+      if (activeChild) {
+        this.emit('inactive', activeChild);
+      }
+
+      this.emit('active', child);
+      node.activeChild = child;
+    }
+  },
+
+  setActiveIndex: function (id, index) {
+    var node = this.nodes[id];
+    if (!node || !node.children[index]) return
+
+    this.setActiveChild(id, node.children[index]);
+  },
+
+  _updateGrid: function (node) {
+    var self = this;
+    var rowId = node.activeChild || node.children[0];
+    var rowNode = this.nodes[rowId];
+    var activeChild = rowNode.activeChild || rowNode.children[0];
+
+    if (!activeChild) return
+
+    var activeIndex = rowNode.children.indexOf(activeChild);
+
+    node.children.forEach(function (id) {
+      var node = self.nodes[id];
+      self.setActiveChild(id, node.children[activeIndex] || node.activeChild);
+    });
+  },
+
+  _bubbleKeyEvent: function (event, id) {
+    var node = this.nodes[id];
+    if (!node) return
+
+    if (Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.ENTER) {
+      return this.emit('select', id)
+    }
+
+    if (isValidLRUDEvent(event, node)) {
+      var activeChild = node.activeChild || node.children[0];
+      var activeIndex = node.children.indexOf(activeChild);
+      var offset = getEventOffset(event);
+      var nextIndex = getNextActiveIndex(node, activeIndex, offset);
+      var nextChild = node.children[nextIndex];
+
+      if (nextChild) {
+        if (node.grid) {
+          this._updateGrid(node);
+        }
+
+        this.emit('move', {
+          id: id,
+          offset: offset,
+          enter: { id: nextChild, index: nextIndex },
+          leave: { id: activeChild, index: activeIndex }
+        });
+
+        this.focus(nextChild);
+
+        return event.stopPropagation()
+      }
+    }
+
+    this._bubbleKeyEvent(event, node.parent);
+  },
+
+  _bubbleActive: function (id) {
+    var node = this.nodes[id];
+
+    if (node.parent) {
+      this.setActiveChild(node.parent, id);
+      this._bubbleActive(node.parent);
     }
   }
-
-  this._bubbleKeyEvent(event, node.parent);
-};
-
-Lrud.prototype._bubbleActive = function (id) {
-  var node = this.nodes[id];
-
-  if (node.parent) {
-    this.setActiveChild(node.parent, id);
-    this._bubbleActive(node.parent);
-  }
-};
+});
 
 Lrud.KEY_CODES = {
   37: 'LEFT',
