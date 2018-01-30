@@ -45,7 +45,7 @@
     "preversion": "npm test",
     "postversion": "git push && git push --tags",
     "clean": "rimraf lib",
-    "lint": "standard lrud.js",
+    "lint": "standard src/*.js",
     "pretest": "npm run lint && npm run build",
     "test": "jest",
     "minify": "uglifyjs dist/lrud.js --compress --mangle --output dist/lrud.min.js",
