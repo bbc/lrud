@@ -138,7 +138,6 @@ assign(Lrud.prototype, {
   },
 
   _updateGrid: function (node) {
-    var self = this
     var rowId = node.activeChild || node.children[0]
     var rowNode = this.nodes[rowId]
     var activeChild = rowNode.activeChild || rowNode.children[0]
@@ -148,9 +147,11 @@ assign(Lrud.prototype, {
     var activeIndex = rowNode.children.indexOf(activeChild)
 
     node.children.forEach(function (id) {
-      var node = self.nodes[id]
-      self.setActiveChild(id, node.children[activeIndex] || node.activeChild)
-    })
+      this.setActiveIndex(id, Math.min(
+        this.nodes[id].children.length - 1,
+        activeIndex
+      ))
+    }.bind(this))
   },
 
   _bubbleKeyEvent: function (event, id) {

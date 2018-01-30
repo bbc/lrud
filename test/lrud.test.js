@@ -392,13 +392,8 @@ describe('Given an instance of Lrud', () => {
       ])
     })
 
-    // TODO: Fix bug where grid doesn't correctly handle rows with fewer items
     it('should move through a grid as expected', () => {
       const focusSpy = jest.fn()
-
-      navigation.currentFocus = 'row1-child1'
-
-      navigation.on('focus', focusSpy)
 
       navigation.register('root', { orientation: 'vertical', grid: true })
       navigation.register('row1', { orientation: 'horizontal', parent: 'root' })
@@ -409,6 +404,10 @@ describe('Given an instance of Lrud', () => {
       navigation.register('row2-child1', { parent: 'row2' })
       navigation.register('row2-child2', { parent: 'row2' })
       navigation.register('row2-child3', { parent: 'row2' })
+
+      navigation.focus()
+
+      navigation.on('focus', focusSpy)
 
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // RIGHT
       navigation.handleKeyEvent({ keyCode: 40, stopPropagation: noop }) // DOWN
@@ -421,6 +420,27 @@ describe('Given an instance of Lrud', () => {
         [ 'row2-child3' ],
         [ 'row1-child3' ]
       ])
+    })
+
+    it('should move through a grid as expected when a row contains fewer items', () => {
+      const focusSpy = jest.fn()
+
+      navigation.register('root', { orientation: 'vertical', grid: true })
+      navigation.register('row1', { orientation: 'horizontal', parent: 'root' })
+      navigation.register('row2', { orientation: 'horizontal', parent: 'root' })
+      navigation.register('row1-child1', { parent: 'row1' })
+      navigation.register('row1-child2', { parent: 'row1' })
+      navigation.register('row1-child3', { parent: 'row1' })
+      navigation.register('row2-child1', { parent: 'row2' })
+      navigation.register('row2-child2', { parent: 'row2' })
+
+      navigation.focus('row1-child3')
+
+      navigation.on('focus', focusSpy)
+
+      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: noop }) // DOWN
+
+      expect(focusSpy).toHaveBeenCalledWith('row2-child2')
     })
   })
 
