@@ -237,16 +237,6 @@ function isValidLRUDEvent (event, node) {
   )
 }
 
-function getNextActiveIndex (node, activeIndex, offset) {
-  var nextIndex = activeIndex + offset;
-  var size = node.children.length;
-
-  if (node.wrapping && nextIndex === -1) return size - 1
-  if (node.wrapping && nextIndex === size) return 0
-
-  return nextIndex
-}
-
 Lrud.prototype = Object.create(tinyEmitter.prototype);
 
 objectAssign(Lrud.prototype, {
@@ -384,10 +374,12 @@ objectAssign(Lrud.prototype, {
       var activeChild = node.activeChild || node.children[0];
       var activeIndex = node.children.indexOf(activeChild);
       var offset = either(key, Lrud.KEY_MAP.RIGHT, Lrud.KEY_MAP.DOWN) ? 1 : -1;
-      var nextIndex = getNextActiveIndex(node, activeIndex, offset);
-      var nextChild = node.children[nextIndex];
+      var nextIndex = activeIndex + offset;
+      var listSize = node.children.length;
+      var nextActiveIndex = node.wrapping ? (nextIndex + listSize) % listSize : nextIndex;
+      var nextActiveChild = node.children[nextActiveIndex];
 
-      if (nextChild) {
+      if (nextActiveChild) {
         if (node.grid) {
           this._updateGrid(node);
         }
@@ -397,8 +389,8 @@ objectAssign(Lrud.prototype, {
           offset: offset,
           orientation: node.orientation,
           enter: {
-            id: nextChild,
-            index: nextIndex
+            id: nextActiveChild,
+            index: nextActiveIndex
           },
           leave: {
             id: activeChild,
@@ -406,7 +398,7 @@ objectAssign(Lrud.prototype, {
           }
         });
 
-        this.focus(nextChild);
+        this.focus(nextActiveChild);
         return event.stopPropagation()
       }
     }
