@@ -70,7 +70,7 @@ assign(Lrud.prototype, {
     }
 
     if (this.currentFocus === id) {
-      this.blur(id)
+      this.blur()
       this.currentFocus = undefined
     }
 
@@ -118,11 +118,9 @@ assign(Lrud.prototype, {
     var node = this.nodes[id]
     if (!node || node.children.indexOf(child) === -1) return
 
-    var activeChild = node.activeChild
-
-    if (activeChild !== child) {
-      if (activeChild) {
-        this.emit('inactive', activeChild)
+    if (node.activeChild !== child) {
+      if (node.activeChild) {
+        this.emit('inactive', node.activeChild)
       }
 
       this.emit('active', child)
@@ -141,9 +139,6 @@ assign(Lrud.prototype, {
     var rowId = node.activeChild || node.children[0]
     var rowNode = this.nodes[rowId]
     var activeChild = rowNode.activeChild || rowNode.children[0]
-
-    if (!activeChild) return
-
     var activeIndex = rowNode.children.indexOf(activeChild)
 
     node.children.forEach(function (id) {
