@@ -161,6 +161,47 @@ var objectAssign = shouldUseNative() ? Object.assign : function (target, source)
 	return to;
 };
 
+var KEY_MAP = {
+  LEFT: 'LEFT',
+  RIGHT: 'RIGHT',
+  UP: 'UP',
+  DOWN: 'DOWN',
+  ENTER: 'ENTER'
+};
+
+var KEY_CODES = {
+  4: KEY_MAP.LEFT,
+  21: KEY_MAP.LEFT,
+  37: KEY_MAP.LEFT,
+  214: KEY_MAP.LEFT,
+  205: KEY_MAP.LEFT,
+  218: KEY_MAP.LEFT,
+  5: KEY_MAP.RIGHT,
+  22: KEY_MAP.RIGHT,
+  39: KEY_MAP.RIGHT,
+  213: KEY_MAP.RIGHT,
+  206: KEY_MAP.RIGHT,
+  217: KEY_MAP.RIGHT,
+  29460: KEY_MAP.UP,
+  19: KEY_MAP.UP,
+  38: KEY_MAP.UP,
+  211: KEY_MAP.UP,
+  203: KEY_MAP.UP,
+  215: KEY_MAP.UP,
+  29461: KEY_MAP.DOWN,
+  20: KEY_MAP.DOWN,
+  40: KEY_MAP.DOWN,
+  212: KEY_MAP.DOWN,
+  204: KEY_MAP.DOWN,
+  216: KEY_MAP.DOWN,
+  29443: KEY_MAP.ENTER,
+  13: KEY_MAP.ENTER,
+  67: KEY_MAP.ENTER,
+  32: KEY_MAP.ENTER,
+  23: KEY_MAP.ENTER,
+  195: KEY_MAP.ENTER
+};
+
 var either = function (arg, a, b) { return arg === a || arg === b };
 
 function Lrud () {
@@ -376,21 +417,8 @@ objectAssign(Lrud.prototype, {
   }
 });
 
-Lrud.KEY_CODES = {
-  37: 'LEFT',
-  39: 'RIGHT',
-  38: 'UP',
-  40: 'DOWN',
-  13: 'ENTER'
-};
-
-Lrud.KEY_MAP = {
-  LEFT: 'LEFT',
-  RIGHT: 'RIGHT',
-  UP: 'UP',
-  DOWN: 'DOWN',
-  ENTER: 'ENTER'
-};
+Lrud.KEY_MAP = KEY_MAP;
+Lrud.KEY_CODES = KEY_CODES;
 
 var lrud = Lrud;
 

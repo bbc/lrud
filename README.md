@@ -8,7 +8,6 @@ A spatial navigation library for devices with input via directional controls
 
 * [React Example - Repo](https://github.com/stuart-williams/lrud-react-example)
 * [React Example - Live Demo!](http://lrud-react-example.s3-website-eu-west-1.amazonaws.com/)
-* [Device Identification Example](https://github.com/stuart-williams/lrud-device-identification-example)
 
 ![React Example](https://raw.githubusercontent.com/stuart-williams/lrud/master/assets/lrud-react-example.gif)
 
@@ -33,30 +32,6 @@ yarn add lrud
 
 ```js
 var navigation = new Lrud()
-```
-
-## Configuration
-
-Lrud comes with a default map of key codes (based on [TAL's device configuration](https://github.com/bbc/tal/blob/master/config/devices)) that should work in your browser
-
-Your configuration might look different, so override them!
-
-```js
-Lrud.KEY_CODES = {
-  1: 'ArrowLeft',
-  2: 'ArrowRight',
-  3: 'ArrowUp',
-  4: 'ArrowDown',
-  5: 'Enter'
-}
-
-Lrud.KEY_MAP = {
-  LEFT: 'ArrowLeft',
-  RIGHT: 'ArrowRight',
-  UP: 'ArrowUp',
-  DOWN: 'ArrowDown',
-  ENTER: 'Enter'
-}
 ```
 
 ## Registering a node
