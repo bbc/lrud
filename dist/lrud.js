@@ -161,6 +161,8 @@ var objectAssign = shouldUseNative() ? Object.assign : function (target, source)
 	return to;
 };
 
+var either = function (arg, a, b) { return arg === a || arg === b };
+
 function Lrud () {
   this.nodes = {};
   this.root = null;
@@ -172,31 +174,19 @@ function createNode (ctx, id, props) {
 }
 
 function isValidLRUDEvent (event, node) {
-  var keyCode = event.keyCode;
-
   return (
-    (
-      node.orientation === 'horizontal' &&
-      (
-        Lrud.KEY_CODES[keyCode] === Lrud.KEY_MAP.LEFT ||
-        Lrud.KEY_CODES[keyCode] === Lrud.KEY_MAP.RIGHT
-      )
-    ) ||
-    (
-      node.orientation === 'vertical' &&
-      (
-        Lrud.KEY_CODES[keyCode] === Lrud.KEY_MAP.UP ||
-        Lrud.KEY_CODES[keyCode] === Lrud.KEY_MAP.DOWN
-      )
+    node.orientation === 'horizontal' && either(
+      Lrud.KEY_CODES[event.keyCode],
+      Lrud.KEY_MAP.LEFT,
+      Lrud.KEY_MAP.RIGHT
+    )
+  ) || (
+    node.orientation === 'vertical' && either(
+      Lrud.KEY_CODES[event.keyCode],
+      Lrud.KEY_MAP.UP,
+      Lrud.KEY_MAP.DOWN
     )
   )
-}
-
-function getEventOffset (event) {
-  return (
-    Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.RIGHT ||
-    Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.DOWN
-  ) ? 1 : -1
 }
 
 function getNextActiveIndex (node, activeIndex, offset) {
@@ -211,13 +201,9 @@ function getNextActiveIndex (node, activeIndex, offset) {
 
 Lrud.prototype = Object.create(tinyEmitter.prototype);
 
-Lrud.prototype = objectAssign(Lrud.prototype, {
+objectAssign(Lrud.prototype, {
   register: function (id, props) {
-    props = props || {};
-
-    if (!id) {
-      throw new Error('Attempting to register with an invalid id')
-    }
+    if (!id) throw new Error('Attempting to register with an invalid id')
 
     var node = createNode(this, id, props);
 
@@ -270,7 +256,7 @@ Lrud.prototype = objectAssign(Lrud.prototype, {
   },
 
   focus: function (id) {
-    id = id || this.currentFocus || this.root;
+    id = id || this.root;
 
     var node = this.nodes[id];
     if (!node) return
@@ -340,14 +326,16 @@ Lrud.prototype = objectAssign(Lrud.prototype, {
     var node = this.nodes[id];
     if (!node) return
 
-    if (Lrud.KEY_CODES[event.keyCode] === Lrud.KEY_MAP.ENTER) {
+    var key = Lrud.KEY_CODES[event.keyCode];
+
+    if (key === Lrud.KEY_MAP.ENTER) {
       return this.emit('select', id)
     }
 
     if (isValidLRUDEvent(event, node)) {
       var activeChild = node.activeChild || node.children[0];
       var activeIndex = node.children.indexOf(activeChild);
-      var offset = getEventOffset(event);
+      var offset = either(key, Lrud.KEY_MAP.RIGHT, Lrud.KEY_MAP.DOWN) ? 1 : -1;
       var nextIndex = getNextActiveIndex(node, activeIndex, offset);
       var nextChild = node.children[nextIndex];
 
@@ -371,8 +359,7 @@ Lrud.prototype = objectAssign(Lrud.prototype, {
         });
 
         this.focus(nextChild);
-        event.stopPropagation();
-        return
+        return event.stopPropagation()
       }
     }
 

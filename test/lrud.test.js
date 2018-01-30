@@ -213,22 +213,6 @@ describe('Given an instance of Lrud', () => {
       expect(navigation.currentFocus).toEqual('child')
     })
 
-    it('should focus the currentFocus node no id is provided', () => {
-      const spy = jest.fn()
-
-      navigation.currentFocus = 'child2'
-
-      navigation.on('focus', spy)
-
-      navigation.register('root')
-      navigation.register('child', { parent: 'root' })
-      navigation.register('child2', { parent: 'root' })
-
-      navigation.focus()
-
-      expect(spy).toHaveBeenCalledWith('child2')
-    })
-
     it('should focus the root node if there is no currentFocus', () => {
       const spy = jest.fn()
 
