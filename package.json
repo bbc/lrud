@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "unpkg": "dist/lrud.min.js",
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
   "author": {
     "name": "Stuart Williams",
