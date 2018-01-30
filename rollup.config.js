@@ -2,7 +2,7 @@ import commonjs from 'rollup-plugin-commonjs'
 import nodeResolve from 'rollup-plugin-node-resolve'
 
 export default {
-  input: 'lrud.js',
+  input: 'src/index.js',
   output: {
     file: 'dist/lrud.js',
     format: 'umd',

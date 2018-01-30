@@ -1,26 +1,15 @@
 /* eslint-env jest */
 
-const Lrud = require('../lrud')
+const Lrud = require('../src')
+const KeyCodes = require('../src/key-codes')
 const data = require('./data.json')
 
 describe('Given an instance of Lrud', () => {
   let navigation
 
   beforeEach(() => {
-    Lrud.KEY_CODES = {
-      37: 'LEFT',
-      39: 'RIGHT',
-      38: 'UP',
-      40: 'DOWN',
-      13: 'ENTER'
-    }
-    Lrud.KEY_MAP = {
-      LEFT: 'LEFT',
-      RIGHT: 'RIGHT',
-      UP: 'UP',
-      DOWN: 'DOWN',
-      ENTER: 'ENTER'
-    }
+    Lrud.KEY_MAP = KeyCodes.map
+    Lrud.KEY_CODES = KeyCodes.codes
     navigation = new Lrud()
   })
 
