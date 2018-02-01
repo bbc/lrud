@@ -239,7 +239,7 @@ navigation.on('move', function (event) {
 
 ## React Integration
 
-Lrud doesn't ship with a React integration but check out the [Focusable](https://github.com/stuart-williams/lrud-react-example/blob/master/src/components/Focusable.js) component in the React example app
+Lrud doesn't ship with a React integration but check out the [Focusable](https://github.com/stuart-williams/lrud-storybook/blob/master/components/Focusable.js) component in the React example app
 
 ## Inspiration
 
