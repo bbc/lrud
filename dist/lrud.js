@@ -217,10 +217,6 @@ function Lrud () {
   this.currentFocus = null;
 }
 
-function createNode (ctx, id, props) {
-  return objectAssign({ id: id, children: [] }, ctx.nodes[id] || {}, props || {})
-}
-
 function isValidLRUDEvent (event, node) {
   return (
     node.orientation === 'horizontal' && either(
@@ -243,10 +239,10 @@ objectAssign(Lrud.prototype, {
   register: function (id, props) {
     if (!id) throw new Error('Attempting to register with an invalid id')
 
-    var node = createNode(this, id, props);
+    var node = this._createNode(id, props);
 
     if (node.parent) {
-      var parentNode = createNode(this, node.parent);
+      var parentNode = this._createNode(node.parent);
 
       if (parentNode.children.indexOf(id) === -1) {
         parentNode.children.push(id);
@@ -286,29 +282,23 @@ objectAssign(Lrud.prototype, {
   },
 
   blur: function (id) {
-    id = id || this.currentFocus;
-
-    if (this.nodes[id]) {
-      this.emit('blur', id);
-    }
+    var node = this.nodes[id] || this.nodes[this.currentFocus];
+    if (node) this.emit('blur', node.id);
   },
 
   focus: function (id) {
-    id = id || this.root;
-
-    var node = this.nodes[id];
+    var node = this.nodes[id] || this.nodes[this.currentFocus] || this.nodes[this.root];
     if (!node) return
 
     var activeChild = node.activeChild || node.children[0];
-
     if (activeChild) {
       return this.focus(activeChild)
     }
 
     this.blur();
-    this.currentFocus = id;
-    this.emit('focus', id);
-    this._bubbleActive(id);
+    this.currentFocus = node.id;
+    this.emit('focus', this.currentFocus);
+    this._bubbleActive(this.currentFocus);
   },
 
   handleKeyEvent: function (event) {
@@ -318,6 +308,7 @@ objectAssign(Lrud.prototype, {
   destroy: function () {
     this.e = {};
     this.nodes = {};
+    this.root = null;
     this.currentFocus = null;
   },
 
@@ -340,6 +331,10 @@ objectAssign(Lrud.prototype, {
     if (!node || !node.children[index]) return
 
     this.setActiveChild(id, node.children[index]);
+  },
+
+  _createNode: function (id, props) {
+    return objectAssign({ id: id, children: [] }, this.nodes[id] || {}, props || {})
   },
 
   _updateGrid: function (node) {

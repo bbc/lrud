@@ -96,7 +96,6 @@ describe('Given an instance of Lrud', () => {
       const spy = jest.fn()
 
       navigation.on('blur', spy)
-
       navigation.register('root')
       navigation.currentFocus = 'root'
       navigation.unregister('root')
@@ -109,9 +108,7 @@ describe('Given an instance of Lrud', () => {
       const spy = jest.fn()
 
       navigation.currentFocus = 'child'
-
       navigation.on('blur', spy)
-
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
@@ -137,9 +134,7 @@ describe('Given an instance of Lrud', () => {
       const spy = jest.fn()
 
       navigation.on('blur', spy)
-
       navigation.register('root')
-
       navigation.blur('root')
 
       expect(spy).toHaveBeenCalledWith('root')
@@ -149,12 +144,9 @@ describe('Given an instance of Lrud', () => {
       const spy = jest.fn()
 
       navigation.currentFocus = 'child'
-
       navigation.on('blur', spy)
-
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
-
       navigation.blur()
 
       expect(spy).toHaveBeenCalledWith('child')
@@ -166,9 +158,7 @@ describe('Given an instance of Lrud', () => {
       const spy = jest.fn()
 
       navigation.on('focus', spy)
-
       navigation.register('root')
-
       navigation.focus('root')
 
       expect(spy).toHaveBeenCalledWith('root')
@@ -178,10 +168,8 @@ describe('Given an instance of Lrud', () => {
       const spy = jest.fn()
 
       navigation.on('focus', spy)
-
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
-
       navigation.focus('root')
 
       expect(spy).toHaveBeenCalledWith('child')
@@ -191,7 +179,6 @@ describe('Given an instance of Lrud', () => {
       const spy = jest.fn()
 
       navigation.on('focus', spy)
-
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
 
@@ -202,15 +189,26 @@ describe('Given an instance of Lrud', () => {
       expect(navigation.currentFocus).toEqual('child')
     })
 
-    it('should focus the root node if there is no currentFocus', () => {
+    it('should focus the currentFocus node if no id is provided', () => {
       const spy = jest.fn()
 
+      navigation.currentFocus = 'child2'
       navigation.on('focus', spy)
-
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
+      navigation.focus()
 
+      expect(spy).toHaveBeenCalledWith('child2')
+    })
+
+    it('should focus the root node if no id is provided and there is no currentFocus', () => {
+      const spy = jest.fn()
+
+      navigation.on('focus', spy)
+      navigation.register('root')
+      navigation.register('child', { parent: 'root' })
+      navigation.register('child2', { parent: 'root' })
       navigation.focus()
 
       expect(spy).toHaveBeenCalledWith('child')
@@ -220,13 +218,10 @@ describe('Given an instance of Lrud', () => {
       const spy = jest.fn()
 
       navigation.currentFocus = 'child'
-
       navigation.on('blur', spy)
-
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
-
       navigation.focus('child2')
 
       expect(spy).toHaveBeenCalledWith('child')
@@ -252,11 +247,9 @@ describe('Given an instance of Lrud', () => {
       const spy = jest.fn()
 
       navigation.on('active', spy)
-
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child-of-child', { parent: 'child' })
-
       navigation.focus('child-of-child')
 
       expect(spy).toHaveBeenCalledTimes(2)
@@ -268,11 +261,9 @@ describe('Given an instance of Lrud', () => {
       const spy = jest.fn()
 
       navigation.on('inactive', spy)
-
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
-
       navigation.focus('child')
       navigation.focus('child2')
 
@@ -286,12 +277,9 @@ describe('Given an instance of Lrud', () => {
       const spy = jest.fn()
 
       navigation.on('select', spy)
-
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
-
       navigation.focus('child')
-
       navigation.handleKeyEvent({ keyCode: 13 })
 
       expect(spy).toHaveBeenCalledTimes(1)
@@ -304,15 +292,12 @@ describe('Given an instance of Lrud', () => {
       const moveSpy = jest.fn()
 
       navigation.currentFocus = 'child1'
-
       navigation.on('focus', focusSpy)
       navigation.on('move', moveSpy)
-
       navigation.register('root', { orientation: 'horizontal' })
       navigation.register('child1', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
       navigation.register('child3', { parent: 'root' })
-
       // RIGHT
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Focus child2
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Focus child3
@@ -339,15 +324,12 @@ describe('Given an instance of Lrud', () => {
       const moveSpy = jest.fn()
 
       navigation.currentFocus = 'child1'
-
       navigation.on('focus', focusSpy)
       navigation.on('move', moveSpy)
-
       navigation.register('root', { orientation: 'vertical' })
       navigation.register('child1', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
       navigation.register('child3', { parent: 'root' })
-
       // DOWN
       navigation.handleKeyEvent({ keyCode: 40, stopPropagation: stopPropagationSpy }) // Focus child2
       navigation.handleKeyEvent({ keyCode: 40, stopPropagation: stopPropagationSpy }) // Focus child3
@@ -372,14 +354,11 @@ describe('Given an instance of Lrud', () => {
       const focusSpy = jest.fn()
 
       navigation.currentFocus = 'child1'
-
       navigation.on('focus', focusSpy)
-
       navigation.register('root', { orientation: 'horizontal', wrapping: true })
       navigation.register('child1', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
       navigation.register('child3', { parent: 'root' })
-
       // RIGHT
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child2
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child3
@@ -404,11 +383,8 @@ describe('Given an instance of Lrud', () => {
       navigation.register('row2-child1', { parent: 'row2' })
       navigation.register('row2-child2', { parent: 'row2' })
       navigation.register('row2-child3', { parent: 'row2' })
-
       navigation.focus()
-
       navigation.on('focus', focusSpy)
-
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // RIGHT
       navigation.handleKeyEvent({ keyCode: 40, stopPropagation: noop }) // DOWN
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // RIGHT
@@ -433,11 +409,8 @@ describe('Given an instance of Lrud', () => {
       navigation.register('row1-child3', { parent: 'row1' })
       navigation.register('row2-child1', { parent: 'row2' })
       navigation.register('row2-child2', { parent: 'row2' })
-
       navigation.focus('row1-child3')
-
       navigation.on('focus', focusSpy)
-
       navigation.handleKeyEvent({ keyCode: 40, stopPropagation: noop }) // DOWN
 
       expect(focusSpy).toHaveBeenCalledWith('row2-child2')
@@ -445,24 +418,21 @@ describe('Given an instance of Lrud', () => {
   })
 
   describe('destroy', () => {
-    it('should reset nodes and currentFocus and remove remove all event listeners', () => {
+    it('should teardown as expected', () => {
       const focusSpy = jest.fn()
       const blurSpy = jest.fn()
 
       navigation.on('focus', focusSpy)
       navigation.on('blur', blurSpy)
-
       navigation.register('root')
       navigation.currentFocus = 'root'
-
       navigation.destroy()
-
       navigation.emit('focus')
       navigation.emit('blur')
 
       expect(navigation.nodes).toEqual({})
+      expect(navigation.root).toBeFalsy()
       expect(navigation.currentFocus).toBeFalsy()
-
       expect(focusSpy).not.toHaveBeenCalled()
       expect(blurSpy).not.toHaveBeenCalled()
     })
@@ -473,7 +443,6 @@ describe('Given an instance of Lrud', () => {
       navigation.register('root')
       navigation.register('child1', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
-
       navigation.setActiveChild('root', 'child2')
 
       expect(navigation.nodes.root.activeChild).toEqual('child2')
@@ -482,7 +451,6 @@ describe('Given an instance of Lrud', () => {
     it('should not set the activeChild if it is invalid', () => {
       navigation.register('root')
       navigation.register('child1', { parent: 'root' })
-
       navigation.setActiveChild('root', 'child2')
 
       expect(navigation.nodes.root.activeChild).toBeFalsy()
@@ -496,7 +464,6 @@ describe('Given an instance of Lrud', () => {
       navigation.register('root')
       navigation.register('child1', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
-
       navigation.setActiveIndex('root', 1)
 
       expect(navigation.setActiveChild).toHaveBeenCalledWith('root', 'child2')
@@ -508,7 +475,6 @@ describe('Given an instance of Lrud', () => {
       navigation.register('root')
       navigation.register('child1', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
-
       navigation.setActiveIndex('root', 2)
 
       expect(navigation.setActiveChild).not.toHaveBeenCalled()
@@ -523,12 +489,9 @@ describe('Given an instance of Lrud', () => {
       const spy = jest.fn()
 
       navigation.on('select', spy)
-
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
-
       navigation.focus('child')
-
       navigation.handleKeyEvent({ keyCode: 1 })
 
       expect(spy).toHaveBeenCalledTimes(1)
