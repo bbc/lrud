@@ -130,9 +130,23 @@ assign(Lrud.prototype, {
     return assign({ id: id, children: [] }, this.nodes[id] || {}, props || {})
   },
 
+  _findChild: function (parent, predicate) {
+    if (!parent) return
+
+    var id = parent.activeChild || parent.children[0]
+    var node = this.nodes[id]
+
+    if (node && !predicate(node)) {
+      return this._findChild(node, predicate)
+    }
+
+    return node
+  },
+
   _updateGrid: function (node) {
-    var rowId = node.activeChild || node.children[0]
-    var rowNode = this.nodes[rowId]
+    var rowNode = this._findChild(node, function (n) { return !!n.orientation })
+    if (!rowNode) return
+
     var activeChild = rowNode.activeChild || rowNode.children[0]
     var activeIndex = rowNode.children.indexOf(activeChild)
 
