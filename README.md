@@ -6,28 +6,14 @@ A spatial navigation library for devices with input via directional controls
 
 ## Examples
 
-* [React Example - Repo](https://github.com/stuart-williams/lrud-react-example)
-* [React Example - Live Demo!](http://lrud-react-example.s3-website-eu-west-1.amazonaws.com/)
-* [Components with Storybook - Repo](https://github.com/stuart-williams/lrud-storybook)
-* [Components with Storybook - Live Demo!](http://lrud-storybook.s3-website-eu-west-1.amazonaws.com/)
+* [React component demo](https://github.com/stuart-williams/lrud-storybook) with [Storybook](https://github.com/storybooks/storybook) and [react-lrud](https://github.com/stuart-williams/react-lrud) (official React bindings for Lrud)
 
 ![React Example](https://raw.githubusercontent.com/stuart-williams/lrud/master/assets/lrud-react-example.gif)
 
 ## Installation
 
-```html
-<script src="https://unpkg.com/lrud"></script>
-```
-or via npm
-
 ```bash
 npm install lrud
-```
-
-or via yarn
-
-```bash
-yarn add lrud
 ```
 
 ## Initialisation
@@ -236,10 +222,6 @@ navigation.on('move', function (event) {
   node.onMove && node.onMove(event)
 })
 ```
-
-## React Integration
-
-Lrud doesn't ship with a React integration but check out the [Focusable](https://github.com/stuart-williams/lrud-storybook/blob/master/components/Focusable.js) component
 
 ## Inspiration
 
