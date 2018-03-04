@@ -3,6 +3,7 @@ var assign = require('object-assign')
 var KeyCodes = require('./key-codes')
 
 var either = function (arg, a, b) { return arg === a || arg === b }
+var isList = function (node) { return node && !!node.orientation }
 
 function Lrud () {
   this.nodes = {}
@@ -144,15 +145,19 @@ assign(Lrud.prototype, {
   },
 
   _updateGrid: function (node) {
-    var rowNode = this._findChild(node, function (n) { return !!n.orientation })
+    var rowNode = this._findChild(node, isList)
     if (!rowNode) return
 
     var activeChild = rowNode.activeChild || rowNode.children[0]
     var activeIndex = rowNode.children.indexOf(activeChild)
 
     node.children.forEach(function (id) {
-      this.setActiveIndex(id, Math.min(
-        this.nodes[id].children.length - 1,
+      var parent = this.nodes[id]
+      var child = !isList(parent) ? this._findChild(parent, isList) : parent
+      if (!child) return
+
+      this.setActiveIndex(child.id, Math.min(
+        child.children.length - 1,
         activeIndex
       ))
     }.bind(this))
