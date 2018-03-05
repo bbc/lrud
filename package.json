@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "unpkg": "umd/lrud.min.js",
   "files": [
-    "dist",
+    "umd",
     "src"
   ],
   "author": {
@@ -44,7 +44,7 @@
   "scripts": {
     "preversion": "npm test",
     "postversion": "git push && git push --tags",
-    "clean": "rimraf lib",
+    "clean": "rimraf umd",
     "lint": "standard src/*.js",
     "pretest": "npm run lint && npm run build",
     "test": "jest",
