@@ -3,7 +3,7 @@
   "version": "1.4.15",
   "description": "Left, Right, Up, Down. A spatial navigation library for devices with input via directional controls",
   "main": "src/index.js",
-  "unpkg": "dist/lrud.min.js",
+  "unpkg": "umd/lrud.min.js",
   "files": [
     "dist",
     "src"
@@ -48,7 +48,7 @@
     "lint": "standard src/*.js",
     "pretest": "npm run lint && npm run build",
     "test": "jest",
-    "minify": "uglifyjs dist/lrud.js --compress --mangle --output dist/lrud.min.js",
+    "minify": "uglifyjs umd/lrud.js --compress --mangle --output umd/lrud.min.js",
     "prebuild": "npm run clean",
     "build": "rollup -c",
     "postbuild": "npm run minify"
