@@ -4,7 +4,7 @@ import nodeResolve from 'rollup-plugin-node-resolve'
 export default {
   input: 'src/index.js',
   output: {
-    file: 'lib/lrud.js',
+    file: 'dist/lrud.js',
     format: 'umd',
     name: 'Lrud'
   },
