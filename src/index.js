@@ -129,7 +129,7 @@ assign(Lrud.prototype, {
         this.emit('inactive', node.activeChild)
       }
 
-      this.emit('active', child)
+      this.emit('active', assign({}, this.nodes[child]))
       node.activeChild = child
     }
   },

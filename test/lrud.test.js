@@ -269,8 +269,8 @@ describe('Given an instance of Lrud', () => {
       navigation.focus('child-of-child')
 
       expect(spy).toHaveBeenCalledTimes(2)
-      expect(spy.mock.calls[0][0]).toBe('child-of-child')
-      expect(spy.mock.calls[1][0]).toBe('child')
+      expect(spy.mock.calls[0][0]).toEqual(expect.objectContaining({ id: 'child-of-child' }))
+      expect(spy.mock.calls[1][0]).toEqual(expect.objectContaining({ id: 'child' }))
     })
 
     it('should emit the inactive event as expected', () => {
