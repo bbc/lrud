@@ -6,7 +6,7 @@ var isList = function (node) { return node && !!node.orientation }
 
 function assign (target) {
   for (var i = 1; i < arguments.length; i++) {
-    var subject = arguments[i]
+    var subject = Object(arguments[i])
     for (var prop in subject) {
       if (subject.hasOwnProperty(prop)) {
         target[prop] = subject[prop]
@@ -139,7 +139,7 @@ assign(Lrud.prototype, {
   },
 
   _createNode: function (id, props) {
-    return assign({ id: id, children: [] }, this.nodes[id] || {}, props || {})
+    return assign({ id: id, children: [] }, this.nodes[id], props)
   },
 
   _findChild: function (parent, predicate) {
