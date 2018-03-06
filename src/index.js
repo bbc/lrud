@@ -198,10 +198,8 @@ assign(Lrud.prototype, {
           this._updateGrid(node)
         }
 
-        this.emit('move', {
-          id: id,
+        this.emit('move', assign({}, node, {
           offset: offset,
-          orientation: node.orientation,
           enter: {
             id: nextActiveChild,
             index: nextActiveIndex
@@ -210,7 +208,7 @@ assign(Lrud.prototype, {
             id: activeChild,
             index: activeIndex
           }
-        })
+        }))
 
         this.focus(nextActiveChild)
         return event.stopPropagation()

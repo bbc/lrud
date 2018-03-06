@@ -2,124 +2,170 @@
   "horizontalMove": [
     [
       {
-        "id": "root",
-        "offset": 1,
-        "orientation": "horizontal",
+        "children": [
+          "child1",
+          "child2",
+          "child3"
+        ],
         "enter": {
           "id": "child2",
           "index": 1
         },
+        "id": "root",
         "leave": {
           "id": "child1",
           "index": 0
-        }
+        },
+        "offset": 1,
+        "orientation": "horizontal"
       }
     ],
     [
       {
-        "id": "root",
-        "offset": 1,
-        "orientation": "horizontal",
+        "activeChild": "child2",
+        "children": [
+          "child1",
+          "child2",
+          "child3"
+        ],
         "enter": {
           "id": "child3",
           "index": 2
         },
+        "id": "root",
         "leave": {
           "id": "child2",
           "index": 1
-        }
+        },
+        "offset": 1,
+        "orientation": "horizontal"
       }
     ],
     [
       {
-        "id": "root",
-        "offset": -1,
-        "orientation": "horizontal",
+        "activeChild": "child3",
+        "children": [
+          "child1",
+          "child2",
+          "child3"
+        ],
         "enter": {
           "id": "child2",
           "index": 1
         },
+        "id": "root",
         "leave": {
           "id": "child3",
           "index": 2
-        }
+        },
+        "offset": -1,
+        "orientation": "horizontal"
       }
     ],
     [
       {
-        "id": "root",
-        "offset": -1,
-        "orientation": "horizontal",
+        "activeChild": "child2",
+        "children": [
+          "child1",
+          "child2",
+          "child3"
+        ],
         "enter": {
           "id": "child1",
           "index": 0
         },
+        "id": "root",
         "leave": {
           "id": "child2",
           "index": 1
-        }
+        },
+        "offset": -1,
+        "orientation": "horizontal"
       }
     ]
   ],
   "verticalMove": [
     [
       {
-        "id": "root",
-        "offset": 1,
-        "orientation": "vertical",
+        "children": [
+          "child1",
+          "child2",
+          "child3"
+        ],
         "enter": {
           "id": "child2",
           "index": 1
         },
+        "id": "root",
         "leave": {
           "id": "child1",
           "index": 0
-        }
+        },
+        "offset": 1,
+        "orientation": "vertical"
       }
     ],
     [
       {
-        "id": "root",
-        "offset": 1,
-        "orientation": "vertical",
+        "activeChild": "child2",
+        "children": [
+          "child1",
+          "child2",
+          "child3"
+        ],
         "enter": {
           "id": "child3",
           "index": 2
         },
+        "id": "root",
         "leave": {
           "id": "child2",
           "index": 1
-        }
+        },
+        "offset": 1,
+        "orientation": "vertical"
       }
     ],
     [
       {
-        "id": "root",
-        "offset": -1,
-        "orientation": "vertical",
+        "activeChild": "child3",
+        "children": [
+          "child1",
+          "child2",
+          "child3"
+        ],
         "enter": {
           "id": "child2",
           "index": 1
         },
+        "id": "root",
         "leave": {
           "id": "child3",
           "index": 2
-        }
+        },
+        "offset": -1,
+        "orientation": "vertical"
       }
     ],
     [
       {
-        "id": "root",
-        "offset": -1,
-        "orientation": "vertical",
+        "activeChild": "child2",
+        "children": [
+          "child1",
+          "child2",
+          "child3"
+        ],
         "enter": {
           "id": "child1",
           "index": 0
         },
+        "id": "root",
         "leave": {
           "id": "child2",
           "index": 1
-        }
+        },
+        "offset": -1,
+        "orientation": "vertical"
       }
     ]
   ]
