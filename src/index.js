@@ -1,14 +1,19 @@
 var EventEmitter = require('tiny-emitter')
-var assign = require('object-assign')
 var KeyCodes = require('./key-codes')
 
 var either = function (arg, a, b) { return arg === a || arg === b }
 var isList = function (node) { return node && !!node.orientation }
 
-function Lrud () {
-  this.nodes = {}
-  this.root = null
-  this.currentFocus = null
+function assign (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var subject = Object(arguments[i])
+    for (var prop in subject) {
+      if (subject.hasOwnProperty(prop)) {
+        target[prop] = subject[prop]
+      }
+    }
+  }
+  return target
 }
 
 function isValidLRUDEvent (event, node) {
@@ -25,6 +30,12 @@ function isValidLRUDEvent (event, node) {
       Lrud.KEY_MAP.DOWN
     )
   )
+}
+
+function Lrud () {
+  this.nodes = {}
+  this.root = null
+  this.currentFocus = null
 }
 
 Lrud.prototype = Object.create(EventEmitter.prototype)
