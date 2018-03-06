@@ -102,7 +102,7 @@ assign(Lrud.prototype, {
 
     this.blur()
     this.currentFocus = node.id
-    this.emit('focus', this.currentFocus)
+    this.emit('focus', assign({}, node))
     this._bubbleActive(this.currentFocus)
   },
 

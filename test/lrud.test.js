@@ -161,7 +161,9 @@ describe('Given an instance of Lrud', () => {
       navigation.register('root')
       navigation.focus('root')
 
-      expect(spy).toHaveBeenCalledWith('root')
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'root'
+      }))
     })
 
     it('should focus down the tree to the first focusable child', () => {
@@ -172,7 +174,9 @@ describe('Given an instance of Lrud', () => {
       navigation.register('child', { parent: 'root' })
       navigation.focus('root')
 
-      expect(spy).toHaveBeenCalledWith('child')
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'child'
+      }))
     })
 
     it('should update the currentFocus prop as expected', () => {
@@ -199,7 +203,9 @@ describe('Given an instance of Lrud', () => {
       navigation.register('child2', { parent: 'root' })
       navigation.focus()
 
-      expect(spy).toHaveBeenCalledWith('child2')
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'child2'
+      }))
     })
 
     it('should focus the root node if no id is provided and there is no currentFocus', () => {
@@ -211,7 +217,9 @@ describe('Given an instance of Lrud', () => {
       navigation.register('child2', { parent: 'root' })
       navigation.focus()
 
-      expect(spy).toHaveBeenCalledWith('child')
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'child'
+      }))
     })
 
     it('should emit a blur event for the previously focused node', () => {
@@ -311,10 +319,10 @@ describe('Given an instance of Lrud', () => {
 
       expect(stopPropagationSpy).toHaveBeenCalledTimes(4)
       expect(focusSpy.mock.calls).toEqual([
-        [ 'child2' ],
-        [ 'child3' ],
-        [ 'child2' ],
-        [ 'child1' ]
+        [ expect.objectContaining({ id: 'child2' }) ],
+        [ expect.objectContaining({ id: 'child3' }) ],
+        [ expect.objectContaining({ id: 'child2' }) ],
+        [ expect.objectContaining({ id: 'child1' }) ]
       ])
 
       expect(toJSON(moveSpy.mock.calls)).toEqual(data.horizontalMove)
@@ -343,10 +351,10 @@ describe('Given an instance of Lrud', () => {
 
       expect(stopPropagationSpy).toHaveBeenCalledTimes(4)
       expect(focusSpy.mock.calls).toEqual([
-        [ 'child2' ],
-        [ 'child3' ],
-        [ 'child2' ],
-        [ 'child1' ]
+        [ expect.objectContaining({ id: 'child2' }) ],
+        [ expect.objectContaining({ id: 'child3' }) ],
+        [ expect.objectContaining({ id: 'child2' }) ],
+        [ expect.objectContaining({ id: 'child1' }) ]
       ])
 
       expect(toJSON(moveSpy.mock.calls)).toEqual(data.verticalMove)
@@ -367,9 +375,9 @@ describe('Given an instance of Lrud', () => {
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child1
 
       expect(focusSpy.mock.calls).toEqual([
-        [ 'child2' ],
-        [ 'child3' ],
-        [ 'child1' ]
+        [ expect.objectContaining({ id: 'child2' }) ],
+        [ expect.objectContaining({ id: 'child3' }) ],
+        [ expect.objectContaining({ id: 'child1' }) ]
       ])
     })
 
@@ -393,10 +401,10 @@ describe('Given an instance of Lrud', () => {
       navigation.handleKeyEvent({ keyCode: 38, stopPropagation: noop }) // UP
 
       expect(focusSpy.mock.calls).toEqual([
-        [ 'row1-child2' ],
-        [ 'row2-child2' ],
-        [ 'row2-child3' ],
-        [ 'row1-child3' ]
+        [ expect.objectContaining({ id: 'row1-child2' }) ],
+        [ expect.objectContaining({ id: 'row2-child2' }) ],
+        [ expect.objectContaining({ id: 'row2-child3' }) ],
+        [ expect.objectContaining({ id: 'row1-child3' }) ]
       ])
     })
 
@@ -415,7 +423,9 @@ describe('Given an instance of Lrud', () => {
       navigation.on('focus', focusSpy)
       navigation.handleKeyEvent({ keyCode: 40, stopPropagation: noop }) // DOWN
 
-      expect(focusSpy).toHaveBeenCalledWith('row2-child2')
+      expect(focusSpy).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'row2-child2'
+      }))
     })
   })
 
