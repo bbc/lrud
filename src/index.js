@@ -126,7 +126,7 @@ assign(Lrud.prototype, {
 
     if (node.activeChild !== child) {
       if (node.activeChild) {
-        this.emit('inactive', node.activeChild)
+        this.emit('inactive', assign({}, this.nodes[node.activeChild]))
       }
 
       this.emit('active', assign({}, this.nodes[child]))

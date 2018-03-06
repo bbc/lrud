@@ -284,7 +284,7 @@ describe('Given an instance of Lrud', () => {
       navigation.focus('child2')
 
       expect(spy).toHaveBeenCalledTimes(1)
-      expect(spy).toHaveBeenCalledWith('child')
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ id: 'child' }))
     })
   })
 
