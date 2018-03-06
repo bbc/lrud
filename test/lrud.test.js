@@ -101,7 +101,9 @@ describe('Given an instance of Lrud', () => {
       navigation.unregister('root')
 
       expect(navigation.currentFocus).toBeUndefined()
-      expect(spy).toHaveBeenCalledWith('root')
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'root'
+      }))
     })
 
     it('should not blur the currentFocus node if it is not the node being unregistered', () => {
@@ -137,7 +139,9 @@ describe('Given an instance of Lrud', () => {
       navigation.register('root')
       navigation.blur('root')
 
-      expect(spy).toHaveBeenCalledWith('root')
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'root'
+      }))
     })
 
     it('should blur the currentFocus node if no arguments are provided', () => {
@@ -149,7 +153,9 @@ describe('Given an instance of Lrud', () => {
       navigation.register('child', { parent: 'root' })
       navigation.blur()
 
-      expect(spy).toHaveBeenCalledWith('child')
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'child'
+      }))
     })
   })
 
@@ -232,7 +238,9 @@ describe('Given an instance of Lrud', () => {
       navigation.register('child2', { parent: 'root' })
       navigation.focus('child2')
 
-      expect(spy).toHaveBeenCalledWith('child')
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'child'
+      }))
     })
 
     it('should set the activeChild property up the tree as expected', () => {
