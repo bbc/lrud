@@ -186,40 +186,18 @@ Lrud emits events in response to key events. See the [TAL docs](http://bbc.githu
 * `navigation.on('move', function)` - Triggered when focus is changed within a list
 
 ```js
-navigation.on('focus', function (id) {
-  // Focus could be as simple as adding a class
-  document.getElementById(id).classList.add('focused')
+navigation.on('focus', function (node) {
+  // Focus could add a class
+  document.getElementById(node.id).classList.add('focused')
   // Or dispatching a redux action
-  store.dispatch({ type: 'FOCUS', payload: id })
+  store.dispatch({ type: 'FOCUS', payload: node.id })
   // Or whatever
 })
 
-navigation.on('blur', function (id) {
-  document.getElementById(id).classList.remove('focused')
-})
-
-navigation.on('active', function (id) {
-  document.getElementById(id).classList.add('active')
-})
-
-navigation.on('inactive', function (id) {
-  document.getElementById(id).classList.remove('active')
-})
-
-navigation.on('select', function (id) {
-  var node = navigation.nodes[id]
-  node.onSelect && node.onSelect(node)
-})
-
-navigation.on('move', function (event) {
-  // event.id
-  // event.offset - Direction of travel (depending on orientation): -1 = LEFT/UP, 1 = RIGHT/DOWN
-  // event.orientation
-  // event.enter - { id, index } of the node we're navigating into
-  // event.leave - { id, index } of the node we're leaving
-
-  var node = navigation.nodes[event.id]
-  node.onMove && node.onMove(event)
+navigation.on('move', function (node) {
+  // node.offset - Direction of travel (depending on orientation): -1 = LEFT/UP, 1 = RIGHT/DOWN
+  // node.enter - { id, index } of the node we're navigating into
+  // node.leave - { id, index } of the node we're leaving
 })
 ```
 
