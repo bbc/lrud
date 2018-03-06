@@ -181,7 +181,7 @@ assign(Lrud.prototype, {
     var key = Lrud.KEY_CODES[event.keyCode]
 
     if (key === Lrud.KEY_MAP.ENTER) {
-      return this.emit('select', id)
+      return this.emit('select', assign({}, node))
     }
 
     if (isValidLRUDEvent(event, node)) {

@@ -283,7 +283,9 @@ describe('Given an instance of Lrud', () => {
       navigation.handleKeyEvent({ keyCode: 13 })
 
       expect(spy).toHaveBeenCalledTimes(1)
-      expect(spy).toHaveBeenCalledWith('child')
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'child'
+      }))
     })
 
     it('should move through a horizontal list as expected', () => {
@@ -495,7 +497,9 @@ describe('Given an instance of Lrud', () => {
       navigation.handleKeyEvent({ keyCode: 1 })
 
       expect(spy).toHaveBeenCalledTimes(1)
-      expect(spy).toHaveBeenCalledWith('child')
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'child'
+      }))
     })
   })
 })
