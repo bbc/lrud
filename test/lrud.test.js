@@ -162,14 +162,14 @@ describe('Given an instance of Lrud', () => {
   describe('focus', () => {
     it('should emit the focus event as expected', () => {
       const spy = jest.fn()
+      const onFocus = jest.fn()
 
       navigation.on('focus', spy)
-      navigation.register('root')
+      navigation.register('root', { onFocus })
       navigation.focus('root')
 
-      expect(spy).toHaveBeenCalledWith(expect.objectContaining({
-        id: 'root'
-      }))
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ id: 'root' }))
+      expect(onFocus).toHaveBeenCalledWith(expect.objectContaining({ id: 'root' }))
     })
 
     it('should focus down the tree to the first focusable child', () => {

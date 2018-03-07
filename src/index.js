@@ -109,9 +109,17 @@ assign(Lrud.prototype, {
     }
 
     this.blur()
+
+    var clone = assign({}, node)
+
+    if (node.onFocus) {
+      node.onFocus(clone)
+    }
+
+    this.emit('focus', clone)
+
+    this._bubbleActive(node.id)
     this.currentFocus = node.id
-    this.emit('focus', assign({}, node))
-    this._bubbleActive(this.currentFocus)
   },
 
   handleKeyEvent: function (event) {
