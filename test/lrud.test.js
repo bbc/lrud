@@ -517,6 +517,19 @@ describe('Given an instance of Lrud', () => {
     })
   })
 
+  describe('getFocusedNode', () => {
+    it('should', () => {
+      navigation.register('root')
+      navigation.register('child', { parent: 'root' })
+
+      navigation.focus()
+
+      expect(navigation.getFocusedNode()).toEqual(expect.objectContaining({
+        id: 'child'
+      }))
+    })
+  })
+
   describe('Overriding static KEY_CODES/KEY_MAP properties', () => {
     it('should emit the select event as expected', () => {
       Lrud.KEY_CODES = { 1: 'Enter' }
