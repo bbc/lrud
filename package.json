@@ -38,7 +38,6 @@
     "uglify-js": "^3.2.2"
   },
   "dependencies": {
-    "npm": "^5.7.1",
     "tiny-emitter": "^2.0.2"
   },
   "scripts": {
