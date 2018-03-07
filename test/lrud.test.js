@@ -132,16 +132,16 @@ describe('Given an instance of Lrud', () => {
   })
 
   describe('blur', () => {
-    it('should emit the blur event with node id as expected', () => {
+    it('should emit the blur event as expected', () => {
       const spy = jest.fn()
+      const onBlur = jest.fn()
 
       navigation.on('blur', spy)
-      navigation.register('root')
+      navigation.register('root', { onBlur })
       navigation.blur('root')
 
-      expect(spy).toHaveBeenCalledWith(expect.objectContaining({
-        id: 'root'
-      }))
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ id: 'root' }))
+      expect(onBlur).toHaveBeenCalledWith(expect.objectContaining({ id: 'root' }))
     })
 
     it('should blur the currentFocus node if no arguments are provided', () => {
@@ -160,7 +160,7 @@ describe('Given an instance of Lrud', () => {
   })
 
   describe('focus', () => {
-    it('should emit the focus event with node id as expected', () => {
+    it('should emit the focus event as expected', () => {
       const spy = jest.fn()
 
       navigation.on('focus', spy)

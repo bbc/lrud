@@ -88,10 +88,15 @@ assign(Lrud.prototype, {
 
   blur: function (id) {
     var node = this.nodes[id] || this.nodes[this.currentFocus]
+    if (!node) return
 
-    if (node) {
-      this.emit('blur', assign({}, node))
+    var clone = assign({}, node)
+
+    if (node.onBlur) {
+      node.onBlur(clone)
     }
+
+    this.emit('blur', clone)
   },
 
   focus: function (id) {
