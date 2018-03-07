@@ -518,7 +518,7 @@ describe('Given an instance of Lrud', () => {
   })
 
   describe('getFocusedNode', () => {
-    it('should', () => {
+    it('should return the currect focused node as expected', () => {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
 

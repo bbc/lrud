@@ -154,19 +154,6 @@ assign(Lrud.prototype, {
     this.setActiveChild(id, node.children[index])
   },
 
-  findChildNode: function (node, predicate) {
-    if (!node) return
-
-    var id = node.activeChild || node.children[0]
-    var child = this.nodes[id]
-
-    if (child && !predicate(child)) {
-      return this.findChildNode(child, predicate)
-    }
-
-    return child
-  },
-
   getFocusedNode: function () {
     return this.nodes[this.currentFocus]
   },
@@ -175,8 +162,21 @@ assign(Lrud.prototype, {
     return assign({ id: id, children: [] }, this.nodes[id], props)
   },
 
+  _findActiveChildNode: function (node, predicate) {
+    if (!node) return
+
+    var id = node.activeChild || node.children[0]
+    var child = this.nodes[id]
+
+    if (child && !predicate(child)) {
+      return this._findActiveChildNode(child, predicate)
+    }
+
+    return child
+  },
+
   _updateGrid: function (node) {
-    var rowNode = this.findChildNode(node, isList)
+    var rowNode = this._findActiveChildNode(node, isList)
     if (!rowNode) return
 
     var activeChild = rowNode.activeChild || rowNode.children[0]
@@ -184,7 +184,7 @@ assign(Lrud.prototype, {
 
     node.children.forEach(function (id) {
       var parent = this.nodes[id]
-      var child = !isList(parent) ? this.findChildNode(parent, isList) : parent
+      var child = !isList(parent) ? this._findActiveChildNode(parent, isList) : parent
       if (!child) return
 
       this.setActiveIndex(child.id, Math.min(
