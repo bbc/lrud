@@ -291,17 +291,17 @@ describe('Given an instance of Lrud', () => {
   describe('handleKeyEvent', () => {
     it('should emit the select event as expected', () => {
       const spy = jest.fn()
+      const onSelect = jest.fn()
 
       navigation.on('select', spy)
       navigation.register('root')
-      navigation.register('child', { parent: 'root' })
+      navigation.register('child', { parent: 'root', onSelect })
       navigation.focus('child')
       navigation.handleKeyEvent({ keyCode: 13 })
 
       expect(spy).toHaveBeenCalledTimes(1)
-      expect(spy).toHaveBeenCalledWith(expect.objectContaining({
-        id: 'child'
-      }))
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ id: 'child' }))
+      expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'child' }))
     })
 
     it('should move through a horizontal list as expected', () => {

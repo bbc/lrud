@@ -197,7 +197,13 @@ assign(Lrud.prototype, {
     var key = Lrud.KEY_CODES[event.keyCode]
 
     if (key === Lrud.KEY_MAP.ENTER) {
-      return this.emit('select', assign({}, node))
+      var clone = assign({}, node)
+
+      if (node.onSelect) {
+        node.onSelect(clone)
+      }
+
+      return this.emit('select', clone)
     }
 
     if (isValidLRUDEvent(event, node)) {
