@@ -175,14 +175,14 @@ assign(Lrud.prototype, {
     return child
   },
 
-  _updateGrid: function (node) {
-    var rowNode = this._findActiveChildNode(node, isList)
-    if (!rowNode) return
+  _updateGrid: function (grid) {
+    var row = this._findActiveChildNode(grid, isList)
+    if (!row) return
 
-    var activeChild = rowNode.activeChild || rowNode.children[0]
-    var activeIndex = rowNode.children.indexOf(activeChild)
+    var activeChild = row.activeChild || row.children[0]
+    var activeIndex = row.children.indexOf(activeChild)
 
-    node.children.forEach(function (id) {
+    grid.children.forEach(function (id) {
       var parent = this.nodes[id]
       var child = !isList(parent) ? this._findActiveChildNode(parent, isList) : parent
       if (!child) return
