@@ -304,6 +304,22 @@ describe('Given an instance of Lrud', () => {
       expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: 'child' }))
     })
 
+    it('should emit the move event as expected', () => {
+      const spy = jest.fn()
+      const onMove = jest.fn()
+
+      navigation.on('move', spy)
+      navigation.register('root', { orientation: 'vertical', onMove })
+      navigation.register('child1', { parent: 'root' })
+      navigation.register('child2', { parent: 'root' })
+      navigation.focus()
+      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: noop })
+
+      expect(spy).toHaveBeenCalledTimes(1)
+      expect(spy).toHaveBeenCalledWith(expect.objectContaining({ id: 'root' }))
+      expect(onMove).toHaveBeenCalledWith(expect.objectContaining({ id: 'root' }))
+    })
+
     it('should move through a horizontal list as expected', () => {
       const stopPropagationSpy = jest.fn()
       const focusSpy = jest.fn()

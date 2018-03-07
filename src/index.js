@@ -203,7 +203,8 @@ assign(Lrud.prototype, {
         node.onSelect(clone)
       }
 
-      return this.emit('select', clone)
+      this.emit('select', clone)
+      return
     }
 
     if (isValidLRUDEvent(event, node)) {
@@ -220,7 +221,7 @@ assign(Lrud.prototype, {
           this._updateGrid(node)
         }
 
-        this.emit('move', assign({}, node, {
+        var moveEvent = assign({}, node, {
           offset: offset,
           enter: {
             id: nextActiveChild,
@@ -230,10 +231,17 @@ assign(Lrud.prototype, {
             id: activeChild,
             index: activeIndex
           }
-        }))
+        })
+
+        if (node.onMove) {
+          node.onMove(moveEvent)
+        }
+
+        this.emit('move', moveEvent)
 
         this.focus(nextActiveChild)
-        return event.stopPropagation()
+        event.stopPropagation()
+        return
       }
     }
 
