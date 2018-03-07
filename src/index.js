@@ -154,29 +154,42 @@ assign(Lrud.prototype, {
     this.setActiveChild(id, node.children[index])
   },
 
+  getNodeById: function (id) {
+    return this.nodes[id]
+  },
+
   getFocusedNode: function () {
     return this.nodes[this.currentFocus]
+  },
+
+  // Search down the active brach of the tree only...
+  searchDown: function (node, predicate) {
+    var id = node.activeChild || node.children[0]
+    var child = this.nodes[id]
+
+    if (child && !predicate(child)) {
+      return this.searchDown(child, predicate)
+    }
+
+    return child
+  },
+
+  searchUp: function (node, predicate) {
+    var parent = this.nodes[node.parent]
+
+    if (parent && !predicate(parent)) {
+      return this.searchUp(parent, predicate)
+    }
+
+    return parent
   },
 
   _createNode: function (id, props) {
     return assign({ id: id, children: [] }, this.nodes[id], props)
   },
 
-  _findActiveChildNode: function (node, predicate) {
-    if (!node) return
-
-    var id = node.activeChild || node.children[0]
-    var child = this.nodes[id]
-
-    if (child && !predicate(child)) {
-      return this._findActiveChildNode(child, predicate)
-    }
-
-    return child
-  },
-
   _updateGrid: function (grid) {
-    var row = this._findActiveChildNode(grid, isList)
+    var row = this.searchDown(grid, isList)
     if (!row) return
 
     var activeChild = row.activeChild || row.children[0]
@@ -184,7 +197,7 @@ assign(Lrud.prototype, {
 
     grid.children.forEach(function (id) {
       var parent = this.nodes[id]
-      var child = !isList(parent) ? this._findActiveChildNode(parent, isList) : parent
+      var child = !isList(parent) ? this.searchDown(parent, isList) : parent
       if (!child) return
 
       this.setActiveIndex(child.id, Math.min(

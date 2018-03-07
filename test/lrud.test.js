@@ -517,8 +517,17 @@ describe('Given an instance of Lrud', () => {
     })
   })
 
-  describe('getFocusedNode', () => {
-    it('should return the currect focused node as expected', () => {
+  describe('getters', () => {
+    it('getNodeById should return the node as expected', () => {
+      navigation.register('root')
+      navigation.register('child', { parent: 'root' })
+
+      expect(navigation.getNodeById('child')).toEqual(expect.objectContaining({
+        id: 'child'
+      }))
+    })
+
+    it('getFocusedNode should return the current focused node as expected', () => {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
 
@@ -527,6 +536,21 @@ describe('Given an instance of Lrud', () => {
       expect(navigation.getFocusedNode()).toEqual(expect.objectContaining({
         id: 'child'
       }))
+    })
+  })
+
+  describe('searchUp', () => {
+    it('should find the parent node as expected', () => {
+      navigation.register('root', { foo: true })
+      navigation.register('child', { parent: 'root' })
+      navigation.register('child-of-child', { parent: 'child' })
+
+      const node = navigation.nodes['child-of-child']
+      const found = navigation.searchUp(node, ({ foo }) => !!foo)
+      const notFound = navigation.searchUp(node, ({ bar }) => !!bar)
+
+      expect(found).toEqual(expect.objectContaining({ id: 'root' }))
+      expect(notFound).toBeUndefined()
     })
   })
 
