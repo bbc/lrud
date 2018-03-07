@@ -59,6 +59,22 @@ To be used in conjunction with orientation to make a list wrap at the top/bottom
 
 To be used in conjunction with orientation to give a list of lists grid functionality
 
+### `onFocus`
+
+`function`
+
+### `onBlur`
+
+`function`
+
+### `onSelect`
+
+`function`
+
+### `onMove`
+
+`function`
+
 ### Parent/child relationship
 
 Create a vertical list with two children
