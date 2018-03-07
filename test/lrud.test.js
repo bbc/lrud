@@ -539,17 +539,32 @@ describe('Given an instance of Lrud', () => {
     })
   })
 
-  describe('searchUp', () => {
-    it('should find the parent node as expected', () => {
+  describe('search', () => {
+    it('searchUp should find the parent node as expected', () => {
       navigation.register('root', { foo: true })
       navigation.register('child', { parent: 'root' })
       navigation.register('child-of-child', { parent: 'child' })
 
-      const node = navigation.nodes['child-of-child']
+      const node = navigation.getNodeById('child-of-child')
       const found = navigation.searchUp(node, ({ foo }) => !!foo)
       const notFound = navigation.searchUp(node, ({ bar }) => !!bar)
 
       expect(found).toEqual(expect.objectContaining({ id: 'root' }))
+      expect(notFound).toBeUndefined()
+    })
+
+    it('searchDown should find the child node as expected', () => {
+      navigation.register('root')
+      navigation.register('child', { parent: 'root', foo: true })
+      navigation.register('child-of-child', { parent: 'child' })
+
+      navigation.focus()
+
+      const node = navigation.getNodeById('root')
+      const found = navigation.searchDown(node, ({ foo }) => !!foo)
+      const notFound = navigation.searchDown(node, ({ bar }) => !!bar)
+
+      expect(found).toEqual(expect.objectContaining({ id: 'child' }))
       expect(notFound).toBeUndefined()
     })
   })
