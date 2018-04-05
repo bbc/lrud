@@ -153,7 +153,7 @@ assign(Lrud.prototype, {
 
   setActiveIndex: function (id, index) {
     var node = this.nodes[id]
-    if (!node || !node.children[index]) return
+    if (!node) return
 
     this.setActiveChild(id, node.children[index])
   },

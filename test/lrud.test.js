@@ -504,17 +504,6 @@ describe('Given an instance of Lrud', () => {
 
       expect(navigation.setActiveChild).toHaveBeenCalledWith('root', 'child2')
     })
-
-    it('should not call through to setActiveChild when the index is out of range', () => {
-      navigation.setActiveChild = jest.fn()
-
-      navigation.register('root')
-      navigation.register('child1', { parent: 'root' })
-      navigation.register('child2', { parent: 'root' })
-      navigation.setActiveIndex('root', 2)
-
-      expect(navigation.setActiveChild).not.toHaveBeenCalled()
-    })
   })
 
   describe('getters', () => {
