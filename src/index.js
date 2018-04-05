@@ -103,7 +103,7 @@ assign(Lrud.prototype, {
     var node = this.nodes[id] || this.nodes[this.currentFocus] || this.nodes[this.root]
     if (!node) return
 
-    var activeChild = node.activeChild || node.children[0]
+    var activeChild = this._getActiveChild(node)
     if (activeChild) {
       return this.focus(activeChild)
     }
@@ -135,7 +135,11 @@ assign(Lrud.prototype, {
 
   setActiveChild: function (id, child) {
     var node = this.nodes[id]
-    if (!node || node.children.indexOf(child) === -1) return
+    var childNode = this.nodes[child]
+
+    if (!node || node.children.indexOf(child) === -1 || !childNode || childNode.disabled) {
+      return
+    }
 
     if (node.activeChild !== child) {
       if (node.activeChild) {
@@ -164,7 +168,7 @@ assign(Lrud.prototype, {
 
   // Search down the active brach of the tree only...
   searchDown: function (node, predicate) {
-    var id = node.activeChild || node.children[0]
+    var id = this._getActiveChild(node)
     var child = this.nodes[id]
 
     if (child && !predicate(child)) {
@@ -192,7 +196,7 @@ assign(Lrud.prototype, {
     var row = this.searchDown(grid, isList)
     if (!row) return
 
-    var activeChild = row.activeChild || row.children[0]
+    var activeChild = this._getActiveChild(row)
     var activeIndex = row.children.indexOf(activeChild)
 
     grid.children.forEach(function (id) {
@@ -205,6 +209,27 @@ assign(Lrud.prototype, {
         activeIndex
       ))
     }.bind(this))
+  },
+
+  _getActiveChild: function (node) {
+    return node.activeChild || node.children.filter(function (id) {
+      return !this.nodes[id].disabled
+    }.bind(this))[0]
+  },
+
+  _getNextActiveIndex: function (node, offset, index) {
+    var currIndex = index + offset
+    var listSize = node.children.length
+    var nextIndex = node.wrapping ? (currIndex + listSize) % listSize : currIndex
+    var targetId = node.children[nextIndex]
+    var target = this.nodes[targetId]
+
+    // Skip if this node is disabled
+    if (target && target.disabled) {
+      return this._getNextActiveIndex(node, offset, nextIndex)
+    }
+
+    return nextIndex
   },
 
   _bubbleKeyEvent: function (event, id) {
@@ -225,12 +250,10 @@ assign(Lrud.prototype, {
     }
 
     if (isValidLRUDEvent(event, node)) {
-      var activeChild = node.activeChild || node.children[0]
+      var activeChild = this._getActiveChild(node)
       var activeIndex = node.children.indexOf(activeChild)
       var offset = either(key, Lrud.KEY_MAP.RIGHT, Lrud.KEY_MAP.DOWN) ? 1 : -1
-      var nextIndex = activeIndex + offset
-      var listSize = node.children.length
-      var nextActiveIndex = node.wrapping ? (nextIndex + listSize) % listSize : nextIndex
+      var nextActiveIndex = this._getNextActiveIndex(node, offset, activeIndex)
       var nextActiveChild = node.children[nextActiveIndex]
 
       if (nextActiveChild) {

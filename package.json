@@ -29,12 +29,17 @@
     "url": "git@github.com:stuart-williams/lrud.git"
   },
   "devDependencies": {
+    "eslint": "^4.19.1",
+    "eslint-config-standard": "^11.0.0",
+    "eslint-plugin-import": "^2.10.0",
+    "eslint-plugin-node": "^6.0.1",
+    "eslint-plugin-promise": "^3.7.0",
+    "eslint-plugin-standard": "^3.0.1",
     "jest": "^22.1.4",
     "rimraf": "^2.6.2",
     "rollup": "^0.53.0",
     "rollup-plugin-commonjs": "^8.2.6",
     "rollup-plugin-node-resolve": "^3.0.2",
-    "standard": "^10.0.3",
     "uglify-js": "^3.2.2"
   },
   "dependencies": {
@@ -44,12 +49,13 @@
     "preversion": "npm test",
     "postversion": "git push && git push --tags",
     "clean": "rimraf umd",
-    "lint": "standard src/*.js",
+    "lint": "eslint src",
     "pretest": "npm run lint && npm run build",
     "test": "jest",
     "minify": "uglifyjs umd/lrud.js --compress --mangle --output umd/lrud.min.js",
     "prebuild": "npm run clean",
     "build": "rollup -c",
-    "postbuild": "npm run minify"
+    "postbuild": "npm run minify",
+    "watch": "npm run build -- -w"
   }
 }
