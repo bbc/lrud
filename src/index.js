@@ -3,6 +3,7 @@ var KeyCodes = require('./key-codes')
 
 var either = function (arg, a, b) { return arg === a || arg === b }
 var isList = function (node) { return node && !!node.orientation }
+var isEnabled = function (id) { return this.nodes[id] && !this.nodes[id].disabled }
 
 function assign (target) {
   for (var i = 1; i < arguments.length; i++) {
@@ -201,20 +202,20 @@ assign(Lrud.prototype, {
 
     grid.children.forEach(function (id) {
       var parent = this.nodes[id]
-      var child = !isList(parent) ? this.searchDown(parent, isList) : parent
-      if (!child) return
+      var node = !isList(parent) ? this.searchDown(parent, isList) : parent
 
-      this.setActiveIndex(child.id, Math.min(
-        child.children.length - 1,
-        activeIndex
-      ))
+      if (!node) return
+
+      // Focus closest enabled node
+      var left = node.children.slice(0, activeIndex).filter(isEnabled.bind(this))
+      var right = node.children.slice(activeIndex).filter(isEnabled.bind(this))
+
+      this.setActiveIndex(node.id, node.children.indexOf(right[0] || left[left.length - 1]))
     }.bind(this))
   },
 
   _getActiveChild: function (node) {
-    return node.activeChild || node.children.filter(function (id) {
-      return !this.nodes[id].disabled
-    }.bind(this))[0]
+    return node.activeChild || node.children.filter(isEnabled.bind(this))[0]
   },
 
   _getNextActiveIndex: function (node, offset, index) {

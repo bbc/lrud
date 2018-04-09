@@ -577,4 +577,10 @@ describe('Given an instance of Lrud', () => {
       }))
     })
   })
+
+  describe('disabled items', () => {
+    it('should...', () => {
+      expect(true).toBe(false)
+    })
+  })
 })
