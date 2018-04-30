@@ -31,16 +31,16 @@
   "devDependencies": {
     "eslint": "^4.19.1",
     "eslint-config-standard": "^11.0.0",
-    "eslint-plugin-import": "^2.10.0",
+    "eslint-plugin-import": "^2.11.0",
     "eslint-plugin-node": "^6.0.1",
     "eslint-plugin-promise": "^3.7.0",
-    "eslint-plugin-standard": "^3.0.1",
-    "jest": "^22.1.4",
+    "eslint-plugin-standard": "^3.1.0",
+    "jest": "^22.4.3",
     "rimraf": "^2.6.2",
-    "rollup": "^0.53.0",
-    "rollup-plugin-commonjs": "^8.2.6",
-    "rollup-plugin-node-resolve": "^3.0.2",
-    "uglify-js": "^3.2.2"
+    "rollup": "^0.58.2",
+    "rollup-plugin-commonjs": "^9.1.2",
+    "rollup-plugin-node-resolve": "^3.3.0",
+    "uglify-js": "^3.3.23"
   },
   "dependencies": {
     "tiny-emitter": "^2.0.2"
