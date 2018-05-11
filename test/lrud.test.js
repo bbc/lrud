@@ -331,11 +331,14 @@ describe('Given an instance of Lrud', () => {
       navigation.register('root', { orientation: 'horizontal' })
       navigation.register('child1', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
-      navigation.register('child3', { parent: 'root' })
+      navigation.register('child3', { parent: 'root', disabled: true })
+      navigation.register('child4', { parent: 'root' })
+
       // RIGHT
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Focus child2
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Focus child3
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Focus child4
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Edge
+
       // LEFT
       navigation.handleKeyEvent({ keyCode: 37, stopPropagation: stopPropagationSpy }) // Focus child2
       navigation.handleKeyEvent({ keyCode: 37, stopPropagation: stopPropagationSpy }) // Focus child1
@@ -344,7 +347,7 @@ describe('Given an instance of Lrud', () => {
       expect(stopPropagationSpy).toHaveBeenCalledTimes(4)
       expect(focusSpy.mock.calls).toEqual([
         [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child3' }) ],
+        [ expect.objectContaining({ id: 'child4' }) ],
         [ expect.objectContaining({ id: 'child2' }) ],
         [ expect.objectContaining({ id: 'child1' }) ]
       ])
@@ -363,11 +366,14 @@ describe('Given an instance of Lrud', () => {
       navigation.register('root', { orientation: 'vertical' })
       navigation.register('child1', { parent: 'root' })
       navigation.register('child2', { parent: 'root' })
-      navigation.register('child3', { parent: 'root' })
+      navigation.register('child3', { parent: 'root', disabled: true })
+      navigation.register('child4', { parent: 'root' })
+
       // DOWN
       navigation.handleKeyEvent({ keyCode: 40, stopPropagation: stopPropagationSpy }) // Focus child2
-      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: stopPropagationSpy }) // Focus child3
+      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: stopPropagationSpy }) // Focus child4
       navigation.handleKeyEvent({ keyCode: 40, stopPropagation: stopPropagationSpy }) // Edge
+
       // UP
       navigation.handleKeyEvent({ keyCode: 38, stopPropagation: stopPropagationSpy }) // Focus child2
       navigation.handleKeyEvent({ keyCode: 38, stopPropagation: stopPropagationSpy }) // Focus child1
@@ -376,7 +382,7 @@ describe('Given an instance of Lrud', () => {
       expect(stopPropagationSpy).toHaveBeenCalledTimes(4)
       expect(focusSpy.mock.calls).toEqual([
         [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child3' }) ],
+        [ expect.objectContaining({ id: 'child4' }) ],
         [ expect.objectContaining({ id: 'child2' }) ],
         [ expect.objectContaining({ id: 'child1' }) ]
       ])
