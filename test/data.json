@@ -5,7 +5,8 @@
         "children": [
           "child1",
           "child2",
-          "child3"
+          "child3",
+          "child4"
         ],
         "enter": {
           "id": "child2",
@@ -26,11 +27,12 @@
         "children": [
           "child1",
           "child2",
-          "child3"
+          "child3",
+          "child4"
         ],
         "enter": {
-          "id": "child3",
-          "index": 2
+          "id": "child4",
+          "index": 3
         },
         "id": "root",
         "leave": {
@@ -43,11 +45,12 @@
     ],
     [
       {
-        "activeChild": "child3",
+        "activeChild": "child4",
         "children": [
           "child1",
           "child2",
-          "child3"
+          "child3",
+          "child4"
         ],
         "enter": {
           "id": "child2",
@@ -55,8 +58,8 @@
         },
         "id": "root",
         "leave": {
-          "id": "child3",
-          "index": 2
+          "id": "child4",
+          "index": 3
         },
         "offset": -1,
         "orientation": "horizontal"
@@ -68,7 +71,8 @@
         "children": [
           "child1",
           "child2",
-          "child3"
+          "child3",
+          "child4"
         ],
         "enter": {
           "id": "child1",
@@ -90,7 +94,8 @@
         "children": [
           "child1",
           "child2",
-          "child3"
+          "child3",
+          "child4"
         ],
         "enter": {
           "id": "child2",
@@ -111,11 +116,12 @@
         "children": [
           "child1",
           "child2",
-          "child3"
+          "child3",
+          "child4"
         ],
         "enter": {
-          "id": "child3",
-          "index": 2
+          "id": "child4",
+          "index": 3
         },
         "id": "root",
         "leave": {
@@ -128,11 +134,12 @@
     ],
     [
       {
-        "activeChild": "child3",
+        "activeChild": "child4",
         "children": [
           "child1",
           "child2",
-          "child3"
+          "child3",
+          "child4"
         ],
         "enter": {
           "id": "child2",
@@ -140,8 +147,8 @@
         },
         "id": "root",
         "leave": {
-          "id": "child3",
-          "index": 2
+          "id": "child4",
+          "index": 3
         },
         "offset": -1,
         "orientation": "vertical"
@@ -153,7 +160,8 @@
         "children": [
           "child1",
           "child2",
-          "child3"
+          "child3",
+          "child4"
         ],
         "enter": {
           "id": "child1",
