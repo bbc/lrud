@@ -193,25 +193,25 @@ assign(Lrud.prototype, {
     return assign({ id: id, children: [] }, this.nodes[id], props)
   },
 
-  _updateGrid: function (grid) {
-    var row = this.searchDown(grid, isList)
-    if (!row) return
+  _updateGrid: function (activeId, nextId) {
+    var activeNode = this.nodes[activeId]
+    var nextNode = this.nodes[nextId]
 
-    var activeChild = this._getActiveChild(row)
-    var activeIndex = row.children.indexOf(activeChild)
+    // Ignore if we're not moving from a grid item to another grid item
+    if (!activeNode || !nextNode || !activeNode.grid || !nextNode.grid) return
 
-    grid.children.forEach(function (id) {
-      var parent = this.nodes[id]
-      var node = !isList(parent) ? this.searchDown(parent, isList) : parent
+    var activeChild = this._getActiveChild(activeNode)
+    var activeIndex = activeNode.children.indexOf(activeChild)
 
-      if (!node) return
+    var nodeToUpdate = !isList(nextNode) ? this.searchDown(nextNode, isList) : nextNode
 
-      // Focus closest enabled node
-      var left = node.children.slice(0, activeIndex).filter(isEnabled.bind(this))
-      var right = node.children.slice(activeIndex).filter(isEnabled.bind(this))
+    if (!nodeToUpdate) return
 
-      this.setActiveIndex(node.id, node.children.indexOf(right[0] || left[left.length - 1]))
-    }.bind(this))
+    // Focus closest enabled node
+    var left = nodeToUpdate.children.slice(0, activeIndex).filter(isEnabled.bind(this))
+    var right = nodeToUpdate.children.slice(activeIndex).filter(isEnabled.bind(this))
+
+    this.setActiveIndex(nodeToUpdate.id, nodeToUpdate.children.indexOf(right[0] || left[left.length - 1]))
   },
 
   _getActiveChild: function (node) {
@@ -258,9 +258,7 @@ assign(Lrud.prototype, {
       var nextActiveChild = node.children[nextActiveIndex]
 
       if (nextActiveChild) {
-        if (node.grid) {
-          this._updateGrid(node)
-        }
+        this._updateGrid(activeChild, nextActiveChild)
 
         var moveEvent = assign({}, node, {
           offset: offset,

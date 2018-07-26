@@ -414,9 +414,9 @@ describe('Given an instance of Lrud', () => {
     it('should move through a grid as expected', () => {
       const focusSpy = jest.fn()
 
-      navigation.register('root', { orientation: 'vertical', grid: true })
-      navigation.register('row1', { orientation: 'horizontal', parent: 'root' })
-      navigation.register('row2', { orientation: 'horizontal', parent: 'root' })
+      navigation.register('root', { orientation: 'vertical' })
+      navigation.register('row1', { orientation: 'horizontal', parent: 'root', grid: true })
+      navigation.register('row2', { orientation: 'horizontal', parent: 'root', grid: true })
       navigation.register('row1-child1', { parent: 'row1' })
       navigation.register('row1-child2', { parent: 'row1' })
       navigation.register('row1-child3', { parent: 'row1' })
@@ -441,9 +441,9 @@ describe('Given an instance of Lrud', () => {
     it('should move through a grid as expected when a row contains fewer items', () => {
       const focusSpy = jest.fn()
 
-      navigation.register('root', { orientation: 'vertical', grid: true })
-      navigation.register('row1', { orientation: 'horizontal', parent: 'root' })
-      navigation.register('row2', { orientation: 'horizontal', parent: 'root' })
+      navigation.register('root', { orientation: 'vertical' })
+      navigation.register('row1', { orientation: 'horizontal', parent: 'root', grid: true })
+      navigation.register('row2', { orientation: 'horizontal', parent: 'root', grid: true })
       navigation.register('row1-child1', { parent: 'row1' })
       navigation.register('row1-child2', { parent: 'row1' })
       navigation.register('row1-child3', { parent: 'row1' })
@@ -455,6 +455,31 @@ describe('Given an instance of Lrud', () => {
 
       expect(focusSpy).toHaveBeenCalledWith(expect.objectContaining({
         id: 'row2-child2'
+      }))
+    })
+
+    it('should move through a grid as expected when a non-grid row is navigated to', () => {
+      const focusSpy = jest.fn()
+
+      navigation.register('root', { orientation: 'vertical' })
+      navigation.register('row1', { orientation: 'horizontal', parent: 'root', grid: true })
+      navigation.register('row2', { orientation: 'horizontal', parent: 'root', grid: true })
+      navigation.register('row3', { orientation: 'horizontal', parent: 'root', grid: false })
+      navigation.register('row1-child1', { parent: 'row1' })
+      navigation.register('row1-child2', { parent: 'row1' })
+      navigation.register('row1-child3', { parent: 'row1' })
+      navigation.register('row2-child1', { parent: 'row2' })
+      navigation.register('row2-child2', { parent: 'row2' })
+      navigation.register('row2-child3', { parent: 'row2' })
+      navigation.register('row3-child1', { parent: 'row3' })
+      navigation.register('row3-child2', { parent: 'row3' })
+      navigation.register('row3-child3', { parent: 'row3' })
+      navigation.focus('row2-child3')
+      navigation.on('focus', focusSpy)
+      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: noop }) // DOWN
+
+      expect(focusSpy).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'row3-child1'
       }))
     })
   })
