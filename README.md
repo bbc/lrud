@@ -2,14 +2,6 @@
 
 A spatial navigation library for devices with input via directional controls
 
-[![Build Status](https://travis-ci.org/stuart-williams/lrud.svg?branch=master)](https://travis-ci.org/stuart-williams/lrud)
-
-## Examples
-
-* [React component demo](https://github.com/stuart-williams/lrud-storybook) with [Storybook](https://github.com/storybooks/storybook) and [react-lrud](https://github.com/stuart-williams/react-lrud) (official React bindings for Lrud)
-
-![React Example](https://raw.githubusercontent.com/stuart-williams/lrud/master/assets/lrud-react-example.gif)
-
 ## Installation
 
 ```bash
@@ -225,10 +217,10 @@ navigation.on('move', function (node) {
 
 ## Alternatives
 
+* [tal](https://github.com/bbc/tal)
 * [react-tv-navigation](https://github.com/react-tv/react-tv-navigation)
 * [react-key-navigation](https://github.com/dead/react-key-navigation)
 * [js-spatial-navigation](https://github.com/luke-chang/js-spatial-navigation)
-* [tal](https://github.com/bbc/tal)
 
 # License
 
@@ -236,3 +228,4 @@ navigation.on('move', function (node) {
 LRUD is part of the BBC TAL libraries, and available to everyone under the terms of the Apache 2 open source licence (Apache-2.0). Take a look at the LICENSE file in the code.
 
 Copyright (c) 2018 BBC
+
