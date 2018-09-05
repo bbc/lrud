@@ -26,7 +26,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git@github.com:stuart-williams/lrud.git"
+    "url": "git@github.com:bbc/lrud.git"
   },
   "devDependencies": {
     "eslint": "^4.19.1",
