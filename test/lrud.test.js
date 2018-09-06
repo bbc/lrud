@@ -608,4 +608,54 @@ describe('Given an instance of Lrud', () => {
       }))
     })
   })
+
+  describe('upsert', () => {
+    it('should insert a new node if none exists for that id', () => {
+      navigation.upsert('root')
+
+      expect(toJSON(navigation.nodes)).toEqual({
+        root: {
+          id: 'root',
+          children: []
+        }
+      })
+    })
+
+    it('should replace a node already there with a new node when upserted', () => {
+      navigation.upsert('root')
+      navigation.upsert('root', { orientation: 'horizontal' })
+
+      expect(toJSON(navigation.nodes)).toEqual({
+        root: {
+          id: 'root',
+          orientation: 'horizontal',
+          children: []
+        }
+      })
+    })
+
+    it('should replace a node already there with a new node when upserted - child test', () => {
+      navigation.upsert('root')
+      navigation.upsert('child-a', { parent: 'root' })
+      navigation.upsert('child-b', { parent: 'root' })
+
+      expect(toJSON(navigation.nodes)).toEqual({
+        root: {
+          id: 'root',
+          children: ['child-a', 'child-b']
+        }
+      })
+
+      navigation.upsert('root')
+      navigation.upsert('child-c', { parent: 'root' })
+      navigation.upsert('child-d', { parent: 'root' })
+
+      expect(toJSON(navigation.nodes)).toEqual({
+        root: {
+          id: 'root',
+          children: ['child-c', 'child-d']
+        }
+      })
+    })
+  })
 })
