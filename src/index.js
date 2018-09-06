@@ -294,6 +294,27 @@ assign(Lrud.prototype, {
       this.setActiveChild(node.parent, id)
       this._bubbleActive(node.parent)
     }
+  },
+
+  /**
+   * insert a new node or replace a current node of the same id
+   * @func upsert
+   * @param {string} id
+   * @param {object} props
+   */
+  upsert: function (id, props) {
+    if (!id) throw new Error('Attempting to register with an invalid id')
+
+    var node = this._createNode(id, props)
+    var self = this
+
+    if (this.nodes[id] && this.nodes[id].children) {
+      this.nodes[id].children.forEach(function (childId) {
+        self.unregister(childId)
+      })
+    }
+
+    this.nodes[id] = node
   }
 })
 
