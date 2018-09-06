@@ -305,7 +305,6 @@ assign(Lrud.prototype, {
   upsert: function (id, props) {
     if (!id) throw new Error('Attempting to register with an invalid id')
 
-    var node = this._createNode(id, props)
     var self = this
 
     if (this.nodes[id] && this.nodes[id].children) {
@@ -314,7 +313,7 @@ assign(Lrud.prototype, {
       })
     }
 
-    this.nodes[id] = node
+    self.register(id, props)
   }
 })
 

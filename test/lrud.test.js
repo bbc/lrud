@@ -639,23 +639,13 @@ describe('Given an instance of Lrud', () => {
       navigation.upsert('child-a', { parent: 'root' })
       navigation.upsert('child-b', { parent: 'root' })
 
-      expect(toJSON(navigation.nodes)).toEqual({
-        root: {
-          id: 'root',
-          children: ['child-a', 'child-b']
-        }
-      })
+      expect(toJSON(navigation.nodes.root.children)).toEqual(['child-a', 'child-b'])
 
       navigation.upsert('root')
       navigation.upsert('child-c', { parent: 'root' })
       navigation.upsert('child-d', { parent: 'root' })
 
-      expect(toJSON(navigation.nodes)).toEqual({
-        root: {
-          id: 'root',
-          children: ['child-c', 'child-d']
-        }
-      })
+      expect(toJSON(navigation.nodes.root.children)).toEqual(['child-c', 'child-d'])
     })
   })
 })
