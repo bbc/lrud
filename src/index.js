@@ -19,15 +19,13 @@ function assign (target) {
 
 function isValidLRUDEvent (event, node) {
   return (
-    node.orientation === 'horizontal' &&
-    node.children.length > 0 && either(
+    node.orientation === 'horizontal' && either(
       Lrud.KEY_CODES[event.keyCode],
       Lrud.KEY_MAP.LEFT,
       Lrud.KEY_MAP.RIGHT
     )
   ) || (
-    node.orientation === 'vertical' &&
-    node.children.length > 0 && either(
+    node.orientation === 'vertical' && either(
       Lrud.KEY_CODES[event.keyCode],
       Lrud.KEY_MAP.UP,
       Lrud.KEY_MAP.DOWN
@@ -259,10 +257,6 @@ assign(Lrud.prototype, {
       var nextActiveIndex = this._getNextActiveIndex(node, offset, activeIndex)
       var nextActiveChild = node.children[nextActiveIndex]
       if (nextActiveChild) {
-        var nextActiveChildNode = this.nodes[nextActiveChild]
-        if (nextActiveChildNode.orientation &&
-          (!nextActiveChildNode.children || nextActiveChildNode.children.length === 0)) return
-
         this._updateGrid(activeChild, nextActiveChild)
 
         var moveEvent = assign({}, node, {
