@@ -19,13 +19,15 @@ function assign (target) {
 
 function isValidLRUDEvent (event, node) {
   return (
-    node.orientation === 'horizontal' && either(
+    node.orientation === 'horizontal' &&
+    node.children.length > 0 && either(
       Lrud.KEY_CODES[event.keyCode],
       Lrud.KEY_MAP.LEFT,
       Lrud.KEY_MAP.RIGHT
     )
   ) || (
-    node.orientation === 'vertical' && either(
+    node.orientation === 'vertical' &&
+    node.children.length > 0 && either(
       Lrud.KEY_CODES[event.keyCode],
       Lrud.KEY_MAP.UP,
       Lrud.KEY_MAP.DOWN
