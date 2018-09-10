@@ -429,6 +429,7 @@ describe('Given an instance of Lrud', () => {
       navigation.handleKeyEvent({ keyCode: 40, stopPropagation: noop }) // DOWN
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // RIGHT
       navigation.handleKeyEvent({ keyCode: 38, stopPropagation: noop }) // UP
+      console.log('navigation', navigation)
 
       expect(focusSpy.mock.calls).toEqual([
         [ expect.objectContaining({ id: 'row1-child2' }) ],

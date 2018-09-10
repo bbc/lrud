@@ -258,8 +258,11 @@ assign(Lrud.prototype, {
       var offset = either(key, Lrud.KEY_MAP.RIGHT, Lrud.KEY_MAP.DOWN) ? 1 : -1
       var nextActiveIndex = this._getNextActiveIndex(node, offset, activeIndex)
       var nextActiveChild = node.children[nextActiveIndex]
-
       if (nextActiveChild) {
+        var nextActiveChildNode = this.nodes[nextActiveChild]
+        if (nextActiveChildNode.orientation &&
+          (!nextActiveChildNode.children || nextActiveChildNode.children.length === 0)) return
+
         this._updateGrid(activeChild, nextActiveChild)
 
         var moveEvent = assign({}, node, {
