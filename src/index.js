@@ -257,6 +257,18 @@ assign(Lrud.prototype, {
       var nextActiveIndex = this._getNextActiveIndex(node, offset, activeIndex)
       var nextActiveChild = node.children[nextActiveIndex]
 
+      var child = this.nodes[nextActiveChild]
+
+      if (child == null) {
+        this._bubbleKeyEvent(event, node.parent)
+        return
+      }
+
+      // blocks invalid content items from being focussed
+      if (child.children.length <= 0 && child.selectAction == null && child.orientation == null) {
+        return
+      }
+
       if (nextActiveChild) {
         this._updateGrid(activeChild, nextActiveChild)
 
