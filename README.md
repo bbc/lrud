@@ -209,6 +209,18 @@ navigation.on('move', function (node) {
 })
 ```
 
+# F.A.Q
+
+> Q: A node that should be focusabled is never receiving focus - whats happening?
+
+A: Ensure that the parent nodes, etc. have the correct orientation in order to be able to jump inbetween nodes.
+
+> Q: All my parents have orientations, everything is setup in the navigation tree, and I STILL can't focus on the element.
+
+A: A node is considered invalid if it has 0 children AND no `selectAction` AND no orientation. 
+
+Make sure a node has at least 1 child, or a select action, or an orientation if you want it to be focusable. 
+
 ## Inspiration
 
 * [BBC - TV Application Layer (TAL)](http://bbc.github.io/tal/widgets/focus-management.html)
