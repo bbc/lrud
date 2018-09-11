@@ -264,7 +264,6 @@ assign(Lrud.prototype, {
         return
       }
 
-      // blocks invalid content items from being focussed
       if (child.children.length <= 0 && child.selectAction == null && child.orientation == null) {
         return
       }
