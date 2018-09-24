@@ -310,8 +310,8 @@ describe('Given an instance of Lrud', () => {
 
       navigation.on('move', spy)
       navigation.register('root', { orientation: 'vertical', onMove })
-      navigation.register('child1', { parent: 'root' })
-      navigation.register('child2', { parent: 'root' })
+      navigation.register('child1', { parent: 'root', selectAction: true })
+      navigation.register('child2', { parent: 'root', selectAction: true })
       navigation.focus()
       navigation.handleKeyEvent({ keyCode: 40, stopPropagation: noop })
 
@@ -329,10 +329,10 @@ describe('Given an instance of Lrud', () => {
       navigation.on('focus', focusSpy)
       navigation.on('move', moveSpy)
       navigation.register('root', { orientation: 'horizontal' })
-      navigation.register('child1', { parent: 'root' })
-      navigation.register('child2', { parent: 'root' })
-      navigation.register('child3', { parent: 'root', disabled: true })
-      navigation.register('child4', { parent: 'root' })
+      navigation.register('child1', { parent: 'root', selectAction: true })
+      navigation.register('child2', { parent: 'root', selectAction: true })
+      navigation.register('child3', { parent: 'root', selectAction: true, disabled: true })
+      navigation.register('child4', { parent: 'root', selectAction: true })
 
       // RIGHT
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Focus child2
@@ -364,10 +364,10 @@ describe('Given an instance of Lrud', () => {
       navigation.on('focus', focusSpy)
       navigation.on('move', moveSpy)
       navigation.register('root', { orientation: 'vertical' })
-      navigation.register('child1', { parent: 'root' })
-      navigation.register('child2', { parent: 'root' })
-      navigation.register('child3', { parent: 'root', disabled: true })
-      navigation.register('child4', { parent: 'root' })
+      navigation.register('child1', { parent: 'root', selectAction: true })
+      navigation.register('child2', { parent: 'root', selectAction: true })
+      navigation.register('child3', { parent: 'root', selectAction: true, disabled: true })
+      navigation.register('child4', { parent: 'root', selectAction: true })
 
       // DOWN
       navigation.handleKeyEvent({ keyCode: 40, stopPropagation: stopPropagationSpy }) // Focus child2
@@ -396,9 +396,9 @@ describe('Given an instance of Lrud', () => {
       navigation.currentFocus = 'child1'
       navigation.on('focus', focusSpy)
       navigation.register('root', { orientation: 'horizontal', wrapping: true })
-      navigation.register('child1', { parent: 'root' })
-      navigation.register('child2', { parent: 'root' })
-      navigation.register('child3', { parent: 'root' })
+      navigation.register('child1', { parent: 'root', selectAction: true })
+      navigation.register('child2', { parent: 'root', selectAction: true })
+      navigation.register('child3', { parent: 'root', selectAction: true })
       // RIGHT
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child2
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child3
@@ -415,14 +415,14 @@ describe('Given an instance of Lrud', () => {
       const focusSpy = jest.fn()
 
       navigation.register('root', { orientation: 'vertical' })
-      navigation.register('row1', { orientation: 'horizontal', parent: 'root', grid: true })
-      navigation.register('row2', { orientation: 'horizontal', parent: 'root', grid: true })
-      navigation.register('row1-child1', { parent: 'row1' })
-      navigation.register('row1-child2', { parent: 'row1' })
-      navigation.register('row1-child3', { parent: 'row1' })
-      navigation.register('row2-child1', { parent: 'row2' })
-      navigation.register('row2-child2', { parent: 'row2' })
-      navigation.register('row2-child3', { parent: 'row2' })
+      navigation.register('row1', { orientation: 'horizontal', parent: 'root', grid: true, selectAction: true })
+      navigation.register('row2', { orientation: 'horizontal', parent: 'root', grid: true, selectAction: true })
+      navigation.register('row1-child1', { parent: 'row1', selectAction: true })
+      navigation.register('row1-child2', { parent: 'row1', selectAction: true })
+      navigation.register('row1-child3', { parent: 'row1', selectAction: true })
+      navigation.register('row2-child1', { parent: 'row2', selectAction: true })
+      navigation.register('row2-child2', { parent: 'row2', selectAction: true })
+      navigation.register('row2-child3', { parent: 'row2', selectAction: true })
       navigation.focus()
       navigation.on('focus', focusSpy)
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // RIGHT
