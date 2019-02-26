@@ -1,6 +1,6 @@
 {
   "name": "lrud",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "Left, Right, Up, Down. A spatial navigation library for devices with input via directional controls",
   "main": "src/index.js",
   "unpkg": "umd/lrud.min.js",
