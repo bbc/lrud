@@ -34,6 +34,7 @@ function isValidLRUDEvent (event, node) {
 }
 
 function Lrud (params) {
+  if (params == null) { params = [] }
   this.nodes = {}
   this.overrides = params.overrides || []
   this.root = null
@@ -236,11 +237,11 @@ assign(Lrud.prototype, {
 
   _bubbleKeyEvent: function (event, id) {
     var node = this.nodes[id]
-    
+
     if (!node) return
-    
+
     var key = Lrud.KEY_CODES[event.keyCode]
-    
+
     this.overrides.forEach(function (override) {
       if (override.id === id && key === override.direction) {
         return this._bubbleKeyEvent(event, override.target)
