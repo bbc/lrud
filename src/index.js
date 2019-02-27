@@ -241,10 +241,14 @@ assign(Lrud.prototype, {
     if (!node) return
 
     var key = Lrud.KEY_CODES[event.keyCode]
-
+    var func = this._bubbleKeyEvent.bind(this)
     this.overrides.forEach(function (override) {
+      console.log('id', id)
+      console.log('override', override)
+      console.log('key', key)
+
       if (override.id === id && key === override.direction) {
-        return this._bubbleKeyEvent(event, override.target)
+        return func(event, override.target)
       }
     })
 

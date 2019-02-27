@@ -651,94 +651,35 @@ describe('Given an instance of Lrud', () => {
 
   describe('handleKeyEvent - with overrides', () => {
     it('should move through a horizontal list as expected', () => {
-      const stopPropagationSpy = jest.fn()
-      const focusSpy = jest.fn()
-      const moveSpy = jest.fn()
-
-      navigation.currentFocus = 'child1'
-      navigation.on('focus', focusSpy)
-      navigation.on('move', moveSpy)
+      navigation.overrides = [
+        {
+          id: 'child2',
+          direction: 'RIGHT',
+          target: 'child1'
+        }
+      ]
       navigation.register('root', { orientation: 'horizontal' })
       navigation.register('child1', { parent: 'root', selectAction: true })
       navigation.register('child2', { parent: 'root', selectAction: true })
-      navigation.register('child3', { parent: 'root', selectAction: true, disabled: true })
-      navigation.register('child4', { parent: 'root', selectAction: true })
-
-      // RIGHT
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Focus child2
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Focus child4
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Edge
-
-      // LEFT
-      navigation.handleKeyEvent({ keyCode: 37, stopPropagation: stopPropagationSpy }) // Focus child2
-      navigation.handleKeyEvent({ keyCode: 37, stopPropagation: stopPropagationSpy }) // Focus child1
-      navigation.handleKeyEvent({ keyCode: 37, stopPropagation: stopPropagationSpy }) // Edge
-
-      expect(stopPropagationSpy).toHaveBeenCalledTimes(4)
-      expect(focusSpy.mock.calls).toEqual([
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child4' }) ],
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child1' }) ]
-      ])
-
-      expect(toJSON(moveSpy.mock.calls)).toEqual(data.horizontalMove)
-    })
-
-    it('should move through a vertical list as expected', () => {
-      const stopPropagationSpy = jest.fn()
-      const focusSpy = jest.fn()
-      const moveSpy = jest.fn()
-
-      navigation.currentFocus = 'child1'
-      navigation.on('focus', focusSpy)
-      navigation.on('move', moveSpy)
-      navigation.register('root', { orientation: 'vertical' })
-      navigation.register('child1', { parent: 'root', selectAction: true })
-      navigation.register('child2', { parent: 'root', selectAction: true })
-      navigation.register('child3', { parent: 'root', selectAction: true, disabled: true })
-      navigation.register('child4', { parent: 'root', selectAction: true })
-
-      // DOWN
-      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: stopPropagationSpy }) // Focus child2
-      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: stopPropagationSpy }) // Focus child4
-      navigation.handleKeyEvent({ keyCode: 40, stopPropagation: stopPropagationSpy }) // Edge
-
-      // UP
-      navigation.handleKeyEvent({ keyCode: 38, stopPropagation: stopPropagationSpy }) // Focus child2
-      navigation.handleKeyEvent({ keyCode: 38, stopPropagation: stopPropagationSpy }) // Focus child1
-      navigation.handleKeyEvent({ keyCode: 38, stopPropagation: stopPropagationSpy }) // Edge
-
-      expect(stopPropagationSpy).toHaveBeenCalledTimes(4)
-      expect(focusSpy.mock.calls).toEqual([
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child4' }) ],
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child1' }) ]
-      ])
-
-      expect(toJSON(moveSpy.mock.calls)).toEqual(data.verticalMove)
-    })
-
-    it('should move through a wrapping list as expected', () => {
-      const focusSpy = jest.fn()
-
-      navigation.currentFocus = 'child1'
-      navigation.on('focus', focusSpy)
-      navigation.register('root', { orientation: 'horizontal', wrapping: true })
-      navigation.register('child1', { parent: 'root', selectAction: true })
-      navigation.register('child2', { parent: 'root', selectAction: true })
       navigation.register('child3', { parent: 'root', selectAction: true })
-      // RIGHT
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child2
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child3
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child1
+      navigation.register('child4', { parent: 'root', selectAction: true })
 
-      expect(focusSpy.mock.calls).toEqual([
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child3' }) ],
-        [ expect.objectContaining({ id: 'child1' }) ]
-      ])
+      navigation.currentFocus = 'child2'
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child2
+
+      // // RIGHT
+      // navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Focus child2
+      // navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Focus child4
+      // navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Edge
+
+      // // LEFT
+      // navigation.handleKeyEvent({ keyCode: 37, stopPropagation: stopPropagationSpy }) // Focus child2
+      // navigation.handleKeyEvent({ keyCode: 37, stopPropagation: stopPropagationSpy }) // Focus child1
+      // navigation.handleKeyEvent({ keyCode: 37, stopPropagation: stopPropagationSpy }) // Edge
+
+      // expect(stopPropagationSpy).toHaveBeenCalledTimes(4)
+      expect(navigation.currentFocus).toEqual('child1')
+      // expect(toJSON(moveSpy.mock.calls)).toEqual(data.horizontalMove)
     })
   })
 })
