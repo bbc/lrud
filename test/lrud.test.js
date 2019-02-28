@@ -650,7 +650,7 @@ describe('Given an instance of Lrud', () => {
   })
 
   describe('handleKeyEvent - with overrides', () => {
-    it('should move through a horizontal list as expected', () => {
+    it.only('should move through a horizontal list as expected [`override`]', () => {
       navigation.overrides = [
         {
           id: 'child2',

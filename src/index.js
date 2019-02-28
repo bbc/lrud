@@ -241,16 +241,6 @@ assign(Lrud.prototype, {
     if (!node) return
 
     var key = Lrud.KEY_CODES[event.keyCode]
-    var func = this._bubbleKeyEvent.bind(this)
-    this.overrides.forEach(function (override) {
-      console.log('id', id)
-      console.log('override', override)
-      console.log('key', key)
-
-      if (override.id === id && key === override.direction) {
-        return func(event, override.target)
-      }
-    })
 
     if (key === Lrud.KEY_MAP.ENTER) {
       var clone = assign({}, node)
@@ -260,6 +250,52 @@ assign(Lrud.prototype, {
       }
 
       this.emit('select', clone)
+      return
+    }
+
+    console.log('node: ', node)
+
+    console.log(this.currentFocus)
+
+    // bind functions
+    var _updateGrid2 = this._updateGrid.bind(this)
+    var _emit2 = this.emit.bind(this)
+    var _newFocus2 = this.focus.bind(this)
+    var _activeChild2 = this._getActiveChild(node)
+    var _nodes2 = this.nodes
+    var foundOverrides = false
+
+    this.overrides.forEach(function (override) {
+      if (override.id === id && key === override.direction) {
+        var targetNode = _nodes2[override.target]
+        console.log('Found a match')
+
+        _updateGrid2(_activeChild2, targetNode.id)
+
+        var moveEvent = assign({}, node, {
+          offset: offset,
+          enter: {
+            id: targetNode.id,
+            index: 0
+          },
+          leave: {
+            id: id,
+            index: 0
+          }
+        })
+
+        if (node.onMove) {
+          node.onMove(moveEvent)
+        }
+
+        _emit2('move', moveEvent)
+
+        _newFocus2(targetNode.id)
+        event.stopPropagation()
+        foundOverrides = true
+      }
+    })
+    if (foundOverrides) {
       return
     }
 
