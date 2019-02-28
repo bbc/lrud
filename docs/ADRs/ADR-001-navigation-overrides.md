@@ -33,3 +33,7 @@ Because the overrides live as a separate data item on an instance, and are check
 Approved
 
 ### Consequences
+
+- LRUD now "handles" more information than just a navigation tree. This is extra complexity, and as it is an extra data item, any LRUD implementation that currently moves data around will also have to move around the `overrides`
+
+- naive overrides can cause unexpected behaviour in LRUD itself. For example, setting an override target to `X` will _actually_ cause the final focus to end up on the first focusable child of `X`. While this does make sense, it can be somewhat unintuitive at first
