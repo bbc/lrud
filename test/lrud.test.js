@@ -650,7 +650,7 @@ describe('Given an instance of Lrud', () => {
   })
 
   describe('handleKeyEvent - with overrides', () => {
-    it.only('should move through a horizontal list as expected [`override`]', () => {
+    it('should move through a horizontal list as expected [`override`]', () => {
       navigation.overrides = [
         {
           id: 'child2',
@@ -665,21 +665,90 @@ describe('Given an instance of Lrud', () => {
       navigation.register('child4', { parent: 'root', selectAction: true })
 
       navigation.currentFocus = 'child2'
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child2
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
 
-      // // RIGHT
-      // navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Focus child2
-      // navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Focus child4
-      // navigation.handleKeyEvent({ keyCode: 39, stopPropagation: stopPropagationSpy }) // Edge
-
-      // // LEFT
-      // navigation.handleKeyEvent({ keyCode: 37, stopPropagation: stopPropagationSpy }) // Focus child2
-      // navigation.handleKeyEvent({ keyCode: 37, stopPropagation: stopPropagationSpy }) // Focus child1
-      // navigation.handleKeyEvent({ keyCode: 37, stopPropagation: stopPropagationSpy }) // Edge
-
-      // expect(stopPropagationSpy).toHaveBeenCalledTimes(4)
       expect(navigation.currentFocus).toEqual('child1')
-      // expect(toJSON(moveSpy.mock.calls)).toEqual(data.horizontalMove)
+    })
+
+    it('should move through a vertical list as expected [`override`]', () => {
+      navigation.overrides = [
+        {
+          id: 'child1',
+          direction: 'DOWN',
+          target: 'child4'
+        }
+      ]
+      navigation.register('root', { orientation: 'vertical' })
+      navigation.register('child1', { parent: 'root', selectAction: true })
+      navigation.register('child2', { parent: 'root', selectAction: true })
+      navigation.register('child3', { parent: 'root', selectAction: true })
+      navigation.register('child4', { parent: 'root', selectAction: true })
+
+      navigation.currentFocus = 'child1'
+      navigation.handleKeyEvent({ keyCode: 20, stopPropagation: noop })
+
+      expect(navigation.currentFocus).toEqual('child4')
+    })
+
+    it('should move through a nested vertical list as expected [`override`]', () => {
+      navigation.overrides = [
+        {
+          id: 'child3',
+          direction: 'RIGHT',
+          target: 'child4'
+        }
+      ]
+      navigation.register('root', { orientation: 'vertical' })
+      navigation.register('child1', { parent: 'root', selectAction: true })
+      navigation.register('child2', { parent: 'root', selectAction: true })
+      navigation.register('child3', { parent: 'child1', selectAction: true })
+      navigation.register('child4', { parent: 'root', selectAction: true })
+
+      navigation.currentFocus = 'child3'
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
+
+      expect(navigation.currentFocus).toEqual('child4')
+    })
+
+    it('should not move focus, ignoring override feature [`override`]', () => {
+      navigation.overrides = [
+        {
+          id: 'child3',
+          direction: 'DOWN',
+          target: 'child4'
+        }
+      ]
+      navigation.register('root', { orientation: 'vertical' })
+      navigation.register('child1', { parent: 'root', selectAction: true })
+      navigation.register('child2', { parent: 'root', selectAction: true })
+      navigation.register('child3', { parent: 'child1', selectAction: true })
+      navigation.register('child4', { parent: 'root', selectAction: true })
+
+      navigation.currentFocus = 'child3'
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
+
+      expect(navigation.currentFocus).toEqual('child3')
+    })
+
+    it('should not move focus, ignoring override feature [`override`]', () => {
+      navigation.overrides = [
+        {
+          id: 'child1',
+          direction: 'RIGHT',
+          target: 'child5'
+        }
+      ]
+      navigation.register('root', { orientation: 'vertical' })
+      navigation.register('child1', { parent: 'root', selectAction: true })
+      navigation.register('child2', { parent: 'root', selectAction: true })
+      navigation.register('child3', { parent: 'child1', selectAction: true })
+      navigation.register('child4', { parent: 'root', selectAction: true })
+      navigation.register('child5', { parent: 'child3', selectAction: true })
+
+      navigation.currentFocus = 'child1'
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
+
+      expect(navigation.currentFocus).toEqual('child5')
     })
   })
 })

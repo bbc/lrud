@@ -253,48 +253,18 @@ assign(Lrud.prototype, {
       return
     }
 
-    console.log('node: ', node)
-
-    console.log(this.currentFocus)
-
-    // bind functions
-    var _updateGrid2 = this._updateGrid.bind(this)
-    var _emit2 = this.emit.bind(this)
-    var _newFocus2 = this.focus.bind(this)
-    var _activeChild2 = this._getActiveChild(node)
-    var _nodes2 = this.nodes
     var foundOverrides = false
-
-    this.overrides.forEach(function (override) {
+    var _myFunc = function (override) {
       if (override.id === id && key === override.direction) {
-        var targetNode = _nodes2[override.target]
-        console.log('Found a match')
-
-        _updateGrid2(_activeChild2, targetNode.id)
-
-        var moveEvent = assign({}, node, {
-          offset: offset,
-          enter: {
-            id: targetNode.id,
-            index: 0
-          },
-          leave: {
-            id: id,
-            index: 0
-          }
-        })
-
-        if (node.onMove) {
-          node.onMove(moveEvent)
-        }
-
-        _emit2('move', moveEvent)
-
-        _newFocus2(targetNode.id)
-        event.stopPropagation()
+        this._assignFocus(this._getActiveChild(node), override.target, 0, 0, 0, event, this.nodes[override.target])
         foundOverrides = true
       }
-    })
+    }
+
+    var myFunc = _myFunc.bind(this)
+
+    this.overrides.forEach(myFunc)
+
     if (foundOverrides) {
       return
     }
@@ -318,28 +288,7 @@ assign(Lrud.prototype, {
       }
 
       if (nextActiveChild) {
-        this._updateGrid(activeChild, nextActiveChild)
-
-        var moveEvent = assign({}, node, {
-          offset: offset,
-          enter: {
-            id: nextActiveChild,
-            index: nextActiveIndex
-          },
-          leave: {
-            id: activeChild,
-            index: activeIndex
-          }
-        })
-
-        if (node.onMove) {
-          node.onMove(moveEvent)
-        }
-
-        this.emit('move', moveEvent)
-
-        this.focus(nextActiveChild)
-        event.stopPropagation()
+        this._assignFocus(activeChild, nextActiveChild, nextActiveIndex, activeIndex, offset, event, node)
         return
       }
     }
@@ -347,6 +296,10 @@ assign(Lrud.prototype, {
     this._bubbleKeyEvent(event, node.parent)
   },
 
+  /**
+   *
+   * @param {*} id
+   */
   _bubbleActive: function (id) {
     var node = this.nodes[id]
 
@@ -374,7 +327,32 @@ assign(Lrud.prototype, {
     }
 
     self.register(id, props)
+  },
+
+  _assignFocus: function (activeChild, nextActiveChild, nextActiveIndex, activeIndex, offset, event, node) {
+    this._updateGrid(activeChild, nextActiveChild)
+    var moveEvent = assign({}, node, {
+      offset: offset,
+      enter: {
+        id: nextActiveChild,
+        index: nextActiveIndex
+      },
+      leave: {
+        id: activeChild,
+        index: activeIndex
+      }
+    })
+
+    if (node.onMove) {
+      node.onMove(moveEvent)
+    }
+
+    this.emit('move', moveEvent)
+
+    this.focus(nextActiveChild)
+    event.stopPropagation()
   }
+
 })
 
 Lrud.KEY_MAP = KeyCodes.map
