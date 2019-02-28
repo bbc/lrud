@@ -751,26 +751,40 @@ describe('Given an instance of Lrud', () => {
       expect(navigation.currentFocus).toEqual('child5')
     })
 
-    it('should move down to a sub child of the parent element [`override`]', () => {
+    it('should correctly focus on the first focusable child of the specified override target [`override`]', () => {
       navigation.overrides = [
         {
-          id: 'child1',
-          direction: 'RIGHT',
-          target: 'child5'
+          id: 'keyboard',
+          direction: 'DOWN',
+          target: 'grid'
         }
       ]
       navigation.register('root', { orientation: 'vertical' })
-      navigation.register('keyboard', { parent: 'root', selectAction: true })
-      navigation.register('grid', { parent: 'root', selectAction: true })
-      navigation.register('key-row-1', { parent: 'keyboard', selectAction: true })
-      navigation.register('key-row-2', { parent: 'keyboard', selectAction: true })
-      navigation.register('grid-row-1', { parent: 'grid', selectAction: true })
-      navigation.register('grid-row-2', { parent: 'grid', selectAction: true })
 
-      navigation.currentFocus = 'child1'
-      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
+      // keyboard region
+      navigation.register('keyboard_region', { parent: 'root', orientation: 'vertical' })
+      navigation.register('keyboard', { parent: 'keyboard_region', orientation: 'vertical' })
+      navigation.register('key_row_1', { parent: 'keyboard', orientation: 'horizontal' })
+      navigation.register('key_row_2', { parent: 'keyboard', orientation: 'horizontal' })
+      navigation.register('key_row_1:button-a', { parent: 'key_row_1', selectAction: true })
+      navigation.register('key_row_1:button-b', { parent: 'key_row_1', selectAction: true })
+      navigation.register('key_row_2:button-c', { parent: 'key_row_2', selectAction: true })
+      navigation.register('key_row_2:button-d', { parent: 'key_row_2', selectAction: true })
 
-      expect(navigation.currentFocus).toEqual('child5')
+      // grid region
+      navigation.register('grid_region', { parent: 'root', orientation: 'vertical' })
+      navigation.register('grid', { parent: 'grid_region', orientation: 'vertical' })
+      navigation.register('grid_row_1', { parent: 'grid', orientation: 'horizontal' })
+      navigation.register('grid_row_2', { parent: 'grid', orientation: 'horizontal' })
+      navigation.register('grid_row_1:button-1', { parent: 'grid_row_1', selectAction: true })
+      navigation.register('grid_row_1:button-2', { parent: 'grid_row_1', selectAction: true })
+      navigation.register('grid_row_2:button-3', { parent: 'grid_row_2', selectAction: true })
+      navigation.register('grid_row_2:button-4', { parent: 'grid_row_2', selectAction: true })
+
+      navigation.currentFocus = 'key_row_1:button-a'
+      navigation.handleKeyEvent({ keyCode: 20, stopPropagation: noop })
+
+      expect(navigation.currentFocus).toEqual('grid_row_1:button-1')
     })
   })
 })
