@@ -730,7 +730,7 @@ describe('Given an instance of Lrud', () => {
       expect(navigation.currentFocus).toEqual('child3')
     })
 
-    it('should not move focus, ignoring override feature [`override`]', () => {
+    it('should move down to a sub child of the parent element [`override`]', () => {
       navigation.overrides = [
         {
           id: 'child1',
@@ -744,6 +744,28 @@ describe('Given an instance of Lrud', () => {
       navigation.register('child3', { parent: 'child1', selectAction: true })
       navigation.register('child4', { parent: 'root', selectAction: true })
       navigation.register('child5', { parent: 'child3', selectAction: true })
+
+      navigation.currentFocus = 'child1'
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
+
+      expect(navigation.currentFocus).toEqual('child5')
+    })
+
+    it('should move down to a sub child of the parent element [`override`]', () => {
+      navigation.overrides = [
+        {
+          id: 'child1',
+          direction: 'RIGHT',
+          target: 'child5'
+        }
+      ]
+      navigation.register('root', { orientation: 'vertical' })
+      navigation.register('keyboard', { parent: 'root', selectAction: true })
+      navigation.register('grid', { parent: 'root', selectAction: true })
+      navigation.register('key-row-1', { parent: 'keyboard', selectAction: true })
+      navigation.register('key-row-2', { parent: 'keyboard', selectAction: true })
+      navigation.register('grid-row-1', { parent: 'grid', selectAction: true })
+      navigation.register('grid-row-2', { parent: 'grid', selectAction: true })
 
       navigation.currentFocus = 'child1'
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
