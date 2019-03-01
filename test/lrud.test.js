@@ -799,6 +799,10 @@ describe('Given an instance of Lrud', () => {
       expect(navigation.nodes.grid_region.activeChild).toEqual('grid')
       expect(navigation.nodes.grid.activeChild).toEqual('grid_row_1')
       expect(navigation.nodes.grid_row_1.activeChild).toEqual('grid_row_1:button-1')
+
+      expect(navigation.nodes.keyboard_region.activeChild).toEqual('keyboard')
+      expect(navigation.nodes.keyboard.activeChild).toEqual('key_row_1')
+      expect(navigation.nodes.key_row_1.activeChild).toEqual('key_row_1:button-a')
     })
   })
 })
