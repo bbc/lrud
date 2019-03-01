@@ -273,7 +273,7 @@ assign(Lrud.prototype, {
       var override = this.overrides[overrideId]
       if (!override) return
       if (override.id === id && key === override.direction) {
-        this._assignFocus(this._getActiveChild(node), override.target, 0, 0, 0, event, this.nodes[override.target])
+        this._assignFocus(this._getActiveChild(node), override.target, 0, node.children.indexOf(activeChild), 0, event, this.nodes[override.target])
         foundOverrides = true
       }
     }.bind(this)
@@ -345,12 +345,13 @@ assign(Lrud.prototype, {
   },
 
   /**
+   * assign focus from one child of a node to another
    *
    * @param {string} activeChildId id of the current active child of the node
    * @param {string} nextActiveChild id of the next child of the node to focus on
    * @param {number} nextActiveIndex index of the next child to focus on (index from the node.children array)
    * @param {number} activeIndex index of the current child (index from the node.children array)
-   * @param {number} offset 1 if moving right/down, -1 if moving left/up
+   * @param {number} offset 1 if moving right/down, -1 if moving left/up, 0 for override
    * @param {object} event the event that triggered the focus assignment
    * @param {object} node the navigation node we're acting on
    */
