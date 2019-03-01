@@ -33,10 +33,18 @@ function isValidLRUDEvent (event, node) {
   )
 }
 
+/**
+ *
+ * @param {object} params any params used used during instance construction
+ * @param {object} params.overrides any params used used during instance construction
+ * @param {string} params.overrides.id id of the node for an override to trigger on
+ * @param {string} params.overrides.direction direction for the override to trigger on
+ * @param {string} params.overrides.target node to set focus to after override triggered
+ */
 function Lrud (params) {
   if (params == null) { params = [] }
   this.nodes = {}
-  this.overrides = params.overrides || []
+  this.overrides = params.overrides || {}
   this.root = null
   this.currentFocus = null
 }
@@ -254,16 +262,16 @@ assign(Lrud.prototype, {
     }
 
     var foundOverrides = false
-    var _myFunc = function (override) {
+
+    var handleOverride = function (overrideId) {
+      var override = this.overrides[overrideId]
       if (override.id === id && key === override.direction) {
         this._assignFocus(this._getActiveChild(node), override.target, 0, 0, 0, event, this.nodes[override.target])
         foundOverrides = true
       }
-    }
+    }.bind(this)
 
-    var myFunc = _myFunc.bind(this)
-
-    this.overrides.forEach(myFunc)
+    Object.keys(this.overrides).forEach(handleOverride)
 
     if (foundOverrides) {
       return

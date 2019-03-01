@@ -13,7 +13,7 @@ describe('Given an instance of Lrud', () => {
     navigation = new Lrud()
   })
 
-  const noop = () => {}
+  const noop = () => { }
   const toJSON = (o) => JSON.parse(JSON.stringify(o))
 
   describe('register', () => {
@@ -49,7 +49,7 @@ describe('Given an instance of Lrud', () => {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
 
-      expect(navigation.nodes.root.children).toEqual([ 'child' ])
+      expect(navigation.nodes.root.children).toEqual(['child'])
       expect(navigation.nodes.child.parent).toEqual('root')
     })
 
@@ -346,10 +346,10 @@ describe('Given an instance of Lrud', () => {
 
       expect(stopPropagationSpy).toHaveBeenCalledTimes(4)
       expect(focusSpy.mock.calls).toEqual([
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child4' }) ],
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child1' }) ]
+        [expect.objectContaining({ id: 'child2' })],
+        [expect.objectContaining({ id: 'child4' })],
+        [expect.objectContaining({ id: 'child2' })],
+        [expect.objectContaining({ id: 'child1' })]
       ])
 
       expect(toJSON(moveSpy.mock.calls)).toEqual(data.horizontalMove)
@@ -381,10 +381,10 @@ describe('Given an instance of Lrud', () => {
 
       expect(stopPropagationSpy).toHaveBeenCalledTimes(4)
       expect(focusSpy.mock.calls).toEqual([
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child4' }) ],
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child1' }) ]
+        [expect.objectContaining({ id: 'child2' })],
+        [expect.objectContaining({ id: 'child4' })],
+        [expect.objectContaining({ id: 'child2' })],
+        [expect.objectContaining({ id: 'child1' })]
       ])
 
       expect(toJSON(moveSpy.mock.calls)).toEqual(data.verticalMove)
@@ -405,9 +405,9 @@ describe('Given an instance of Lrud', () => {
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child1
 
       expect(focusSpy.mock.calls).toEqual([
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child3' }) ],
-        [ expect.objectContaining({ id: 'child1' }) ]
+        [expect.objectContaining({ id: 'child2' })],
+        [expect.objectContaining({ id: 'child3' })],
+        [expect.objectContaining({ id: 'child1' })]
       ])
     })
 
@@ -431,10 +431,10 @@ describe('Given an instance of Lrud', () => {
       navigation.handleKeyEvent({ keyCode: 38, stopPropagation: noop }) // UP
 
       expect(focusSpy.mock.calls).toEqual([
-        [ expect.objectContaining({ id: 'row1-child2' }) ],
-        [ expect.objectContaining({ id: 'row2-child2' }) ],
-        [ expect.objectContaining({ id: 'row2-child3' }) ],
-        [ expect.objectContaining({ id: 'row1-child3' }) ]
+        [expect.objectContaining({ id: 'row1-child2' })],
+        [expect.objectContaining({ id: 'row2-child2' })],
+        [expect.objectContaining({ id: 'row2-child3' })],
+        [expect.objectContaining({ id: 'row1-child3' })]
       ])
     })
 
@@ -651,13 +651,13 @@ describe('Given an instance of Lrud', () => {
 
   describe('handleKeyEvent - with overrides', () => {
     it('should move through a horizontal list as expected [`override`]', () => {
-      navigation.overrides = [
-        {
+      navigation.overrides = {
+        'override-1': {
           id: 'child2',
           direction: 'RIGHT',
           target: 'child1'
         }
-      ]
+      }
       navigation.register('root', { orientation: 'horizontal' })
       navigation.register('child1', { parent: 'root', selectAction: true })
       navigation.register('child2', { parent: 'root', selectAction: true })
@@ -671,13 +671,13 @@ describe('Given an instance of Lrud', () => {
     })
 
     it('should move through a vertical list as expected [`override`]', () => {
-      navigation.overrides = [
-        {
+      navigation.overrides = {
+        'override-1': {
           id: 'child1',
           direction: 'DOWN',
           target: 'child4'
         }
-      ]
+      }
       navigation.register('root', { orientation: 'vertical' })
       navigation.register('child1', { parent: 'root', selectAction: true })
       navigation.register('child2', { parent: 'root', selectAction: true })
@@ -691,13 +691,13 @@ describe('Given an instance of Lrud', () => {
     })
 
     it('should move through a nested vertical list as expected [`override`]', () => {
-      navigation.overrides = [
-        {
+      navigation.overrides = {
+        'override-1': {
           id: 'child3',
           direction: 'RIGHT',
           target: 'child4'
         }
-      ]
+      }
       navigation.register('root', { orientation: 'vertical' })
       navigation.register('child1', { parent: 'root', selectAction: true })
       navigation.register('child2', { parent: 'root', selectAction: true })
@@ -711,13 +711,13 @@ describe('Given an instance of Lrud', () => {
     })
 
     it('should not move focus, ignoring override feature [`override`]', () => {
-      navigation.overrides = [
-        {
+      navigation.overrides = {
+        'override-1': {
           id: 'child3',
           direction: 'DOWN',
           target: 'child4'
         }
-      ]
+      }
       navigation.register('root', { orientation: 'vertical' })
       navigation.register('child1', { parent: 'root', selectAction: true })
       navigation.register('child2', { parent: 'root', selectAction: true })
@@ -731,13 +731,13 @@ describe('Given an instance of Lrud', () => {
     })
 
     it('should move down to a sub child of the parent element [`override`]', () => {
-      navigation.overrides = [
-        {
+      navigation.overrides = {
+        'override-1': {
           id: 'child1',
           direction: 'RIGHT',
           target: 'child5'
         }
-      ]
+      }
       navigation.register('root', { orientation: 'vertical' })
       navigation.register('child1', { parent: 'root', selectAction: true })
       navigation.register('child2', { parent: 'root', selectAction: true })
@@ -752,13 +752,13 @@ describe('Given an instance of Lrud', () => {
     })
 
     it('should correctly focus on the first focusable child of the specified override target [`override`]', () => {
-      navigation.overrides = [
-        {
+      navigation.overrides = {
+        'override-1': {
           id: 'keyboard',
           direction: 'DOWN',
           target: 'grid'
         }
-      ]
+      }
       navigation.register('root', { orientation: 'vertical' })
 
       // keyboard region
