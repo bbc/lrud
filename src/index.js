@@ -263,8 +263,15 @@ assign(Lrud.prototype, {
 
     var foundOverrides = false
 
+    /**
+     * for a given overrideId, find that override from the this.override object
+     * if the override exists, and its id matches id and direction matches key, run _assignFocus
+     *
+     * @param {string} overrideId
+     */
     var handleOverride = function (overrideId) {
       var override = this.overrides[overrideId]
+      if (!override) return
       if (override.id === id && key === override.direction) {
         this._assignFocus(this._getActiveChild(node), override.target, 0, 0, 0, event, this.nodes[override.target])
         foundOverrides = true
@@ -337,16 +344,26 @@ assign(Lrud.prototype, {
     self.register(id, props)
   },
 
-  _assignFocus: function (activeChild, nextActiveChild, nextActiveIndex, activeIndex, offset, event, node) {
-    this._updateGrid(activeChild, nextActiveChild)
+  /**
+   *
+   * @param {string} activeChildId id of the current active child of the node
+   * @param {string} nextActiveChild id of the next child of the node to focus on
+   * @param {number} nextActiveIndex index of the next child to focus on (index from the node.children array)
+   * @param {number} activeIndex index of the current child (index from the node.children array)
+   * @param {number} offset 1 if moving right/down, -1 if moving left/up
+   * @param {object} event the event that triggered the focus assignment
+   * @param {object} node the navigation node we're acting on
+   */
+  _assignFocus: function (activeChildId, nextActiveChildId, nextActiveIndex, activeIndex, offset, event, node) {
+    this._updateGrid(activeChildId, nextActiveChildId)
     var moveEvent = assign({}, node, {
       offset: offset,
       enter: {
-        id: nextActiveChild,
+        id: nextActiveChildId,
         index: nextActiveIndex
       },
       leave: {
-        id: activeChild,
+        id: activeChildId,
         index: activeIndex
       }
     })
@@ -357,7 +374,7 @@ assign(Lrud.prototype, {
 
     this.emit('move', moveEvent)
 
-    this.focus(nextActiveChild)
+    this.focus(nextActiveChildId)
     event.stopPropagation()
   }
 
