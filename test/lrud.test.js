@@ -668,6 +668,7 @@ describe('Given an instance of Lrud', () => {
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
 
       expect(navigation.currentFocus).toEqual('child1')
+      expect(navigation.nodes.root.activeChild).toEqual('child1')
     })
 
     it('should move through a vertical list as expected [`override`]', () => {
@@ -688,6 +689,7 @@ describe('Given an instance of Lrud', () => {
       navigation.handleKeyEvent({ keyCode: 20, stopPropagation: noop })
 
       expect(navigation.currentFocus).toEqual('child4')
+      expect(navigation.nodes.root.activeChild).toEqual('child4')
     })
 
     it('should move through a nested vertical list as expected [`override`]', () => {
@@ -708,6 +710,7 @@ describe('Given an instance of Lrud', () => {
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
 
       expect(navigation.currentFocus).toEqual('child4')
+      expect(navigation.nodes.root.activeChild).toEqual('child4')
     })
 
     it('should not move focus, ignoring override feature [`override`]', () => {
@@ -746,9 +749,12 @@ describe('Given an instance of Lrud', () => {
       navigation.register('child5', { parent: 'child3', selectAction: true })
 
       navigation.currentFocus = 'child1'
+      navigation.setActiveChild('root', 'child1')
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
 
       expect(navigation.currentFocus).toEqual('child5')
+      expect(navigation.nodes.root.activeChild).toEqual('child1')
+      expect(navigation.nodes.child3.activeChild).toEqual('child5')
     })
 
     it('should correctly focus on the first focusable child of the specified override target [`override`]', () => {
@@ -782,9 +788,17 @@ describe('Given an instance of Lrud', () => {
       navigation.register('grid_row_2:button-4', { parent: 'grid_row_2', selectAction: true })
 
       navigation.currentFocus = 'key_row_1:button-a'
+      navigation.setActiveChild('root', 'keyboard_region')
+      navigation.setActiveChild('keyboard_region', 'keyboard')
+      navigation.setActiveChild('keyboard', 'key_row_1')
+      navigation.setActiveChild('key_row_1', 'key_row_1:button-a')
       navigation.handleKeyEvent({ keyCode: 20, stopPropagation: noop })
 
       expect(navigation.currentFocus).toEqual('grid_row_1:button-1')
+      expect(navigation.nodes.root.activeChild).toEqual('grid_region')
+      expect(navigation.nodes.grid_region.activeChild).toEqual('grid')
+      expect(navigation.nodes.grid.activeChild).toEqual('grid_row_1')
+      expect(navigation.nodes.grid_row_1.activeChild).toEqual('grid_row_1:button-1')
     })
   })
 })
