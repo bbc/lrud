@@ -33,8 +33,18 @@ function isValidLRUDEvent (event, node) {
   )
 }
 
-function Lrud () {
+/**
+ *
+ * @param {object} params any params used used during instance construction
+ * @param {object} params.overrides any params used used during instance construction
+ * @param {string} params.overrides.id id of the node for an override to trigger on
+ * @param {string} params.overrides.direction direction for the override to trigger on
+ * @param {string} params.overrides.target node to set focus to after override triggered
+ */
+function Lrud (params) {
+  if (params == null) { params = [] }
   this.nodes = {}
+  this.overrides = params.overrides || {}
   this.root = null
   this.currentFocus = null
 }
@@ -235,6 +245,7 @@ assign(Lrud.prototype, {
 
   _bubbleKeyEvent: function (event, id) {
     var node = this.nodes[id]
+
     if (!node) return
 
     var key = Lrud.KEY_CODES[event.keyCode]
@@ -247,6 +258,29 @@ assign(Lrud.prototype, {
       }
 
       this.emit('select', clone)
+      return
+    }
+
+    var foundOverrides = false
+
+    /**
+     * for a given overrideId, find that override from the this.override object
+     * if the override exists, and its id matches id and direction matches key, run _assignFocus
+     *
+     * @param {string} overrideId
+     */
+    var handleOverride = function (overrideId) {
+      var override = this.overrides[overrideId]
+      if (!override) return
+      if (override.id === id && key === override.direction) {
+        this._assignFocus(this._getActiveChild(node), override.target, 0, node.children.indexOf(activeChild), 0, event, this.nodes[override.target])
+        foundOverrides = true
+      }
+    }.bind(this)
+
+    Object.keys(this.overrides).forEach(handleOverride)
+
+    if (foundOverrides) {
       return
     }
 
@@ -269,28 +303,7 @@ assign(Lrud.prototype, {
       }
 
       if (nextActiveChild) {
-        this._updateGrid(activeChild, nextActiveChild)
-
-        var moveEvent = assign({}, node, {
-          offset: offset,
-          enter: {
-            id: nextActiveChild,
-            index: nextActiveIndex
-          },
-          leave: {
-            id: activeChild,
-            index: activeIndex
-          }
-        })
-
-        if (node.onMove) {
-          node.onMove(moveEvent)
-        }
-
-        this.emit('move', moveEvent)
-
-        this.focus(nextActiveChild)
-        event.stopPropagation()
+        this._assignFocus(activeChild, nextActiveChild, nextActiveIndex, activeIndex, offset, event, node)
         return
       }
     }
@@ -298,6 +311,10 @@ assign(Lrud.prototype, {
     this._bubbleKeyEvent(event, node.parent)
   },
 
+  /**
+   *
+   * @param {*} id
+   */
   _bubbleActive: function (id) {
     var node = this.nodes[id]
 
@@ -325,7 +342,43 @@ assign(Lrud.prototype, {
     }
 
     self.register(id, props)
+  },
+
+  /**
+   * assign focus from one child of a node to another
+   *
+   * @param {string} activeChildId id of the current active child of the node
+   * @param {string} nextActiveChild id of the next child of the node to focus on
+   * @param {number} nextActiveIndex index of the next child to focus on (index from the node.children array)
+   * @param {number} activeIndex index of the current child (index from the node.children array)
+   * @param {number} offset 1 if moving right/down, -1 if moving left/up, 0 for override
+   * @param {object} event the event that triggered the focus assignment
+   * @param {object} node the navigation node we're acting on
+   */
+  _assignFocus: function (activeChildId, nextActiveChildId, nextActiveIndex, activeIndex, offset, event, node) {
+    this._updateGrid(activeChildId, nextActiveChildId)
+    var moveEvent = assign({}, node, {
+      offset: offset,
+      enter: {
+        id: nextActiveChildId,
+        index: nextActiveIndex
+      },
+      leave: {
+        id: activeChildId,
+        index: activeIndex
+      }
+    })
+
+    if (node.onMove) {
+      node.onMove(moveEvent)
+    }
+
+    this.emit('move', moveEvent)
+
+    this.focus(nextActiveChildId)
+    event.stopPropagation()
   }
+
 })
 
 Lrud.KEY_MAP = KeyCodes.map

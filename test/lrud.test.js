@@ -13,7 +13,7 @@ describe('Given an instance of Lrud', () => {
     navigation = new Lrud()
   })
 
-  const noop = () => {}
+  const noop = () => { }
   const toJSON = (o) => JSON.parse(JSON.stringify(o))
 
   describe('register', () => {
@@ -49,7 +49,7 @@ describe('Given an instance of Lrud', () => {
       navigation.register('root')
       navigation.register('child', { parent: 'root' })
 
-      expect(navigation.nodes.root.children).toEqual([ 'child' ])
+      expect(navigation.nodes.root.children).toEqual(['child'])
       expect(navigation.nodes.child.parent).toEqual('root')
     })
 
@@ -346,10 +346,10 @@ describe('Given an instance of Lrud', () => {
 
       expect(stopPropagationSpy).toHaveBeenCalledTimes(4)
       expect(focusSpy.mock.calls).toEqual([
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child4' }) ],
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child1' }) ]
+        [expect.objectContaining({ id: 'child2' })],
+        [expect.objectContaining({ id: 'child4' })],
+        [expect.objectContaining({ id: 'child2' })],
+        [expect.objectContaining({ id: 'child1' })]
       ])
 
       expect(toJSON(moveSpy.mock.calls)).toEqual(data.horizontalMove)
@@ -381,10 +381,10 @@ describe('Given an instance of Lrud', () => {
 
       expect(stopPropagationSpy).toHaveBeenCalledTimes(4)
       expect(focusSpy.mock.calls).toEqual([
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child4' }) ],
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child1' }) ]
+        [expect.objectContaining({ id: 'child2' })],
+        [expect.objectContaining({ id: 'child4' })],
+        [expect.objectContaining({ id: 'child2' })],
+        [expect.objectContaining({ id: 'child1' })]
       ])
 
       expect(toJSON(moveSpy.mock.calls)).toEqual(data.verticalMove)
@@ -405,9 +405,9 @@ describe('Given an instance of Lrud', () => {
       navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop }) // Focus child1
 
       expect(focusSpy.mock.calls).toEqual([
-        [ expect.objectContaining({ id: 'child2' }) ],
-        [ expect.objectContaining({ id: 'child3' }) ],
-        [ expect.objectContaining({ id: 'child1' }) ]
+        [expect.objectContaining({ id: 'child2' })],
+        [expect.objectContaining({ id: 'child3' })],
+        [expect.objectContaining({ id: 'child1' })]
       ])
     })
 
@@ -431,10 +431,10 @@ describe('Given an instance of Lrud', () => {
       navigation.handleKeyEvent({ keyCode: 38, stopPropagation: noop }) // UP
 
       expect(focusSpy.mock.calls).toEqual([
-        [ expect.objectContaining({ id: 'row1-child2' }) ],
-        [ expect.objectContaining({ id: 'row2-child2' }) ],
-        [ expect.objectContaining({ id: 'row2-child3' }) ],
-        [ expect.objectContaining({ id: 'row1-child3' }) ]
+        [expect.objectContaining({ id: 'row1-child2' })],
+        [expect.objectContaining({ id: 'row2-child2' })],
+        [expect.objectContaining({ id: 'row2-child3' })],
+        [expect.objectContaining({ id: 'row1-child3' })]
       ])
     })
 
@@ -646,6 +646,163 @@ describe('Given an instance of Lrud', () => {
       navigation.upsert('child-d', { parent: 'root' })
 
       expect(toJSON(navigation.nodes.root.children)).toEqual(['child-c', 'child-d'])
+    })
+  })
+
+  describe('handleKeyEvent - with overrides', () => {
+    it('should move through a horizontal list as expected [`override`]', () => {
+      navigation.overrides = {
+        'override-1': {
+          id: 'child2',
+          direction: 'RIGHT',
+          target: 'child1'
+        }
+      }
+      navigation.register('root', { orientation: 'horizontal' })
+      navigation.register('child1', { parent: 'root', selectAction: true })
+      navigation.register('child2', { parent: 'root', selectAction: true })
+      navigation.register('child3', { parent: 'root', selectAction: true })
+      navigation.register('child4', { parent: 'root', selectAction: true })
+
+      navigation.currentFocus = 'child2'
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
+
+      expect(navigation.currentFocus).toEqual('child1')
+      expect(navigation.nodes.root.activeChild).toEqual('child1')
+    })
+
+    it('should move through a vertical list as expected [`override`]', () => {
+      navigation.overrides = {
+        'override-1': {
+          id: 'child1',
+          direction: 'DOWN',
+          target: 'child4'
+        }
+      }
+      navigation.register('root', { orientation: 'vertical' })
+      navigation.register('child1', { parent: 'root', selectAction: true })
+      navigation.register('child2', { parent: 'root', selectAction: true })
+      navigation.register('child3', { parent: 'root', selectAction: true })
+      navigation.register('child4', { parent: 'root', selectAction: true })
+
+      navigation.currentFocus = 'child1'
+      navigation.handleKeyEvent({ keyCode: 20, stopPropagation: noop })
+
+      expect(navigation.currentFocus).toEqual('child4')
+      expect(navigation.nodes.root.activeChild).toEqual('child4')
+    })
+
+    it('should move through a nested vertical list as expected [`override`]', () => {
+      navigation.overrides = {
+        'override-1': {
+          id: 'child3',
+          direction: 'RIGHT',
+          target: 'child4'
+        }
+      }
+      navigation.register('root', { orientation: 'vertical' })
+      navigation.register('child1', { parent: 'root', selectAction: true })
+      navigation.register('child2', { parent: 'root', selectAction: true })
+      navigation.register('child3', { parent: 'child1', selectAction: true })
+      navigation.register('child4', { parent: 'root', selectAction: true })
+
+      navigation.currentFocus = 'child3'
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
+
+      expect(navigation.currentFocus).toEqual('child4')
+      expect(navigation.nodes.root.activeChild).toEqual('child4')
+    })
+
+    it('should not move focus, ignoring override feature [`override`]', () => {
+      navigation.overrides = {
+        'override-1': {
+          id: 'child3',
+          direction: 'DOWN',
+          target: 'child4'
+        }
+      }
+      navigation.register('root', { orientation: 'vertical' })
+      navigation.register('child1', { parent: 'root', selectAction: true })
+      navigation.register('child2', { parent: 'root', selectAction: true })
+      navigation.register('child3', { parent: 'child1', selectAction: true })
+      navigation.register('child4', { parent: 'root', selectAction: true })
+
+      navigation.currentFocus = 'child3'
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
+
+      expect(navigation.currentFocus).toEqual('child3')
+    })
+
+    it('should move down to a sub child of the parent element [`override`]', () => {
+      navigation.overrides = {
+        'override-1': {
+          id: 'child1',
+          direction: 'RIGHT',
+          target: 'child5'
+        }
+      }
+      navigation.register('root', { orientation: 'vertical' })
+      navigation.register('child1', { parent: 'root', selectAction: true })
+      navigation.register('child2', { parent: 'root', selectAction: true })
+      navigation.register('child3', { parent: 'child1', selectAction: true })
+      navigation.register('child4', { parent: 'root', selectAction: true })
+      navigation.register('child5', { parent: 'child3', selectAction: true })
+
+      navigation.currentFocus = 'child1'
+      navigation.setActiveChild('root', 'child1')
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
+
+      expect(navigation.currentFocus).toEqual('child5')
+      expect(navigation.nodes.root.activeChild).toEqual('child1')
+      expect(navigation.nodes.child3.activeChild).toEqual('child5')
+    })
+
+    it('should correctly focus on the first focusable child of the specified override target [`override`]', () => {
+      navigation.overrides = {
+        'override-1': {
+          id: 'keyboard',
+          direction: 'DOWN',
+          target: 'grid'
+        }
+      }
+      navigation.register('root', { orientation: 'vertical' })
+
+      // keyboard region
+      navigation.register('keyboard_region', { parent: 'root', orientation: 'vertical' })
+      navigation.register('keyboard', { parent: 'keyboard_region', orientation: 'vertical' })
+      navigation.register('key_row_1', { parent: 'keyboard', orientation: 'horizontal' })
+      navigation.register('key_row_2', { parent: 'keyboard', orientation: 'horizontal' })
+      navigation.register('key_row_1:button-a', { parent: 'key_row_1', selectAction: true })
+      navigation.register('key_row_1:button-b', { parent: 'key_row_1', selectAction: true })
+      navigation.register('key_row_2:button-c', { parent: 'key_row_2', selectAction: true })
+      navigation.register('key_row_2:button-d', { parent: 'key_row_2', selectAction: true })
+
+      // grid region
+      navigation.register('grid_region', { parent: 'root', orientation: 'vertical' })
+      navigation.register('grid', { parent: 'grid_region', orientation: 'vertical' })
+      navigation.register('grid_row_1', { parent: 'grid', orientation: 'horizontal' })
+      navigation.register('grid_row_2', { parent: 'grid', orientation: 'horizontal' })
+      navigation.register('grid_row_1:button-1', { parent: 'grid_row_1', selectAction: true })
+      navigation.register('grid_row_1:button-2', { parent: 'grid_row_1', selectAction: true })
+      navigation.register('grid_row_2:button-3', { parent: 'grid_row_2', selectAction: true })
+      navigation.register('grid_row_2:button-4', { parent: 'grid_row_2', selectAction: true })
+
+      navigation.currentFocus = 'key_row_1:button-a'
+      navigation.setActiveChild('root', 'keyboard_region')
+      navigation.setActiveChild('keyboard_region', 'keyboard')
+      navigation.setActiveChild('keyboard', 'key_row_1')
+      navigation.setActiveChild('key_row_1', 'key_row_1:button-a')
+      navigation.handleKeyEvent({ keyCode: 20, stopPropagation: noop })
+
+      expect(navigation.currentFocus).toEqual('grid_row_1:button-1')
+      expect(navigation.nodes.root.activeChild).toEqual('grid_region')
+      expect(navigation.nodes.grid_region.activeChild).toEqual('grid')
+      expect(navigation.nodes.grid.activeChild).toEqual('grid_row_1')
+      expect(navigation.nodes.grid_row_1.activeChild).toEqual('grid_row_1:button-1')
+
+      expect(navigation.nodes.keyboard_region.activeChild).toEqual('keyboard')
+      expect(navigation.nodes.keyboard.activeChild).toEqual('key_row_1')
+      expect(navigation.nodes.key_row_1.activeChild).toEqual('key_row_1:button-a')
     })
   })
 })
