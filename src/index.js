@@ -278,6 +278,7 @@ assign(Lrud.prototype, {
         var offset = (override.direction === 'RIGHT' || override.direction === 'DOWN') ? 1 : -1
         var nextActiveIndex = 0
         var activeIndex = 0
+        var overrideTargetParentId = this.nodes[this.nodes[override.target].parent].id
         if (this.nodes[override.target].parent != null) {
           nextActiveIndex = this.nodes[this.nodes[override.target].parent].children.indexOf(override.target)
         }
@@ -293,7 +294,7 @@ assign(Lrud.prototype, {
           offset, // offset
           event, // event
           this.nodes[override.target], // node,
-          this.nodes[this.nodes[override.target].parent].id, // an override for the move object id
+          overrideTargetParentId, // override node that we "moved through" to hit the enter.id
           override.id // an override for the move object leave.id
         )
         foundOverrides = true
