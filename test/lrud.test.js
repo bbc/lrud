@@ -804,5 +804,90 @@ describe('Given an instance of Lrud', () => {
       expect(navigation.nodes.keyboard.activeChild).toEqual('key_row_1')
       expect(navigation.nodes.key_row_1.activeChild).toEqual('key_row_1:button-a')
     })
+
+    it('after an override, move event object should have correct id [`override`]', () => {
+      const spy = jest.fn()
+      const onMove = jest.fn()
+
+      navigation.on('move', spy)
+
+      navigation.overrides = {
+        'override-1': {
+          id: 'keyboard',
+          direction: 'DOWN',
+          target: 'grid'
+        }
+      }
+
+      navigation.register('root', { orientation: 'vertical', onMove })
+
+      // keyboard region
+      navigation.register('keyboard_region', { parent: 'root', orientation: 'vertical', onMove })
+      navigation.register('keyboard', { parent: 'keyboard_region', orientation: 'vertical', onMove })
+      navigation.register('key_row_1', { parent: 'keyboard', orientation: 'horizontal', onMove })
+      navigation.register('key_row_2', { parent: 'keyboard', orientation: 'horizontal', onMove })
+      navigation.register('key_row_1:button-a', { parent: 'key_row_1', selectAction: true, onMove })
+      navigation.register('key_row_1:button-b', { parent: 'key_row_1', selectAction: true, onMove })
+      navigation.register('key_row_2:button-c', { parent: 'key_row_2', selectAction: true, onMove })
+      navigation.register('key_row_2:button-d', { parent: 'key_row_2', selectAction: true, onMove })
+
+      // grid region
+      navigation.register('grid_region', { parent: 'root', orientation: 'vertical', onMove })
+      navigation.register('grid', { parent: 'grid_region', orientation: 'vertical', onMove })
+      navigation.register('grid_row_1', { parent: 'grid', orientation: 'horizontal', onMove })
+      navigation.register('grid_row_2', { parent: 'grid', orientation: 'horizontal', onMove })
+      navigation.register('grid_row_1:button-1', { parent: 'grid_row_1', selectAction: true, onMove })
+      navigation.register('grid_row_1:button-2', { parent: 'grid_row_1', selectAction: true, onMove })
+      navigation.register('grid_row_2:button-3', { parent: 'grid_row_2', selectAction: true, onMove })
+      navigation.register('grid_row_2:button-4', { parent: 'grid_row_2', selectAction: true, onMove })
+
+      // so you're on the bottom row of a keyboard, in a keyboard region
+      // pressing down should override you to land on the grid region
+      navigation.currentFocus = 'key_row_1:button-a'
+      navigation.setActiveChild('root', 'keyboard_region')
+      navigation.setActiveChild('keyboard_region', 'keyboard')
+      navigation.setActiveChild('keyboard', 'key_row_1')
+      navigation.setActiveChild('key_row_1', 'key_row_1:button-a')
+      navigation.handleKeyEvent({ keyCode: 20, stopPropagation: noop })
+
+      expect(navigation.currentFocus).toEqual('grid_row_1:button-1')
+      expect(onMove).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'grid_region', // is the parent of the override target
+        enter: { id: 'grid', index: 0 }, // node we entered with index of itself inside its parent
+        leave: { id: 'keyboard', index: 0 } // node we left with index of itself inside its parent
+      }))
+    })
+
+    it('after an override, move event object should have enter/leave indexes that are correct and greater than 0 [`override`]', () => {
+      const spy = jest.fn()
+      const onMove = jest.fn()
+
+      navigation.on('move', spy)
+
+      navigation.overrides = {
+        'override-1': {
+          id: 'button-a',
+          direction: 'DOWN',
+          target: 'button-d'
+        }
+      }
+      navigation.register('root', { orientation: 'vertical' })
+
+      navigation.register('row_region', { parent: 'root', orientation: 'vertical', onMove })
+      navigation.register('row', { parent: 'row_region', orientation: 'horizontal', onMove })
+      navigation.register('button-a', { parent: 'row', selectAction: true, onMove })
+      navigation.register('button-b', { parent: 'row', selectAction: true, onMove })
+      navigation.register('button-c', { parent: 'row', selectAction: true, onMove })
+      navigation.register('button-d', { parent: 'row', selectAction: true, onMove })
+
+      navigation.currentFocus = 'button-a'
+      navigation.handleKeyEvent({ keyCode: 20, stopPropagation: noop })
+
+      expect(onMove).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'row', // is the parent of the override target
+        enter: { id: 'button-d', index: 3 }, // node we entered with index of itself inside its parent
+        leave: { id: 'button-a', index: 0 } // node we left with index of itself inside its parent
+      }))
+    })
   })
 })

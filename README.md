@@ -100,7 +100,7 @@ navigation.register('list-item-2', { parent: 'list' })
 
 ## Unregistering a node
 
-A node can be removed from the navigation tree by calling `navigation.unregister` with the id of the node
+A node can be removed from the navigation tree by calling `navigation.unregister()` with the id of the node
 
 ```js
 navigation.unregister('list-item-1')
@@ -133,13 +133,13 @@ navigation.unregister('list')
 ```
 
 ## Focus
-You can give focus to a particular node by calling `navigation.focus` with the node id
+You can give focus to a particular node by calling `navigation.focus()` with the node id
 
 ```js
 navigation.focus('list')
 ```
 
-Calling `navigation.focus` without an id will focus the root node
+Calling `navigation.focus()` without an id will focus the root node
 
 ```js
 navigation.focus()
@@ -207,6 +207,24 @@ navigation.on('move', function (node) {
   // node.enter - { id, index } of the node we're navigating into
   // node.leave - { id, index } of the node we're leaving
 })
+```
+
+## Overrides
+
+LRUD supports an override system, for times when correct product/UX behaviour requires focus to change in a way that is not strictly in accordance with the structure of the navigation tree.
+
+`navigation.overrides` is an object, each key representing an override object.
+
+The override object below represents that when LRUD is bubbling its key event, when it hits the `box-1` node, and direction of travel is `DOWN`, STOP the propogation of the bubble event and focus directly on `box-2`.
+
+```js
+navigation.overrides = {
+  'override-1': {           // the name of the override
+    'id': 'box-1',          // the ID to trigger the override on
+    'direction': 'DOWN',    // the direction of travel in order for the override to trigger
+    'target': 'box-2'       // the ID of the node we want to focus on
+  }
+}
 ```
 
 # F.A.Q

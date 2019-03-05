@@ -271,9 +271,32 @@ assign(Lrud.prototype, {
      */
     var handleOverride = function (overrideId) {
       var override = this.overrides[overrideId]
-      if (!override) return
+      if (!override) {
+        return
+      }
       if (override.id === id && key === override.direction) {
-        this._assignFocus(this._getActiveChild(node), override.target, 0, node.children.indexOf(activeChild), 0, event, this.nodes[override.target])
+        var offset = (override.direction === 'RIGHT' || override.direction === 'DOWN') ? 1 : -1
+        var nextActiveIndex = 0
+        var activeIndex = 0
+        var overrideTargetParentId = this.nodes[this.nodes[override.target].parent].id
+        if (this.nodes[override.target].parent != null) {
+          nextActiveIndex = this.nodes[this.nodes[override.target].parent].children.indexOf(override.target)
+        }
+        if (this.nodes[override.id].parent != null) {
+          activeIndex = this.nodes[this.nodes[override.id].parent].children.indexOf(override.id)
+        }
+
+        this._assignFocus(
+          this._getActiveChild(node), // activeChildId
+          override.target, // nextActiveChild (becomes the enter.id for the move event)
+          nextActiveIndex,
+          activeIndex,
+          offset, // offset
+          event, // event
+          this.nodes[override.target], // node,
+          overrideTargetParentId, // override node that we "moved through" to hit the enter.id
+          override.id // an override for the move object leave.id
+        )
         foundOverrides = true
       }
     }.bind(this)
@@ -348,14 +371,14 @@ assign(Lrud.prototype, {
    * assign focus from one child of a node to another
    *
    * @param {string} activeChildId id of the current active child of the node
-   * @param {string} nextActiveChild id of the next child of the node to focus on
+   * @param {string} nextActiveChildId id of the next child of the node to focus on
    * @param {number} nextActiveIndex index of the next child to focus on (index from the node.children array)
    * @param {number} activeIndex index of the current child (index from the node.children array)
    * @param {number} offset 1 if moving right/down, -1 if moving left/up, 0 for override
    * @param {object} event the event that triggered the focus assignment
    * @param {object} node the navigation node we're acting on
    */
-  _assignFocus: function (activeChildId, nextActiveChildId, nextActiveIndex, activeIndex, offset, event, node) {
+  _assignFocus: function (activeChildId, nextActiveChildId, nextActiveIndex, activeIndex, offset, event, node, moveId, moveLeaveId) {
     this._updateGrid(activeChildId, nextActiveChildId)
     var moveEvent = assign({}, node, {
       offset: offset,
@@ -368,6 +391,19 @@ assign(Lrud.prototype, {
         index: activeIndex
       }
     })
+
+    if (moveId != null) {
+      moveEvent.id = moveId
+      moveEvent.parent = this.nodes[moveId].parent
+      moveEvent.children = this.nodes[moveId].children
+      if (this.nodes[moveId].activeChild) {
+        moveEvent.activeChild = this.nodes[moveId].activeChild
+      }
+    }
+
+    if (moveLeaveId != null) {
+      moveEvent.leave.id = moveLeaveId
+    }
 
     if (node.onMove) {
       node.onMove(moveEvent)
