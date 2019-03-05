@@ -280,8 +280,8 @@ assign(Lrud.prototype, {
         this._assignFocus(
           this._getActiveChild(node), // activeChildId
           override.target, // nextActiveChild (becomes the enter.id for the move event)
-          0, // nextActiveIndex
-          node.children.indexOf(activeChild), // activeIndex
+          this.nodes[this.nodes[override.target].parent].children.indexOf(override.target), // nextActiveIndex
+          this.nodes[this.nodes[override.id].parent].children.indexOf(override.id), // activeIndex
           offset, // offset
           event, // event
           this.nodes[override.target], // node,
@@ -387,6 +387,9 @@ assign(Lrud.prototype, {
       moveEvent.id = moveId
       moveEvent.parent = this.nodes[moveId].parent
       moveEvent.children = this.nodes[moveId].children
+      if (this.nodes[moveId].activeChild) {
+        moveEvent.activeChild = this.nodes[moveId].activeChild
+      }
     }
 
     if (moveLeaveId != null) {
