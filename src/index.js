@@ -276,12 +276,20 @@ assign(Lrud.prototype, {
       }
       if (override.id === id && key === override.direction) {
         var offset = (override.direction === 'RIGHT' || override.direction === 'DOWN') ? 1 : -1
+        var nextActiveIndex = 0
+        var activeIndex = 0
+        if (this.nodes[override.target].parent != null) {
+          nextActiveIndex = this.nodes[this.nodes[override.target].parent].children.indexOf(override.target)
+        }
+        if (this.nodes[override.id].parent != null) {
+          activeIndex = this.nodes[this.nodes[override.id].parent].children.indexOf(override.id)
+        }
 
         this._assignFocus(
           this._getActiveChild(node), // activeChildId
           override.target, // nextActiveChild (becomes the enter.id for the move event)
-          this.nodes[this.nodes[override.target].parent].children.indexOf(override.target), // nextActiveIndex
-          this.nodes[this.nodes[override.id].parent].children.indexOf(override.id), // activeIndex
+          nextActiveIndex,
+          activeIndex,
           offset, // offset
           event, // event
           this.nodes[override.target], // node,
