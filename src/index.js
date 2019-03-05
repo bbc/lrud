@@ -243,6 +243,33 @@ assign(Lrud.prototype, {
     return nextIndex
   },
 
+  /**
+   * when we're doing an override, we need to fake real behaviour which includes
+   * "bubbling up". therefore, we need to manually work out what the leave and id data
+   * should be
+   *
+   * for the given node we're acting on, we need to keep bubbling up until we find a node whose children
+   * contains the node we're acting on
+   *
+   * // leave needs to be the override.id
+        // enter.id needs to be the target
+        // node.id needs to be the parent that has the target as a child
+
+   * @param {object} node node we're acting on
+   */
+  _getOverrideMoveInformation: function (node, override) {
+    var parentNode = this.nodes[override.target]
+
+    if (parentNode.children.indexOf(node.id) !== -1) {
+      return {
+        id: parentNode.id,
+        leave: override.target
+      }
+    }
+
+    return this._getOverrideMoveInformation(parentNode, override)
+  },
+
   _bubbleKeyEvent: function (event, id) {
     var node = this.nodes[id]
 
@@ -271,9 +298,33 @@ assign(Lrud.prototype, {
      */
     var handleOverride = function (overrideId) {
       var override = this.overrides[overrideId]
-      if (!override) return
+      if (!override) {
+        return
+      }
       if (override.id === id && key === override.direction) {
-        this._assignFocus(this._getActiveChild(node), override.target, 0, node.children.indexOf(activeChild), 0, event, this.nodes[override.target])
+        // move stuff
+        // id is node.id
+        // leave id is activeChildId
+
+        // leave needs to be the override.id
+        // enter.id needs to be the target
+        // node.id needs to be the parent that has the target as a child
+        var moveInformation = this._getOverrideMoveInformation(node, override)
+        var moveId = moveInformation.id
+        var moveLeaveId = moveInformation.leave
+        var offset = (override.direction === 'RIGHT' || override.direction === 'DOWN') ? 1 : -1
+
+        this._assignFocus(
+          this._getActiveChild(node), // activeChildId
+          override.target, // nextActiveChild
+          0, // nextActiveIndex
+          node.children.indexOf(activeChild), // activeIndex
+          offset, // offset
+          event, // event
+          this.nodes[override.target], // node,
+          moveId,
+          moveLeaveId
+        )
         foundOverrides = true
       }
     }.bind(this)
@@ -348,7 +399,7 @@ assign(Lrud.prototype, {
    * assign focus from one child of a node to another
    *
    * @param {string} activeChildId id of the current active child of the node
-   * @param {string} nextActiveChild id of the next child of the node to focus on
+   * @param {string} nextActiveChildId id of the next child of the node to focus on
    * @param {number} nextActiveIndex index of the next child to focus on (index from the node.children array)
    * @param {number} activeIndex index of the current child (index from the node.children array)
    * @param {number} offset 1 if moving right/down, -1 if moving left/up, 0 for override
