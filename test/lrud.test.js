@@ -813,9 +813,9 @@ describe('Given an instance of Lrud', () => {
 
       navigation.overrides = {
         'override-1': {
-          id: 'keyboard',
-          direction: 'DOWN',
-          target: 'grid'
+          id: 'keyboard_region',
+          direction: 'RIGHT',
+          target: 'grid_region'
         }
       }
       navigation.register('root', { orientation: 'vertical' })
@@ -840,16 +840,16 @@ describe('Given an instance of Lrud', () => {
       navigation.register('grid_row_2:button-3', { parent: 'grid_row_2', selectAction: true })
       navigation.register('grid_row_2:button-4', { parent: 'grid_row_2', selectAction: true })
 
-      navigation.currentFocus = 'key_row_1:button-a'
+      // so you're on the bottom row of a keyboard, in a keyboard region
+      // pressing down should override you to land on the grid region
+      navigation.currentFocus = 'key_row_1:button-b'
       navigation.setActiveChild('root', 'keyboard_region')
       navigation.setActiveChild('keyboard_region', 'keyboard')
       navigation.setActiveChild('keyboard', 'key_row_1')
       navigation.setActiveChild('key_row_1', 'key_row_1:button-a')
-      navigation.handleKeyEvent({ keyCode: 20, stopPropagation: noop })
+      navigation.handleKeyEvent({ keyCode: 39, stopPropagation: noop })
 
-      // expect(navigation.currentFocus).toEqual('grid_row_1:button-1')
-
-      // expect(onMove).toHaveBeenCalledWith(expect.objectContaining({ id: 'root' }))
+      expect(navigation.currentFocus).toEqual('grid_row_1:button-1')
     })
   })
 })
