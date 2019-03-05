@@ -400,8 +400,6 @@ assign(Lrud.prototype, {
       node.onMove(moveEvent)
     }
 
-    console.log('moveEvent', moveEvent)
-
     this.emit('move', moveEvent)
 
     this.focus(nextActiveChildId)
