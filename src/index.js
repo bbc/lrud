@@ -243,33 +243,6 @@ assign(Lrud.prototype, {
     return nextIndex
   },
 
-  /**
-   * when we're doing an override, we need to fake real behaviour which includes
-   * "bubbling up". therefore, we need to manually work out what the leave and id data
-   * should be
-   *
-   * for the given node we're acting on, we need to keep bubbling up until we find a node whose children
-   * contains target we're aiming for
-   *
-   * // leave needs to be the override.id - the thing we're leaving is from our override
-   * // node.id (mainNodeId) needs to be the parent that has the target as a child - we're moving
-   * across the thing that has the target as a parent
-   *
-   * @param {object} node node we're acting on
-   */
-  _getOverrideMoveInformation: function (node, override) {
-    var parentNode = this.nodes[this.nodes[override.target].parent]
-
-    if (parentNode && parentNode.children.indexOf(override.target) !== -1) {
-      return {
-        mainNodeId: parentNode.id,
-        leaveId: override.id
-      }
-    }
-
-    return this._getOverrideMoveInformation(parentNode, override)
-  },
-
   _bubbleKeyEvent: function (event, id) {
     var node = this.nodes[id]
 
@@ -412,6 +385,8 @@ assign(Lrud.prototype, {
 
     if (moveId != null) {
       moveEvent.id = moveId
+      moveEvent.parent = this.nodes[moveId].parent
+      moveEvent.children = this.nodes[moveId].children
     }
 
     if (moveLeaveId != null) {
