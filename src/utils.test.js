@@ -74,6 +74,8 @@ describe('find() - find nested properties and return path strings', () => {
 
     const path = Utils.find(tree, 'PIDXYZ')
 
+    console.log('path', path)
+
     expect(path).toEqual('root.children.right_region.children.grid.children.row_2.children.PIDXYZ')
   })
 })

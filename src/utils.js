@@ -1,19 +1,16 @@
 const find = (tree, nodeId) => {
-  const keys = Object.keys(tree)
-
-  let path = ''
-  if (keys.includes(nodeId)) {
-    path = nodeId
-    return path
+  if (tree.hasOwnProperty(nodeId)) {
+    return nodeId
   }
 
-  keys.forEach(key => {
-    let findResult = find(tree[key], nodeId)
-    if (findResult !== '') {
-      path += key + '.' + findResult
-      return path
+  let path = ''
+
+  for (let key in tree) {
+    let foundId = find(tree[key], nodeId)
+    if (foundId) {
+      path += key + '.' + foundId
     }
-  })
+  }
 
   return path
 }

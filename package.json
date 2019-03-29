@@ -43,6 +43,7 @@
     "uglify-js": "^3.3.23"
   },
   "dependencies": {
+    "flat": "^4.1.0",
     "tiny-emitter": "^2.0.2"
   },
   "scripts": {
