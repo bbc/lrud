@@ -37,37 +37,6 @@ describe('lrud', () => {
       })
     })
 
-    test('registering a node with a parent that doesnt exist should create a node for that parent under the root container', () => {
-      const navigation = new Lrud()
-
-      navigation.registerNode('root')
-      navigation.registerNode('region-a')
-      navigation.registerNode('content-grid', { parent: 'region-b' })
-      navigation.registerNode('PID-X', { parent: 'content-grid' })
-
-      expect(navigation.getTree()).toMatchObject({
-        root: {
-          children: {
-            'region-a': {
-              parent: 'root'
-            },
-            'region-b': {
-              children: {
-                'content-grid': {
-                  parent: 'region-b',
-                  children: {
-                    'PID-X': {
-                      parent: 'content-grid'
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      })
-    })
-
     test('registering a node with a nested parent', () => {
       const navigation = new Lrud()
 
@@ -93,8 +62,6 @@ describe('lrud', () => {
 
     test('registering a node with a deeply nested parent', () => {
       const navigation = new Lrud()
-
-      const node = navigation.pickNode('root.region.contentgrid')
 
       navigation.registerNode('root')
       navigation.registerNode('region-a', { parent: 'root' })
@@ -127,6 +94,61 @@ describe('lrud', () => {
                     }
                   }
                 }
+              }
+            }
+          }
+        }
+      })
+    })
+  })
+
+  describe('getNode()', () => {
+    test('get a nested node with no children by id', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('region-a', { parent: 'root' })
+      navigation.registerNode('region-b', { parent: 'root' })
+      navigation.registerNode('content-grid', { parent: 'region-b' })
+      navigation.registerNode('PID-X', { action: 1, parent: 'content-grid' })
+      navigation.registerNode('PID-Y', { action: 2, parent: 'content-grid' })
+      navigation.registerNode('PID-Z', { action: 3, parent: 'content-grid' })
+
+      const node = navigation.getNode('PID-X')
+
+      expect(node).toMatchObject({
+        action: 1,
+        parent: 'content-grid'
+      })
+    })
+
+    test('get a nested node with children by id and make sure the entire tree comes with it', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('region-a', { parent: 'root' })
+      navigation.registerNode('region-b', { parent: 'root' })
+      navigation.registerNode('content-grid', { parent: 'region-b' })
+      navigation.registerNode('PID-X', { action: 1, parent: 'content-grid' })
+      navigation.registerNode('PID-Y', { action: 2, parent: 'content-grid' })
+      navigation.registerNode('PID-Z', { action: 3, parent: 'content-grid' })
+
+      const node = navigation.getNode('region-b')
+
+      expect(node).toMatchObject({
+        parent: 'root',
+        children: {
+          'content-grid': {
+            parent: 'region-b',
+            children: {
+              'PID-X': {
+                parent: 'content-grid'
+              },
+              'PID-Y': {
+                parent: 'content-grid'
+              },
+              'PID-Z': {
+                parent: 'content-grid'
               }
             }
           }
