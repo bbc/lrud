@@ -127,6 +127,9 @@ describe('lrud', () => {
 
       navigation.registerNode('root')
       navigation.registerNode('region-a', { parent: 'root' })
+      navigation.registerNode('DEAD-X', { action: 1, parent: 'region-a' })
+      navigation.registerNode('DEAD-Y', { action: 2, parent: 'region-a' })
+      navigation.registerNode('DEAD-Z', { action: 3, parent: 'region-a' })
       navigation.registerNode('region-b', { parent: 'root' })
       navigation.registerNode('content-grid', { parent: 'region-b' })
       navigation.registerNode('PID-X', { action: 1, parent: 'content-grid' })
@@ -154,6 +157,89 @@ describe('lrud', () => {
           }
         }
       })
+    })
+  })
+
+  describe('unregisterNode()', () => {
+    test('unregistering a leaf should remove it (set it to undefined)', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { selectAction: 1 })
+      navigation.registerNode('NODE_A', { selectAction: 2 })
+      navigation.registerNode('NODE_B', { selectAction: 3 })
+
+      navigation.unregisterNode('NODE_A')
+
+      expect(navigation.getTree()).toMatchObject({
+        root: {
+          selectAction: 1,
+          children: {
+            NODE_B: {
+              selectAction: 3,
+              parent: 'root'
+            }
+          }
+        }
+      })
+
+      expect(navigation.getNode('NODE_A')).toEqual(undefined)
+
+      expect(navigation.getNodeIdList()).toEqual([
+        'root',
+        'root.children.NODE_B'
+      ])
+    })
+
+    test.only('unregister a whole branch', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { selectAction: 1 })
+      navigation.registerNode('BOX_A', { selectAction: 2 })
+      navigation.registerNode('BOX_B', { selectAction: 3 })
+      navigation.registerNode('NODE_1', { selectAction: 11, parent: 'BOX_A' })
+      navigation.registerNode('NODE_2', { selectAction: 12, parent: 'BOX_A' })
+      navigation.registerNode('NODE_3', { selectAction: 13, parent: 'BOX_A' })
+      navigation.registerNode('NODE_4', { selectAction: 24, parent: 'BOX_B' })
+      navigation.registerNode('NODE_5', { selectAction: 25, parent: 'BOX_B' })
+      navigation.registerNode('NODE_6', { selectAction: 26, parent: 'BOX_B' })
+
+      navigation.unregisterNode('BOX_B')
+
+      expect(navigation.getTree()).toMatchObject({
+        root: {
+          selectAction: 1,
+          children: {
+            BOX_A: {
+              selectAction: 2,
+              parent: 'root',
+              children: {
+                NODE_1: {
+                  selectAction: 11,
+                  parent: 'BOX_A'
+                },
+                NODE_2: {
+                  selectAction: 12,
+                  parent: 'BOX_A'
+                },
+                NODE_3: {
+                  selectAction: 13,
+                  parent: 'BOX_A'
+                }
+              }
+            }
+          }
+        }
+      })
+
+      expect(navigation.getNode('BOX_B')).toEqual(undefined)
+
+      expect(navigation.getNodeIdList()).toEqual([
+        'root',
+        'root.children.BOX_A',
+        'root.children.BOX_A.children.NODE_1',
+        'root.children.BOX_A.children.NODE_2',
+        'root.children.BOX_A.children.NODE_3'
+      ])
     })
   })
 })

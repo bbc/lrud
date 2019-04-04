@@ -1,5 +1,6 @@
 const _ = require('./lodash.custom.min.js')
 const EventEmitter = require('tiny-emitter')
+
 class Lrud {
   constructor ({ tree, rootNodeId, currentFocusId } = {}) {
     this.tree = tree || {}
@@ -11,6 +12,10 @@ class Lrud {
 
   getRootNodeId () {
     return this.rootNodeId
+  }
+
+  getPathForNodeId (nodeId) {
+    return this.nodeIdList.find(path => path.endsWith('.' + nodeId))
   }
 
   registerNode (nodeId, node = {}) {
@@ -32,14 +37,38 @@ class Lrud {
 
     _.set(this.tree, path, node)
     this.nodeIdList.push(path)
+    return this
   }
 
   unregisterNode (nodeId) {
+    const path = this.getPathForNodeId(nodeId)
 
+    if (!path) {
+      return
+    }
+
+    // remove it from the tree
+    _.set(this.tree, path, undefined)
+
+    // remove the relevant entry from the node id list
+    this.nodeIdList.splice(this.nodeIdList.indexOf(path), 1)
+
+    // remove all its children from the node ID list
+    this.nodeIdList = this.nodeIdList.filter(nodeIdPath => {
+      return !(nodeIdPath.includes('.' + nodeId))
+    })
+
+    // TODO handle if they're focused on this node
+
+    return this
   }
 
   getNode (nodeId) {
-    return this.getNodeByPath(this.nodeIdList.find(path => path.endsWith('.' + nodeId)))
+    return this.getNodeByPath(this.getPathForNodeId(nodeId))
+  }
+
+  getNodeIdList () {
+    return this.nodeIdList
   }
 
   getNodeByPath (path) {
@@ -65,7 +94,7 @@ class Lrud {
   }
 
   handleKeyEvent (event) {
-    this._handleKeyEvent(event, this.currentFocus)
+    this._handleKeyEvent(event, this.currentFocusId)
   }
 }
 
