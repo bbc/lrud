@@ -190,7 +190,7 @@ describe('lrud', () => {
       ])
     })
 
-    test.only('unregister a whole branch', () => {
+    test('unregister a whole branch', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { selectAction: 1 })
@@ -240,6 +240,99 @@ describe('lrud', () => {
         'root.children.BOX_A.children.NODE_2',
         'root.children.BOX_A.children.NODE_3'
       ])
+    })
+
+    test('if unregistering the focused node, set focus to undefined (focused on the unregistered node)', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('BOX_A', { parent: 'root' })
+      navigation.registerNode('BOX_B', { parent: 'root' })
+      navigation.registerNode('NODE_1', { parent: 'BOX_A' })
+      navigation.registerNode('NODE_2', { parent: 'BOX_A' })
+      navigation.registerNode('NODE_3', { parent: 'BOX_A' })
+      navigation.registerNode('NODE_4', { parent: 'BOX_B' })
+      navigation.registerNode('NODE_5', { parent: 'BOX_B' })
+      navigation.registerNode('NODE_6', { parent: 'BOX_B' })
+
+      navigation.currentFocusNodePath = 'root.children.BOX_B'
+
+      navigation.unregisterNode('BOX_B')
+
+      expect(navigation.currentFocusNodePath).toEqual(undefined)
+    })
+
+    test('if unregistering the focused node, set focus to undefined (focused on a nested node of the unregistered node)', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('BOX_A', { parent: 'root' })
+      navigation.registerNode('BOX_B', { parent: 'root' })
+      navigation.registerNode('NODE_1', { parent: 'BOX_A' })
+      navigation.registerNode('NODE_2', { parent: 'BOX_A' })
+      navigation.registerNode('NODE_3', { parent: 'BOX_A' })
+      navigation.registerNode('NODE_4', { parent: 'BOX_B' })
+      navigation.registerNode('NODE_5', { parent: 'BOX_B' })
+      navigation.registerNode('NODE_6', { parent: 'BOX_B' })
+
+      navigation.currentFocusNodePath = 'root.children.BOX_B.children.NODE_4'
+      navigation.unregisterNode('BOX_B')
+
+      expect(navigation.currentFocusNodePath).toEqual(undefined)
+    })
+
+    test('unregistering a node should trigger a `blur` event with that node', () => {
+      const navigation = new Lrud()
+      const spy = jest.fn()
+      navigation.on('blur', spy)
+      navigation.registerNode('root')
+      navigation.registerNode('BOX_A', { parent: 'root' })
+      navigation.registerNode('BOX_B', { parent: 'root' })
+      navigation.registerNode('NODE_1', { parent: 'BOX_A' })
+      navigation.registerNode('NODE_2', { parent: 'BOX_A' })
+      navigation.registerNode('NODE_3', { parent: 'BOX_A' })
+      navigation.registerNode('NODE_4', { parent: 'BOX_B' })
+      navigation.registerNode('NODE_5', { parent: 'BOX_B' })
+      navigation.registerNode('NODE_6', { parent: 'BOX_B' })
+
+      navigation.unregisterNode('BOX_B')
+
+      expect(navigation.getTree()).toMatchObject({
+        root: {
+          children: {
+            BOX_A: {
+              parent: 'root',
+              children: {
+                NODE_1: {
+                  parent: 'BOX_A'
+                },
+                NODE_2: {
+                  parent: 'BOX_A'
+                },
+                NODE_3: {
+                  parent: 'BOX_A'
+                }
+              }
+            }
+          }
+        }
+      })
+
+      // should trigger with the details of BOX_B
+      expect(spy).toHaveBeenCalledWith({
+        parent: 'root',
+        children: {
+          NODE_4: {
+            parent: 'BOX_B'
+          },
+          NODE_5: {
+            parent: 'BOX_B'
+          },
+          NODE_6: {
+            parent: 'BOX_B'
+          }
+        }
+      })
     })
   })
 })
