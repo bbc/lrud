@@ -335,4 +335,41 @@ describe('lrud', () => {
       })
     })
   })
+
+  describe('pickNode()', () => {
+    test('pick a nested node', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { selectAction: 1 })
+      navigation.registerNode('BOX_A', { selectAction: 2 })
+      navigation.registerNode('NODE_1', { selectAction: 11, parent: 'BOX_A' })
+      navigation.registerNode('NODE_2', { selectAction: 12, parent: 'BOX_A' })
+      navigation.registerNode('NODE_3', { selectAction: 13, parent: 'BOX_A' })
+
+      const node2 = navigation.pickNode('NODE_2')
+
+      expect(node2).toMatchObject({ selectAction: 12, parent: 'BOX_A' })
+      expect(navigation.getTree()).toMatchObject({
+        root: {
+          selectAction: 1,
+          children: {
+            BOX_A: {
+              selectAction: 2,
+              parent: 'root',
+              children: {
+                NODE_1: {
+                  selectAction: 11,
+                  parent: 'BOX_A'
+                },
+                NODE_3: {
+                  selectAction: 13,
+                  parent: 'BOX_A'
+                }
+              }
+            }
+          }
+        }
+      })
+    })
+  })
 })

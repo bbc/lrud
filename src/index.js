@@ -65,7 +65,6 @@ class Lrud {
       return !(nodeIdPath.includes('.' + nodeId))
     })
 
-    // TODO handle if they're focused on a node thats now unregistered
     if (this.currentFocusNodePath && this.currentFocusNodePath.includes('.' + nodeId)) {
       this.currentFocusNodePath = undefined
     }
@@ -79,7 +78,7 @@ class Lrud {
     return this.getNodeByPath(this.getPathForNodeId(nodeId))
   }
 
-  getNodeIdList () {
+  getNodePathList () {
     return this.nodePathList
   }
 
@@ -87,9 +86,15 @@ class Lrud {
     return _.get(this.tree, path)
   }
 
-  pickNodeByPath (path) {
-    const node = this.getNode(path)
-    this.unregisterNode(path)
+  pickNode (nodeId) {
+    const path = this.getPathForNodeId(nodeId)
+
+    if (!path) {
+      return
+    }
+
+    const node = this.getNodeByPath(path)
+    this.unregisterNode(nodeId)
     return node
   }
 
