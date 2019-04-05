@@ -184,7 +184,7 @@ describe('lrud', () => {
 
       expect(navigation.getNode('NODE_A')).toEqual(undefined)
 
-      expect(navigation.getNodeIdList()).toEqual([
+      expect(navigation.getNodePathList()).toEqual([
         'root',
         'root.children.NODE_B'
       ])
@@ -233,7 +233,7 @@ describe('lrud', () => {
 
       expect(navigation.getNode('BOX_B')).toEqual(undefined)
 
-      expect(navigation.getNodeIdList()).toEqual([
+      expect(navigation.getNodePathList()).toEqual([
         'root',
         'root.children.BOX_A',
         'root.children.BOX_A.children.NODE_1',
@@ -336,6 +336,34 @@ describe('lrud', () => {
     })
   })
 
+  describe('isDirectionAndOrientationMatching()', () => {
+    const navigation = new Lrud()
+    test('vertical and up is true', () => {
+      expect(navigation.isDirectionAndOrientationMatching('vertical', 'up')).toEqual(true)
+    })
+    test('vertical and down is true', () => {
+      expect(navigation.isDirectionAndOrientationMatching('vertical', 'down')).toEqual(true)
+    })
+    test('horizontal and left is true', () => {
+      expect(navigation.isDirectionAndOrientationMatching('horizontal', 'left')).toEqual(true)
+    })
+    test('horizontal and right is true', () => {
+      expect(navigation.isDirectionAndOrientationMatching('horizontal', 'right')).toEqual(true)
+    })
+    test('vertical and left is false', () => {
+      expect(navigation.isDirectionAndOrientationMatching('vertical', 'left')).toEqual(false)
+    })
+    test('vertical and right is false', () => {
+      expect(navigation.isDirectionAndOrientationMatching('vertical', 'right')).toEqual(false)
+    })
+    test('horizontal and up is false', () => {
+      expect(navigation.isDirectionAndOrientationMatching('horizontal', 'up')).toEqual(false)
+    })
+    test('horizontal and down is false', () => {
+      expect(navigation.isDirectionAndOrientationMatching('horizontal', 'down')).toEqual(false)
+    })
+  })
+
   describe('pickNode()', () => {
     test('pick a nested node', () => {
       const navigation = new Lrud()
@@ -370,6 +398,64 @@ describe('lrud', () => {
           }
         }
       })
+    })
+  })
+
+  describe('_isFocusableNode()', () => {
+    test('returns true for a node with a select action (`selectAction`)', () => {
+      const node = { selectAction: true, parent: 'root' }
+      const navigation = new Lrud()
+
+      expect(navigation._isFocusableNode(node)).toEqual(true)
+    })
+
+    test('returns true for a node with is focusable (`isFocusable`)', () => {
+      const node = { isFocusable: true, parent: 'root' }
+      const navigation = new Lrud()
+
+      expect(navigation._isFocusableNode(node)).toEqual(true)
+    })
+
+    test('returns false for a node with neither', () => {
+      const node = { parent: 'root' }
+      const navigation = new Lrud()
+
+      expect(navigation._isFocusableNode(node)).toEqual(false)
+    })
+  })
+
+  describe.skip('assignFocus()', () => {
+    test('assigning focus should set the `activeChild` of all the nodes back up the tree', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('region-a', { parent: 'root' })
+      navigation.registerNode('region-b', { parent: 'root' })
+      navigation.registerNode('content-grid', { parent: 'region-b' })
+      navigation.registerNode('PID-X', { selectAction: 1, parent: 'content-grid' })
+      navigation.registerNode('PID-Y', { selectAction: 2, parent: 'content-grid' })
+      navigation.registerNode('PID-Z', { selectAction: 3, parent: 'content-grid' })
+
+      navigation.assignFocus('PID-Y')
+
+      expect(navigation.getNode('content-grid').activeChild).toEqual('PID-Y')
+      expect(navigation.getNode('region-b').activeChild).toEqual('content-grid')
+      expect(navigation.getNode('root').activeChild).toEqual('region-b')
+    })
+  })
+
+  describe('_findNextActionableNode()', () => {
+    test('scan up the tree', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { selectAction: 1, orientation: 'vertical' })
+      navigation.registerNode('BOX_A', { selectAction: 2, parent: 'horizontal' })
+      navigation.registerNode('BOX_B', { selectAction: 3, parent: 'horizontal' })
+      navigation.registerNode('NODE_1', { selectAction: 11, parent: 'BOX_A' })
+      navigation.registerNode('NODE_2', { selectAction: 12, parent: 'BOX_A' })
+      navigation.registerNode('NODE_3', { selectAction: 13, parent: 'BOX_A' })
+
+      navigation.currentFocusNodePath = 'root.children.BOX_B.children.NODE_2'
     })
   })
 })
