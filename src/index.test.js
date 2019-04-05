@@ -448,14 +448,38 @@ describe('lrud', () => {
     test('scan up the tree', () => {
       const navigation = new Lrud()
 
-      navigation.registerNode('root', { selectAction: 1, orientation: 'vertical' })
-      navigation.registerNode('BOX_A', { selectAction: 2, parent: 'horizontal' })
-      navigation.registerNode('BOX_B', { selectAction: 3, parent: 'horizontal' })
-      navigation.registerNode('NODE_1', { selectAction: 11, parent: 'BOX_A' })
-      navigation.registerNode('NODE_2', { selectAction: 12, parent: 'BOX_A' })
-      navigation.registerNode('NODE_3', { selectAction: 13, parent: 'BOX_A' })
+      navigation.registerNode('root', { orientation: 'vertical' })
+      navigation.registerNode('BOX_A', { parent: 'root', orientation: 'horizontal' })
+      navigation.registerNode('BOX_B', { parent: 'root', orientation: 'horizontal' })
+      navigation.registerNode('NODE_1', { selectAction: 11, parent: 'BOX_B', order: 1 })
+      navigation.registerNode('NODE_2', { selectAction: 12, parent: 'BOX_B', order: 2 })
+      navigation.registerNode('NODE_3', { selectAction: 13, parent: 'BOX_B', order: 3 })
 
       navigation.currentFocusNodePath = 'root.children.BOX_B.children.NODE_2'
+
+      const nextActionableNode = navigation._findNextActionableNode('root.children.BOX_B.children.NODE_2', 'right')
+
+      expect(nextActionableNode).toMatchObject({
+        parent: 'root',
+        orientation: 'horizontal',
+        children: {
+          NODE_1: {
+            selectAction: 11,
+            parent: 'BOX_B',
+            order: 1
+          },
+          NODE_2: {
+            selectAction: 12,
+            parent: 'BOX_B',
+            order: 2
+          },
+          NODE_3: {
+            selectAction: 13,
+            parent: 'BOX_B',
+            order: 3
+          }
+        }
+      })
     })
   })
 })

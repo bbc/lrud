@@ -123,15 +123,19 @@ class Lrud {
     if (!node.orientation && !node.children) {
       // we're on a leaf, try the parent
       if (node.parent) {
-        return this._findNextActionableNode(nodePath + '.parent', direction)
+        return this._findNextActionableNode(this.getPathForNodeId(node.parent), direction)
       }
       // if we dont have an orientation, or children, or a parent, its dead
       return null
     }
 
     if (!this.isDirectionAndOrientationMatching(node.orientation, direction)) {
-      return false
+      return this._findNextActionableNode(this.getPathForNodeId(node.parent), direction)
     }
+
+    // so now the orientation matches the direction, and it has children,
+    // so we return it
+    return node
   }
 
   handleKeyEvent (event) {
