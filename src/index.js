@@ -145,7 +145,7 @@ class Lrud {
       return undefined
     }
 
-    return Object.keys(node.children)[0]
+    return this.getNode(Object.keys(node.children)[0])
   }
 
   // climb up
@@ -183,7 +183,7 @@ class Lrud {
 
     // if we dont have an active child, use the first child
     if (!node.activeChild) {
-      node.activeChild = this.getNodeFirstChild(node)
+      node.activeChild = this.getNodeFirstChild(node).id
     }
 
     const activeChild = this.getNode(node.activeChild)
@@ -201,7 +201,12 @@ class Lrud {
     const indexOfCurrentChild = childKeys.indexOf(node.activeChild)
 
     if (indexOfCurrentChild === childKeys.length - 1) {
-      return node.children[childKeys[indexOfCurrentChild]]
+      // we're on the last child
+      if (node.wraps) {
+        return this.getNodeFirstChild(node)
+      } else {
+        return node.children[childKeys[indexOfCurrentChild]]
+      }
     } else {
       return node.children[childKeys[indexOfCurrentChild + 1]]
     }

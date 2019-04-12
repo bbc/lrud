@@ -586,7 +586,7 @@ describe('lrud', () => {
     })
   })
 
-  describe('handleKeyEvent()', () => {
+  describe.only('handleKeyEvent()', () => {
     test('simple horizontal list - move to a sibling', () => {
       const navigation = new Lrud()
 
@@ -597,11 +597,39 @@ describe('lrud', () => {
 
       navigation.assignFocus('child_1')
 
-      const focusedNode = navigation.handleKeyEvent({
-        direction: 'right'
-      })
+      navigation.handleKeyEvent({ direction: 'right' })
 
-      console.log('focusedNode', focusedNode)
+      expect(navigation.currentFocusNodeId).toEqual('child_2')
+    })
+
+    test('already focused on the last sibling, and no more branches - leave focus where it is', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'horizontal' })
+      navigation.registerNode('child_1', { id: 'child_1', parent: 'root', isFocusable: true })
+      navigation.registerNode('child_2', { id: 'child_2', parent: 'root', isFocusable: true })
+      navigation.registerNode('child_3', { id: 'child_3', parent: 'root', isFocusable: true })
+
+      navigation.assignFocus('child_3')
+
+      navigation.handleKeyEvent({ direction: 'right' })
+
+      expect(navigation.currentFocusNodeId).toEqual('child_3')
+    })
+
+    test('already focused on the last sibling, but the parent wraps - focus needs to go to the first sibling', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'horizontal', wraps: true })
+      navigation.registerNode('child_1', { id: 'child_1', parent: 'root', isFocusable: true })
+      navigation.registerNode('child_2', { id: 'child_2', parent: 'root', isFocusable: true })
+      navigation.registerNode('child_3', { id: 'child_3', parent: 'root', isFocusable: true })
+
+      navigation.assignFocus('child_3')
+
+      navigation.handleKeyEvent({ direction: 'right' })
+
+      expect(navigation.currentFocusNodeId).toEqual('child_1')
     })
   })
 })
