@@ -341,6 +341,7 @@ describe('lrud', () => {
       // should trigger with the details of BOX_B
       expect(spy).toHaveBeenCalledWith({
         parent: 'root',
+        activeChild: 'NODE_4',
         children: {
           NODE_4: {
             parent: 'BOX_B'
@@ -544,6 +545,78 @@ describe('lrud', () => {
       nextChild = navigation.getNextChild(navigation.getNode('root'))
 
       expect(nextChild.id).toEqual('charlie')
+    })
+
+    test('with no order values, if the activeChild is the last child, just return that', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'horizontal' })
+      navigation.registerNode('alpha', { id: 'alpha', parent: 'root' })
+      navigation.registerNode('beta', { id: 'beta', parent: 'root' })
+      navigation.registerNode('charlie', { id: 'charlie', parent: 'root' })
+
+      navigation.assignFocus('charlie')
+
+      // we're already focused on the last child of root, so it should return that
+      let nextChild = navigation.getNextChild(navigation.getNode('root'))
+      expect(nextChild.id).toEqual('charlie')
+    })
+
+    // NOT IMPLEMENTED YET
+    test.skip('with order values, get the one thats 1 order higher, regardless of registered order', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'horizontal' })
+      navigation.registerNode('alpha', { id: 'alpha', parent: 'root', order: 2 })
+      navigation.registerNode('beta', { id: 'beta', parent: 'root', order: 1 })
+      navigation.registerNode('charlie', { id: 'charlie', parent: 'root', order: 3 })
+
+      navigation.assignFocus('beta')
+
+      // we're already focused on the last child of root, so it should return that
+      let nextChild = navigation.getNextChild(navigation.getNode('root'))
+      expect(nextChild.id).toEqual('alpha')
+    })
+  })
+
+  describe('_findFocusableNode()', () => {
+    test('dig down 2 levels', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'horizontal' })
+
+      navigation.registerNode('left_column', { parent: 'root', orientation: 'vertical' })
+      navigation.registerNode('right_column', { parent: 'root', orientation: 'vertical' })
+
+      navigation.registerNode('NODE_A', { id: 'NODE_A', parent: 'left_column', isFocusable: true })
+      navigation.registerNode('NODE_B', { id: 'NODE_B', parent: 'left_column', isFocusable: true })
+
+      navigation.registerNode('NODE_C', { id: 'NODE_C', parent: 'right_column', isFocusable: true })
+      navigation.registerNode('NODE_D', { id: 'NODE_D', parent: 'right_column', isFocusable: true })
+
+      // first focusable of 'root' should be 'NODE_A'
+      const root = navigation.getNode('root')
+      const focusable = navigation._findFocusableNode(root)
+      expect(focusable.id).toEqual('NODE_A')
+    })
+  })
+
+  describe.only('handleKeyEvent()', () => {
+    test('simple horizontal list - move to a sibling', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'horizontal' })
+      navigation.registerNode('child_1', { id: 'child_1', parent: 'root', isFocusable: true })
+      navigation.registerNode('child_2', { id: 'child_2', parent: 'root', isFocusable: true })
+      navigation.registerNode('child_3', { id: 'child_3', parent: 'root', isFocusable: true })
+
+      navigation.assignFocus('child_1')
+
+      const focusedNode = navigation.handleKeyEvent({
+        direction: 'right'
+      })
+
+      console.log('focusedNode', focusedNode)
     })
   })
 })
