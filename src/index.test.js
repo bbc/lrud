@@ -180,7 +180,7 @@ describe('lrud', () => {
     })
   })
 
-  describe('unregisterNode()', () => {
+  describe.only('unregisterNode()', () => {
     test('unregistering a leaf should remove it (set it to undefined)', () => {
       const navigation = new Lrud()
 
@@ -262,43 +262,39 @@ describe('lrud', () => {
       ])
     })
 
-    test('if unregistering the focused node, set focus to undefined (focused on the unregistered node)', () => {
+    test('if unregistering the focused node, reassign focus (focused on the node were unregistering)', () => {
       const navigation = new Lrud()
 
-      navigation.registerNode('root')
-      navigation.registerNode('BOX_A', { parent: 'root' })
-      navigation.registerNode('BOX_B', { parent: 'root' })
-      navigation.registerNode('NODE_1', { parent: 'BOX_A' })
-      navigation.registerNode('NODE_2', { parent: 'BOX_A' })
-      navigation.registerNode('NODE_3', { parent: 'BOX_A' })
-      navigation.registerNode('NODE_4', { parent: 'BOX_B' })
-      navigation.registerNode('NODE_5', { parent: 'BOX_B' })
-      navigation.registerNode('NODE_6', { parent: 'BOX_B' })
+      navigation.registerNode('root', { orientation: 'horizontal' })
+      navigation.registerNode('NODE_1', { parent: 'root', isFocusable: true })
+      navigation.registerNode('NODE_2', { parent: 'root', isFocusable: true })
+      navigation.registerNode('NODE_3', { parent: 'root', isFocusable: true })
 
-      navigation.currentFocusNodePath = 'root.children.BOX_B'
+      navigation.assignFocus('NODE_3')
 
-      navigation.unregisterNode('BOX_B')
+      navigation.unregisterNode('NODE_3')
 
-      expect(navigation.currentFocusNodePath).toEqual(undefined)
+      expect(navigation.currentFocusNodeId).toEqual('NODE_1')
     })
 
     test('if unregistering the focused node, set focus to undefined (focused on a nested node of the unregistered node)', () => {
       const navigation = new Lrud()
 
-      navigation.registerNode('root')
-      navigation.registerNode('BOX_A', { parent: 'root' })
-      navigation.registerNode('BOX_B', { parent: 'root' })
-      navigation.registerNode('NODE_1', { parent: 'BOX_A' })
-      navigation.registerNode('NODE_2', { parent: 'BOX_A' })
-      navigation.registerNode('NODE_3', { parent: 'BOX_A' })
-      navigation.registerNode('NODE_4', { parent: 'BOX_B' })
-      navigation.registerNode('NODE_5', { parent: 'BOX_B' })
-      navigation.registerNode('NODE_6', { parent: 'BOX_B' })
+      navigation.registerNode('root', { orientation: 'vertical' })
+      navigation.registerNode('BOX_A', { parent: 'root', orientation: 'vertical' })
+      navigation.registerNode('BOX_B', { parent: 'root', orientation: 'vertical' })
+      navigation.registerNode('NODE_1', { parent: 'BOX_A', isFocusable: true })
+      navigation.registerNode('NODE_2', { parent: 'BOX_A', isFocusable: true })
+      navigation.registerNode('NODE_3', { parent: 'BOX_B', isFocusable: true })
+      navigation.registerNode('NODE_4', { parent: 'BOX_B', isFocusable: true })
 
-      navigation.currentFocusNodePath = 'root.children.BOX_B.children.NODE_4'
-      navigation.unregisterNode('BOX_B')
+      // so we're focused on the first element of the left pane
+      // and we unregister the entire left pane
+      // so focus should go to the first element of the right pane
+      navigation.assignFocus('NODE_1')
+      navigation.unregisterNode('BOX_A')
 
-      expect(navigation.currentFocusNodePath).toEqual(undefined)
+      expect(navigation.currentFocusNodeId).toEqual('NODE_3')
     })
 
     test('unregistering a node should trigger a `blur` event with that node', () => {
@@ -319,17 +315,22 @@ describe('lrud', () => {
 
       expect(navigation.getTree()).toMatchObject({
         root: {
+          id: 'root',
           children: {
             BOX_A: {
+              id: 'BOX_A',
               parent: 'root',
               children: {
                 NODE_1: {
+                  id: 'NODE_1',
                   parent: 'BOX_A'
                 },
                 NODE_2: {
+                  id: 'NODE_2',
                   parent: 'BOX_A'
                 },
                 NODE_3: {
+                  id: 'NODE_3',
                   parent: 'BOX_A'
                 }
               }
@@ -341,15 +342,19 @@ describe('lrud', () => {
       // should trigger with the details of BOX_B
       expect(spy).toHaveBeenCalledWith({
         parent: 'root',
+        id: 'BOX_B',
         activeChild: 'NODE_4',
         children: {
           NODE_4: {
+            id: 'NODE_4',
             parent: 'BOX_B'
           },
           NODE_5: {
+            id: 'NODE_5',
             parent: 'BOX_B'
           },
           NODE_6: {
+            id: 'NODE_6',
             parent: 'BOX_B'
           }
         }
@@ -601,7 +606,7 @@ describe('lrud', () => {
     })
   })
 
-  describe.only('handleKeyEvent()', () => {
+  describe('handleKeyEvent()', () => {
     test('simple horizontal list - move to a sibling', () => {
       const navigation = new Lrud()
 

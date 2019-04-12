@@ -7,7 +7,6 @@ class Lrud {
     this.tree = {}
     this.nodePathList = []
     this.rootNodeId = rootNodeId || null
-    this.currentFocusNodePath = currentFocusNodePath || null
     this.currentFocusNodeId = null
     this.emitter = new EventEmitter()
   }
@@ -84,8 +83,10 @@ class Lrud {
     // get a copy of the node to pass to the blur event
     const nodeClone = _.get(this.tree, path)
 
-    // remove it from the tree
-    _.set(this.tree, path, undefined)
+    // get its parent, delete it, and reset the parent
+    const parentNode = this.getNode(nodeClone.parent)
+
+    delete parentNode.children[nodeId]
 
     // remove the relevant entry from the node id list
     this.nodePathList.splice(this.nodePathList.indexOf(path), 1)
@@ -95,10 +96,17 @@ class Lrud {
       return !(nodeIdPath.includes('.' + nodeId))
     })
 
-    if (this.currentFocusNodeId === nodeId) {
-      this.currentFocusNodeId = undefined
+    // if its parent's active child is the node we're unregistering, reset that
+    // and reset whats focused
+    if (parentNode.activeChild && parentNode.activeChild === nodeId) {
+      _.set(this.tree, this.getPathForNodeId(parentNode.id) + '.activeChild', null)
+      const focusableChild = this._findFocusableNode(parentNode)
+      this.assignFocus(focusableChild.id)
     }
 
+    _.set(this.tree, this.getPathForNodeId(parentNode.id), parentNode)
+
+    // blur on the nodeClone
     this.emitter.emit('blur', nodeClone)
 
     return this
@@ -130,6 +138,14 @@ class Lrud {
 
   getTree () {
     return this.tree
+  }
+
+  getNodeFirstChild (node) {
+    if (!node.children) {
+      return undefined
+    }
+
+    return Object.keys(node.children)[0]
   }
 
   // dig up
@@ -165,9 +181,9 @@ class Lrud {
       return node
     }
 
-    // if we dont have an active child, we've reached some kind of dead node - return null
+    // if we dont have an active child, use the first child
     if (!node.activeChild) {
-      return null
+      node.activeChild = this.getNodeFirstChild(node)
     }
 
     const activeChild = this.getNode(node.activeChild)
@@ -180,19 +196,14 @@ class Lrud {
   }
 
   getNextChild (node) {
-    const currentChild = this.getNode(node.activeChild)
     const childKeys = Object.keys(node.children)
-    if (currentChild.order) {
-      // get the child whos order is 1 higher than the current childs order
-      // TODO
-    } else {
-      const indexOfCurrentChild = childKeys.indexOf(node.activeChild)
 
-      if (indexOfCurrentChild === childKeys.length - 1) {
-        return node.children[childKeys[indexOfCurrentChild]]
-      } else {
-        return node.children[childKeys[indexOfCurrentChild + 1]]
-      }
+    const indexOfCurrentChild = childKeys.indexOf(node.activeChild)
+
+    if (indexOfCurrentChild === childKeys.length - 1) {
+      return node.children[childKeys[indexOfCurrentChild]]
+    } else {
+      return node.children[childKeys[indexOfCurrentChild + 1]]
     }
   }
 
@@ -216,7 +227,6 @@ class Lrud {
   }
 
   _isFocusableNode (node) {
-    console.log('node', node)
     return !!(node.selectAction || node.isFocusable)
   }
 
