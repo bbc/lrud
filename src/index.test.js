@@ -3,7 +3,7 @@
 const Lrud = require('./index')
 
 describe('lrud', () => {
-  describe.only('registerNode()', () => {
+  describe('registerNode()', () => {
     test('registering the very first registered node sets it to the root node', () => {
       const navigation = new Lrud()
 
@@ -102,7 +102,7 @@ describe('lrud', () => {
     })
 
     // reword this
-    test.only('registering a new node with a parent that has no children sets its parent.activeChild to itself', () => {
+    test('registering a new node with a parent that has no children sets its parent.activeChild to itself', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root')
@@ -444,7 +444,7 @@ describe('lrud', () => {
     })
   })
 
-  describe.skip('assignFocus()', () => {
+  describe('assignFocus()', () => {
     test('assigning focus should set the `activeChild` of all the nodes back up the tree', () => {
       const navigation = new Lrud()
 
@@ -503,7 +503,7 @@ describe('lrud', () => {
       })
     })
 
-    test.only('scan up the tree 2 levels', () => {
+    test('scan up the tree 2 levels', () => {
       const navigation = new Lrud()
       navigation.registerNode('root', { orientation: 'vertical' })
       navigation.registerNode('page', { id: 'page', parent: 'root', orientation: 'horizontal' })
@@ -522,6 +522,28 @@ describe('lrud', () => {
       // the parent of NODE_1 is BOX_A but we couldn't dig up to that because it was horizontal
       // and the next thing that was horizontal was the page
       expect(nextActionableNode.id).toEqual('page')
+    })
+  })
+
+  describe('getNextChild()', () => {
+    test('with no order values, get the next child of a node', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'horizontal' })
+      navigation.registerNode('alpha', { id: 'alpha', parent: 'root' })
+      navigation.registerNode('beta', { id: 'beta', parent: 'root' })
+      navigation.registerNode('charlie', { id: 'charlie', parent: 'root' })
+
+      // default active child of 'root' is 'alpha'
+      let nextChild = navigation.getNextChild(navigation.getNode('root'))
+
+      expect(nextChild.id).toEqual('beta')
+
+      // so then we assign focus to 'beta' and go again
+      navigation.assignFocus('beta')
+      nextChild = navigation.getNextChild(navigation.getNode('root'))
+
+      expect(nextChild.id).toEqual('charlie')
     })
   })
 })

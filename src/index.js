@@ -58,10 +58,9 @@ class Lrud {
     // to it so that the parent always has an activeChild
     // we can tell if its parent has any children by checking the nodePathList for
     // entries containing '<parent>.children'
-    const childrenPaths = this.nodePathList.find(path => path.includes(node.parent + '.children'))
+    const parentsChildPaths = this.nodePathList.find(path => path.includes(node.parent + '.children'))
 
-    if (childrenPaths == null) {
-      // get the path of the parent
+    if (parentsChildPaths == null) {
       const parentPath = this.getPathForNodeId(node.parent)
       _.set(this.tree, parentPath + '.activeChild', nodeId)
     }
@@ -149,6 +148,18 @@ class Lrud {
     // so now the orientation matches the direction, and it has children,
     // so we return it
     return node
+  }
+
+  getNextChild (node) {
+    const currentChild = this.getNode(node.activeChild)
+
+    if (currentChild.order) {
+
+    } else {
+      const childKeys = Object.keys(node.children)
+      const indexOfCurrentChild = childKeys.indexOf(node.activeChild)
+      return node.children[childKeys[indexOfCurrentChild + 1]]
+    }
   }
 
   handleKeyEvent (event) {
