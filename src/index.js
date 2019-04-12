@@ -100,7 +100,7 @@ class Lrud {
     // and reset whats focused
     if (parentNode.activeChild && parentNode.activeChild === nodeId) {
       _.set(this.tree, this.getPathForNodeId(parentNode.id) + '.activeChild', null)
-      const focusableChild = this._findFocusableNode(parentNode)
+      const focusableChild = this.digDown(parentNode)
       this.assignFocus(focusableChild.id)
     }
 
@@ -148,12 +148,12 @@ class Lrud {
     return Object.keys(node.children)[0]
   }
 
-  // dig up
-  _findNextActionableNode (node, direction) {
+  // climb up
+  climbUp (node, direction) {
     if (!node.orientation && !node.children) {
       // we're on a leaf, try the parent
       if (node.parent) {
-        return this._findNextActionableNode(this.getNode(node.parent), direction)
+        return this.climbUp(this.getNode(node.parent), direction)
       }
       // if we dont have an orientation, or children, or a parent, its dead
       return null
@@ -161,12 +161,12 @@ class Lrud {
 
     // if we dont have any children, dig up
     if (!node.children) {
-      return this._findNextActionableNode(this.getNode(node.parent), direction)
+      return this.climbUp(this.getNode(node.parent), direction)
     }
 
     // we have children, but the orientation doesn't match, so try our parent
     if (!this.isDirectionAndOrientationMatching(node.orientation, direction)) {
-      return this._findNextActionableNode(this.getNode(node.parent), direction)
+      return this.climbUp(this.getNode(node.parent), direction)
     }
 
     // so now the orientation matches the direction, and it has children,
@@ -175,7 +175,7 @@ class Lrud {
   }
 
   // dig down
-  _findFocusableNode (node) {
+  digDown (node) {
     // if the active child is focusable, return it
     if (this._isFocusableNode(node)) {
       return node
@@ -192,7 +192,7 @@ class Lrud {
       return activeChild
     }
 
-    return this._findFocusableNode(activeChild)
+    return this.digDown(activeChild)
   }
 
   getNextChild (node) {
@@ -213,13 +213,13 @@ class Lrud {
     const currentFocusNode = this.getNode(this.currentFocusNodeId)
 
     // dig up...
-    const actionableNode = this._findNextActionableNode(currentFocusNode, direction)
+    const actionableNode = this.climbUp(currentFocusNode, direction)
 
     // ...get the top's next child...
     const nextChild = this.getNextChild(actionableNode)
 
     // ...and dig down from that child
-    const focusableNode = this._findFocusableNode(nextChild)
+    const focusableNode = this.digDown(nextChild)
 
     this.assignFocus(focusableNode.id)
 

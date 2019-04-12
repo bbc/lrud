@@ -180,7 +180,7 @@ describe('lrud', () => {
     })
   })
 
-  describe.only('unregisterNode()', () => {
+  describe('unregisterNode()', () => {
     test('unregistering a leaf should remove it (set it to undefined)', () => {
       const navigation = new Lrud()
 
@@ -470,60 +470,40 @@ describe('lrud', () => {
     })
   })
 
-  describe('_findNextActionableNode()', () => {
+  describe('climbUp()', () => {
     test('scan up the tree 1 level', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'vertical' })
       navigation.registerNode('BOX_A', { parent: 'root', orientation: 'horizontal' })
       navigation.registerNode('BOX_B', { parent: 'root', orientation: 'horizontal' })
-      navigation.registerNode('NODE_1', { selectAction: 11, parent: 'BOX_B', order: 1 })
-      navigation.registerNode('NODE_2', { selectAction: 12, parent: 'BOX_B', order: 2 })
-      navigation.registerNode('NODE_3', { selectAction: 13, parent: 'BOX_B', order: 3 })
+      navigation.registerNode('NODE_1', { parent: 'BOX_B', isFocusable: true })
+      navigation.registerNode('NODE_2', { parent: 'BOX_B', isFocusable: true })
+      navigation.registerNode('NODE_3', { parent: 'BOX_B', isFocusable: true })
 
-      navigation.currentFocusNodePath = 'root.children.BOX_B.children.NODE_2'
+      navigation.assignFocus('NODE_2')
 
-      const nextActionableNode = navigation._findNextActionableNode('root.children.BOX_B.children.NODE_2', 'right')
+      const nextActionableNode = navigation.climbUp(navigation.getNode('NODE_2'), 'right')
 
-      // the representation of BOX_B
-      expect(nextActionableNode).toMatchObject({
-        parent: 'root',
-        orientation: 'horizontal',
-        children: {
-          NODE_1: {
-            selectAction: 11,
-            parent: 'BOX_B',
-            order: 1
-          },
-          NODE_2: {
-            selectAction: 12,
-            parent: 'BOX_B',
-            order: 2
-          },
-          NODE_3: {
-            selectAction: 13,
-            parent: 'BOX_B',
-            order: 3
-          }
-        }
-      })
+      expect(nextActionableNode.id).toEqual('BOX_B')
     })
 
     test('scan up the tree 2 levels', () => {
       const navigation = new Lrud()
       navigation.registerNode('root', { orientation: 'vertical' })
-      navigation.registerNode('page', { id: 'page', parent: 'root', orientation: 'horizontal' })
-      navigation.registerNode('BOX_A', { id: 'BOX_A', parent: 'page', orientation: 'vertical' })
-      navigation.registerNode('BOX_B', { id: 'BOX_B', parent: 'page', orientation: 'vertical' })
-      navigation.registerNode('NODE_1', { selectAction: 11, parent: 'BOX_A', order: 1 })
-      navigation.registerNode('NODE_2', { selectAction: 12, parent: 'BOX_A', order: 2 })
-      navigation.registerNode('NODE_3', { selectAction: 13, parent: 'BOX_A', order: 3 })
-      navigation.registerNode('NODE_4', { selectAction: 21, parent: 'BOX_B', order: 1 })
-      navigation.registerNode('NODE_5', { selectAction: 22, parent: 'BOX_B', order: 2 })
-      navigation.registerNode('NODE_6', { selectAction: 23, parent: 'BOX_B', order: 3 })
-      navigation.currentFocusNodePath = 'root.children.page.children.BOX_A.children.NODE_1'
+      navigation.registerNode('page', { parent: 'root', orientation: 'horizontal' })
+      navigation.registerNode('BOX_A', { parent: 'page', orientation: 'vertical' })
+      navigation.registerNode('BOX_B', { parent: 'page', orientation: 'vertical' })
+      navigation.registerNode('NODE_1', { parent: 'BOX_A', isFocusable: true })
+      navigation.registerNode('NODE_2', { parent: 'BOX_A', isFocusable: true })
+      navigation.registerNode('NODE_3', { parent: 'BOX_A', isFocusable: true })
+      navigation.registerNode('NODE_4', { parent: 'BOX_B', isFocusable: true })
+      navigation.registerNode('NODE_5', { parent: 'BOX_B', isFocusable: true })
+      navigation.registerNode('NODE_6', { parent: 'BOX_B', isFocusable: true })
 
-      const nextActionableNode = navigation._findNextActionableNode('root.children.page.children.BOX_A.children.NODE_1', 'right')
+      navigation.assignFocus('NODE_1')
+
+      const nextActionableNode = navigation.climbUp(navigation.getNode('NODE_1'), 'right')
 
       // the parent of NODE_1 is BOX_A but we couldn't dig up to that because it was horizontal
       // and the next thing that was horizontal was the page
@@ -536,9 +516,9 @@ describe('lrud', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'horizontal' })
-      navigation.registerNode('alpha', { id: 'alpha', parent: 'root' })
-      navigation.registerNode('beta', { id: 'beta', parent: 'root' })
-      navigation.registerNode('charlie', { id: 'charlie', parent: 'root' })
+      navigation.registerNode('alpha', { id: 'alpha', parent: 'root', isFocusable: true })
+      navigation.registerNode('beta', { id: 'beta', parent: 'root', isFocusable: true })
+      navigation.registerNode('charlie', { id: 'charlie', parent: 'root', isFocusable: true })
 
       // default active child of 'root' is 'alpha'
       let nextChild = navigation.getNextChild(navigation.getNode('root'))
@@ -556,9 +536,9 @@ describe('lrud', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'horizontal' })
-      navigation.registerNode('alpha', { id: 'alpha', parent: 'root' })
-      navigation.registerNode('beta', { id: 'beta', parent: 'root' })
-      navigation.registerNode('charlie', { id: 'charlie', parent: 'root' })
+      navigation.registerNode('alpha', { id: 'alpha', parent: 'root', isFocusable: true })
+      navigation.registerNode('beta', { id: 'beta', parent: 'root', isFocusable: true })
+      navigation.registerNode('charlie', { id: 'charlie', parent: 'root', isFocusable: true })
 
       navigation.assignFocus('charlie')
 
@@ -584,7 +564,7 @@ describe('lrud', () => {
     })
   })
 
-  describe('_findFocusableNode()', () => {
+  describe('digDown()', () => {
     test('dig down 2 levels', () => {
       const navigation = new Lrud()
 
@@ -601,7 +581,7 @@ describe('lrud', () => {
 
       // first focusable of 'root' should be 'NODE_A'
       const root = navigation.getNode('root')
-      const focusable = navigation._findFocusableNode(root)
+      const focusable = navigation.digDown(root)
       expect(focusable.id).toEqual('NODE_A')
     })
   })
