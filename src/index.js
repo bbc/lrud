@@ -37,7 +37,7 @@ class Lrud {
   }
 
   registerNode (nodeId, node = {}) {
-    // if this is the very first node, set it as root an return...
+    // if this is the very first node, set it as root and return...
     if (Object.keys(this.tree).length <= 0) {
       this.rootNodeId = nodeId
       this.tree[nodeId] = node
@@ -51,8 +51,20 @@ class Lrud {
       node.parent = this.rootNodeId
     }
 
-    // path is the node's parent plus itself (under `children`)
+    // path is the node's parent plus 'children' plus itself
     let path = this.nodePathList.find(path => path.endsWith(node.parent)) + '.children.' + nodeId
+
+    // if this node is the first child of its parent, we need to set its parents activeChild
+    // to it so that the parent always has an activeChild
+    // we can tell if its parent has any children by checking the nodePathList for
+    // entries containing '<parent>.children'
+    const childrenPaths = this.nodePathList.find(path => path.includes(node.parent + '.children'))
+
+    if (childrenPaths == null) {
+      // get the path of the parent
+      const parentPath = this.getPathForNodeId(node.parent)
+      _.set(this.tree, parentPath + '.activeChild', nodeId)
+    }
 
     _.set(this.tree, path, node)
     this.nodePathList.push(path)
@@ -129,6 +141,7 @@ class Lrud {
       return null
     }
 
+    // we have children, but the orientation doesn't match, so try our parent
     if (!this.isDirectionAndOrientationMatching(node.orientation, direction)) {
       return this._findNextActionableNode(this.getPathForNodeId(node.parent), direction)
     }
@@ -139,7 +152,7 @@ class Lrud {
   }
 
   handleKeyEvent (event) {
-    this._findNextActionableNode(event, this.currentFocusNodePath)
+    // this._findNextActionableNode(event, this.currentFocusNodePath)
   }
 
   _isFocusableNode (node) {

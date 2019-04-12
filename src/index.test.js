@@ -3,7 +3,7 @@
 const Lrud = require('./index')
 
 describe('lrud', () => {
-  describe('registerNode()', () => {
+  describe.only('registerNode()', () => {
     test('registering the very first registered node sets it to the root node', () => {
       const navigation = new Lrud()
 
@@ -99,6 +99,26 @@ describe('lrud', () => {
           }
         }
       })
+    })
+
+    // reword this
+    test.only('registering a new node with a parent that has no children sets its parent.activeChild to itself', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('alpha', { parent: 'root' })
+      navigation.registerNode('beta', { parent: 'root' })
+      navigation.registerNode('charlie', { parent: 'alpha' })
+      navigation.registerNode('delta', { parent: 'charlie' })
+      navigation.registerNode('echo', { parent: 'root' })
+
+      // 'root' should have 3 children and its activeChild should be 'alpha'
+      // 'alpha' should have 1 children and its activeChild should be 'charlie'
+      // 'charlie' should have 1 children and its activeChild should be 'delta'
+
+      expect(navigation.getNode('root').activeChild).toEqual('alpha')
+      expect(navigation.getNode('alpha').activeChild).toEqual('charlie')
+      expect(navigation.getNode('charlie').activeChild).toEqual('delta')
     })
   })
 
@@ -445,7 +465,7 @@ describe('lrud', () => {
   })
 
   describe('_findNextActionableNode()', () => {
-    test('scan up the tree', () => {
+    test('scan up the tree 1 level', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'vertical' })
@@ -459,6 +479,7 @@ describe('lrud', () => {
 
       const nextActionableNode = navigation._findNextActionableNode('root.children.BOX_B.children.NODE_2', 'right')
 
+      // the representation of BOX_B
       expect(nextActionableNode).toMatchObject({
         parent: 'root',
         orientation: 'horizontal',
@@ -480,6 +501,27 @@ describe('lrud', () => {
           }
         }
       })
+    })
+
+    test.only('scan up the tree 2 levels', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root', { orientation: 'vertical' })
+      navigation.registerNode('page', { id: 'page', parent: 'root', orientation: 'horizontal' })
+      navigation.registerNode('BOX_A', { id: 'BOX_A', parent: 'page', orientation: 'vertical' })
+      navigation.registerNode('BOX_B', { id: 'BOX_B', parent: 'page', orientation: 'vertical' })
+      navigation.registerNode('NODE_1', { selectAction: 11, parent: 'BOX_A', order: 1 })
+      navigation.registerNode('NODE_2', { selectAction: 12, parent: 'BOX_A', order: 2 })
+      navigation.registerNode('NODE_3', { selectAction: 13, parent: 'BOX_A', order: 3 })
+      navigation.registerNode('NODE_4', { selectAction: 21, parent: 'BOX_B', order: 1 })
+      navigation.registerNode('NODE_5', { selectAction: 22, parent: 'BOX_B', order: 2 })
+      navigation.registerNode('NODE_6', { selectAction: 23, parent: 'BOX_B', order: 3 })
+      navigation.currentFocusNodePath = 'root.children.page.children.BOX_A.children.NODE_1'
+
+      const nextActionableNode = navigation._findNextActionableNode('root.children.page.children.BOX_A.children.NODE_1', 'right')
+
+      // the parent of NODE_1 is BOX_A but we couldn't dig up to that because it was horizontal
+      // and the next thing that was horizontal was the page
+      expect(nextActionableNode.id).toEqual('page')
     })
   })
 })
