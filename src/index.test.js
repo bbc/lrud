@@ -12,7 +12,7 @@ describe('lrud', () => {
       })
 
       expect(navigation.getRootNodeId()).toEqual('root')
-      expect(navigation.getTree()).toMatchObject({
+      expect(navigation.tree).toMatchObject({
         root: {
           selectAction: true
         }
@@ -26,7 +26,7 @@ describe('lrud', () => {
       navigation.registerNode('beta', { x: 1 })
       navigation.registerNode('charlie', { x: 2 })
 
-      expect(navigation.getTree()).toMatchObject({
+      expect(navigation.tree).toMatchObject({
         alpha: {
           z: 1,
           children: {
@@ -44,7 +44,7 @@ describe('lrud', () => {
       navigation.registerNode('beta', { b: 2 })
       navigation.registerNode('charlie', { c: 3, parent: 'beta' })
 
-      expect(navigation.getTree()).toMatchObject({
+      expect(navigation.tree).toMatchObject({
         alpha: {
           a: 1,
           children: {
@@ -71,7 +71,7 @@ describe('lrud', () => {
       navigation.registerNode('PID-Y', { parent: 'content-grid' })
       navigation.registerNode('PID-Z', { parent: 'content-grid' })
 
-      expect(navigation.getTree()).toMatchObject({
+      expect(navigation.tree).toMatchObject({
         root: {
           children: {
             'region-a': {
@@ -190,7 +190,7 @@ describe('lrud', () => {
 
       navigation.unregisterNode('NODE_A')
 
-      expect(navigation.getTree()).toMatchObject({
+      expect(navigation.tree).toMatchObject({
         root: {
           selectAction: 1,
           children: {
@@ -204,7 +204,7 @@ describe('lrud', () => {
 
       expect(navigation.getNode('NODE_A')).toEqual(undefined)
 
-      expect(navigation.getNodePathList()).toEqual([
+      expect(navigation.nodePathList).toEqual([
         'root',
         'root.children.NODE_B'
       ])
@@ -225,7 +225,7 @@ describe('lrud', () => {
 
       navigation.unregisterNode('BOX_B')
 
-      expect(navigation.getTree()).toMatchObject({
+      expect(navigation.tree).toMatchObject({
         root: {
           selectAction: 1,
           children: {
@@ -253,7 +253,7 @@ describe('lrud', () => {
 
       expect(navigation.getNode('BOX_B')).toEqual(undefined)
 
-      expect(navigation.getNodePathList()).toEqual([
+      expect(navigation.nodePathList).toEqual([
         'root',
         'root.children.BOX_A',
         'root.children.BOX_A.children.NODE_1',
@@ -313,7 +313,7 @@ describe('lrud', () => {
 
       navigation.unregisterNode('BOX_B')
 
-      expect(navigation.getTree()).toMatchObject({
+      expect(navigation.tree).toMatchObject({
         root: {
           id: 'root',
           children: {
@@ -403,7 +403,7 @@ describe('lrud', () => {
       const node2 = navigation.pickNode('NODE_2')
 
       expect(node2).toMatchObject({ selectAction: 12, parent: 'BOX_A' })
-      expect(navigation.getTree()).toMatchObject({
+      expect(navigation.tree).toMatchObject({
         root: {
           selectAction: 1,
           children: {
@@ -525,7 +525,7 @@ describe('lrud', () => {
     })
   })
 
-  describe('getChildInDirection()', () => {
+  describe('getNextChildInDirection()', () => {
     test('with no order values, get the next child of a node', () => {
       const navigation = new Lrud()
 
@@ -535,13 +535,13 @@ describe('lrud', () => {
       navigation.registerNode('charlie', { id: 'charlie', parent: 'root', isFocusable: true })
 
       // default active child of 'root' is 'alpha'
-      let nextChild = navigation.getChildInDirection(navigation.getNode('root'), 'right')
+      let nextChild = navigation.getNextChildInDirection(navigation.getNode('root'), 'right')
 
       expect(nextChild.id).toEqual('beta')
 
       // so then we assign focus to 'beta' and go again
       navigation.assignFocus('beta')
-      nextChild = navigation.getChildInDirection(navigation.getNode('root'), 'right')
+      nextChild = navigation.getNextChildInDirection(navigation.getNode('root'), 'right')
 
       expect(nextChild.id).toEqual('charlie')
     })
@@ -557,8 +557,64 @@ describe('lrud', () => {
       navigation.assignFocus('charlie')
 
       // we're already focused on the last child of root, so it should return that
-      let nextChild = navigation.getChildInDirection(navigation.getNode('root'), 'right')
+      let nextChild = navigation.getNextChildInDirection(navigation.getNode('root'), 'right')
       expect(nextChild.id).toEqual('charlie')
+    })
+
+    test('horizontal list, direction: right', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'horizontal' })
+      navigation.registerNode('a')
+      navigation.registerNode('b')
+      navigation.registerNode('c')
+
+      const child = navigation.getNextChildInDirection(navigation.getNode('root'), 'right')
+
+      expect(child.id).toEqual('b')
+    })
+
+    test('horizontal list, direction: left', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'horizontal' })
+      navigation.registerNode('a', { isFocusable: true })
+      navigation.registerNode('b', { isFocusable: true })
+      navigation.registerNode('c', { isFocusable: true })
+
+      navigation.assignFocus('b')
+
+      const child = navigation.getNextChildInDirection(navigation.getNode('root'), 'left')
+
+      expect(child.id).toEqual('a')
+    })
+
+    test('vertical list, direction: down', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'vertical' })
+      navigation.registerNode('a')
+      navigation.registerNode('b')
+      navigation.registerNode('c')
+
+      const child = navigation.getNextChildInDirection(navigation.getNode('root'), 'down')
+
+      expect(child.id).toEqual('b')
+    })
+
+    test('vertical list, direction: up', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'vertical' })
+      navigation.registerNode('a', { isFocusable: true })
+      navigation.registerNode('b', { isFocusable: true })
+      navigation.registerNode('c', { isFocusable: true })
+
+      navigation.assignFocus('b')
+
+      const child = navigation.getNextChildInDirection(navigation.getNode('root'), 'up')
+
+      expect(child.id).toEqual('a')
     })
 
     // NOT IMPLEMENTED YET
@@ -573,7 +629,7 @@ describe('lrud', () => {
       navigation.assignFocus('beta')
 
       // we're already focused on the last child of root, so it should return that
-      let nextChild = navigation.getChildInDirection(navigation.getNode('root'), 'right')
+      let nextChild = navigation.getNextChildInDirection(navigation.getNode('root'), 'right')
       expect(nextChild.id).toEqual('alpha')
     })
   })
