@@ -264,6 +264,8 @@ class Lrud {
     if (node.parent) {
       this._setActiveChild(node.parent, nodeId)
     }
+
+    this.emitter.emit('focus', node)
   }
 }
 

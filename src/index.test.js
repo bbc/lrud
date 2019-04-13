@@ -468,6 +468,20 @@ describe('lrud', () => {
       expect(navigation.getNode('region-b').activeChild).toEqual('content-grid')
       expect(navigation.getNode('root').activeChild).toEqual('region-b')
     })
+
+    test('assigning focus should set the currentFocusNodeId of the instance', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('a', { parent: 'root', isFocusable: true })
+      navigation.registerNode('b', { parent: 'root', isFocusable: true })
+      navigation.registerNode('c', { parent: 'root', isFocusable: true })
+
+      navigation.assignFocus('b')
+
+      expect(navigation.currentFocusNodeId).toEqual('b')
+      expect(navigation.getNode('root').activeChild).toEqual('b')
+    })
   })
 
   describe('climbUp()', () => {
@@ -586,14 +600,14 @@ describe('lrud', () => {
     })
   })
 
-  describe.only('handleKeyEvent()', () => {
+  describe('handleKeyEvent()', () => {
     test('simple horizontal list - move to a sibling', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'horizontal' })
-      navigation.registerNode('child_1', { id: 'child_1', parent: 'root', isFocusable: true })
-      navigation.registerNode('child_2', { id: 'child_2', parent: 'root', isFocusable: true })
-      navigation.registerNode('child_3', { id: 'child_3', parent: 'root', isFocusable: true })
+      navigation.registerNode('child_1', { parent: 'root', isFocusable: true })
+      navigation.registerNode('child_2', { parent: 'root', isFocusable: true })
+      navigation.registerNode('child_3', { parent: 'root', isFocusable: true })
 
       navigation.assignFocus('child_1')
 
@@ -606,9 +620,9 @@ describe('lrud', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'horizontal' })
-      navigation.registerNode('child_1', { id: 'child_1', parent: 'root', isFocusable: true })
-      navigation.registerNode('child_2', { id: 'child_2', parent: 'root', isFocusable: true })
-      navigation.registerNode('child_3', { id: 'child_3', parent: 'root', isFocusable: true })
+      navigation.registerNode('child_1', { parent: 'root', isFocusable: true })
+      navigation.registerNode('child_2', { parent: 'root', isFocusable: true })
+      navigation.registerNode('child_3', { parent: 'root', isFocusable: true })
 
       navigation.assignFocus('child_3')
 
@@ -621,15 +635,37 @@ describe('lrud', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'horizontal', wraps: true })
-      navigation.registerNode('child_1', { id: 'child_1', parent: 'root', isFocusable: true })
-      navigation.registerNode('child_2', { id: 'child_2', parent: 'root', isFocusable: true })
-      navigation.registerNode('child_3', { id: 'child_3', parent: 'root', isFocusable: true })
+      navigation.registerNode('child_1', { parent: 'root', isFocusable: true })
+      navigation.registerNode('child_2', { parent: 'root', isFocusable: true })
+      navigation.registerNode('child_3', { parent: 'root', isFocusable: true })
 
       navigation.assignFocus('child_3')
 
       navigation.handleKeyEvent({ direction: 'right' })
 
       expect(navigation.currentFocusNodeId).toEqual('child_1')
+    })
+
+    test('moving across a simple horizontal list - fire focus event', () => {
+      const navigation = new Lrud()
+      const spy = jest.fn()
+      navigation.on('focus', spy)
+      navigation.registerNode('root', { orientation: 'horizontal' })
+      navigation.registerNode('child_1', { parent: 'root', isFocusable: true })
+      navigation.registerNode('child_2', { parent: 'root', isFocusable: true })
+      navigation.registerNode('child_3', { parent: 'root', isFocusable: true })
+
+      navigation.assignFocus('child_1')
+
+      navigation.handleKeyEvent({ direction: 'right' })
+
+      expect(navigation.currentFocusNodeId).toEqual('child_2')
+
+      expect(spy).toHaveBeenCalledWith({
+        parent: 'root',
+        id: 'child_2',
+        isFocusable: true
+      })
     })
   })
 })
