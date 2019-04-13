@@ -525,7 +525,7 @@ describe('lrud', () => {
     })
   })
 
-  describe('getNextChild()', () => {
+  describe('getChildInDirection()', () => {
     test('with no order values, get the next child of a node', () => {
       const navigation = new Lrud()
 
@@ -535,13 +535,13 @@ describe('lrud', () => {
       navigation.registerNode('charlie', { id: 'charlie', parent: 'root', isFocusable: true })
 
       // default active child of 'root' is 'alpha'
-      let nextChild = navigation.getNextChild(navigation.getNode('root'))
+      let nextChild = navigation.getChildInDirection(navigation.getNode('root'), 'right')
 
       expect(nextChild.id).toEqual('beta')
 
       // so then we assign focus to 'beta' and go again
       navigation.assignFocus('beta')
-      nextChild = navigation.getNextChild(navigation.getNode('root'))
+      nextChild = navigation.getChildInDirection(navigation.getNode('root'), 'right')
 
       expect(nextChild.id).toEqual('charlie')
     })
@@ -557,7 +557,7 @@ describe('lrud', () => {
       navigation.assignFocus('charlie')
 
       // we're already focused on the last child of root, so it should return that
-      let nextChild = navigation.getNextChild(navigation.getNode('root'))
+      let nextChild = navigation.getChildInDirection(navigation.getNode('root'), 'right')
       expect(nextChild.id).toEqual('charlie')
     })
 
@@ -573,8 +573,38 @@ describe('lrud', () => {
       navigation.assignFocus('beta')
 
       // we're already focused on the last child of root, so it should return that
-      let nextChild = navigation.getNextChild(navigation.getNode('root'))
+      let nextChild = navigation.getChildInDirection(navigation.getNode('root'), 'right')
       expect(nextChild.id).toEqual('alpha')
+    })
+  })
+
+  describe('getNodeFirstChild()', () => {
+    test('get first child of a node', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('a')
+      navigation.registerNode('b')
+      navigation.registerNode('c')
+
+      const root = navigation.getNode('root')
+
+      expect(navigation.getNodeFirstChild(root).id).toEqual('a')
+    })
+  })
+
+  describe('getNodeLastChild()', () => {
+    test('get first child of a node', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('a')
+      navigation.registerNode('b')
+      navigation.registerNode('c')
+
+      const root = navigation.getNode('root')
+
+      expect(navigation.getNodeLastChild(root).id).toEqual('c')
     })
   })
 
@@ -646,7 +676,7 @@ describe('lrud', () => {
       expect(navigation.currentFocusNodeId).toEqual('child_1')
     })
 
-    test('moving across a simple horizontal list - fire focus event', () => {
+    test('moving across a simple horizontal list twice - fire focus events', () => {
       const navigation = new Lrud()
       const spy = jest.fn()
       navigation.on('focus', spy)
@@ -664,6 +694,48 @@ describe('lrud', () => {
       expect(spy).toHaveBeenCalledWith({
         parent: 'root',
         id: 'child_2',
+        isFocusable: true
+      })
+
+      navigation.handleKeyEvent({ direction: 'right' })
+
+      expect(navigation.currentFocusNodeId).toEqual('child_3')
+
+      expect(spy).toHaveBeenCalledWith({
+        parent: 'root',
+        id: 'child_3',
+        isFocusable: true
+      })
+    })
+
+    test('moving across a simple horizontal list, forwards then backwards - fire focus events', () => {
+      const navigation = new Lrud()
+      const spy = jest.fn()
+      navigation.on('focus', spy)
+      navigation.registerNode('root', { orientation: 'horizontal' })
+      navigation.registerNode('child_1', { parent: 'root', isFocusable: true })
+      navigation.registerNode('child_2', { parent: 'root', isFocusable: true })
+      navigation.registerNode('child_3', { parent: 'root', isFocusable: true })
+
+      navigation.assignFocus('child_1')
+
+      navigation.handleKeyEvent({ direction: 'right' })
+
+      expect(navigation.currentFocusNodeId).toEqual('child_2')
+
+      expect(spy).toHaveBeenCalledWith({
+        parent: 'root',
+        id: 'child_2',
+        isFocusable: true
+      })
+
+      navigation.handleKeyEvent({ direction: 'left' })
+
+      expect(navigation.currentFocusNodeId).toEqual('child_1')
+
+      expect(spy).toHaveBeenCalledWith({
+        parent: 'root',
+        id: 'child_1',
         isFocusable: true
       })
     })

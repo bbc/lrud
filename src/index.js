@@ -140,14 +140,6 @@ class Lrud {
     return this.tree
   }
 
-  getNodeFirstChild (node) {
-    if (!node.children) {
-      return undefined
-    }
-
-    return this.getNode(Object.keys(node.children)[0])
-  }
-
   // climb up
   climbUp (node, direction) {
     if (!node.orientation && !node.children) {
@@ -195,6 +187,23 @@ class Lrud {
     return this.digDown(activeChild)
   }
 
+  getChildInDirection (node, direction) {
+    direction = direction.toUpperCase()
+
+    if (node.orientation === 'horizontal' && direction === 'RIGHT') {
+      return this.getNextChild(node)
+    }
+    if (node.orientation === 'horizontal' && direction === 'LEFT') {
+      return this.getPrevChild(node)
+    }
+    if (node.orientation === 'vertical' && direction === 'DOWN') {
+      return this.getNextChild(node)
+    }
+    if (node.orientation === 'vertical' && direction === 'UP') {
+      return this.getPrevChild(node)
+    }
+  }
+
   getNextChild (node) {
     const childKeys = Object.keys(node.children)
 
@@ -212,6 +221,41 @@ class Lrud {
     }
   }
 
+  getPrevChild (node) {
+    const childKeys = Object.keys(node.children)
+
+    const indexOfCurrentChild = childKeys.indexOf(node.activeChild)
+
+    if (indexOfCurrentChild === childKeys[0]) {
+      // we're on the first child
+      if (node.wraps) {
+        return this.getNodeLastChild(node)
+      } else {
+        return node.children[childKeys[indexOfCurrentChild]]
+      }
+    } else {
+      return node.children[childKeys[indexOfCurrentChild - 1]]
+    }
+  }
+
+  getNodeFirstChild (node) {
+    if (!node.children) {
+      return undefined
+    }
+
+    return this.getNode(Object.keys(node.children)[0])
+  }
+
+  getNodeLastChild (node) {
+    if (!node.children) {
+      return undefined
+    }
+
+    const childrenIds = Object.keys(node.children)
+
+    return this.getNode(childrenIds[childrenIds.length - 1])
+  }
+
   handleKeyEvent (event) {
     const direction = event.direction
 
@@ -221,7 +265,7 @@ class Lrud {
     const actionableNode = this.climbUp(currentFocusNode, direction)
 
     // ...get the top's next child...
-    const nextChild = this.getNextChild(actionableNode)
+    const nextChild = this.getChildInDirection(actionableNode, direction)
 
     // ...and dig down from that child
     const focusableNode = this.digDown(nextChild)
@@ -232,11 +276,6 @@ class Lrud {
   }
 
   _isFocusableNode (node) {
-    return !!(node.selectAction || node.isFocusable)
-  }
-
-  _isFocusableNodeByPath (path) {
-    const node = this.getNodeByPath(path)
     return !!(node.selectAction || node.isFocusable)
   }
 
@@ -263,6 +302,10 @@ class Lrud {
 
     if (node.parent) {
       this._setActiveChild(node.parent, nodeId)
+    }
+
+    if (node.onFocus) {
+      node.onFocus()
     }
 
     this.emitter.emit('focus', node)
