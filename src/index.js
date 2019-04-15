@@ -6,27 +6,52 @@ class Lrud {
   constructor ({ rootNodeId, currentFocusNodePath } = {}) {
     this.tree = {}
     this.nodePathList = []
+    this.focusableNodePathList = []
     this.rootNodeId = rootNodeId || null
     this.currentFocusNodeId = null
     this.emitter = new EventEmitter()
   }
 
+  /**
+   * given an orientation and a direction, do they match? i.e an
+   * orientation `horizontal` and direction `left` or `right` is considered matching.
+   *
+   * direction CAN be passed as `*` (wildcard). this will always return true
+   *
+   * @param {string} orientation
+   * @param {string} direction
+   */
   isDirectionAndOrientationMatching (orientation, direction) {
     orientation = orientation.toUpperCase()
     direction = direction.toUpperCase()
 
     return (
+      (direction === '*') ||
       (orientation === 'VERTICAL' && (direction === 'UP' || direction === 'DOWN')) ||
       (orientation === 'HORIZONTAL' && (direction === 'LEFT' || direction === 'RIGHT'))
     )
   }
 
+  /**
+   *
+   * @param {string} eventName event to subscribe to
+   * @param {function} callback function to call on event
+   */
   on (eventName, callback) {
     this.emitter.on(eventName, callback)
   }
 
-  getRootNodeId () {
-    return this.rootNodeId
+  /**
+   * return the root node
+   */
+  getRootNode () {
+    const node = this.getNode(this.rootNodeId)
+
+    if (!node) {
+      throw new Error('no root node')
+    }
+
+    return node
   }
 
   getPathForNodeId (nodeId) {
@@ -58,7 +83,7 @@ class Lrud {
     let path = this.nodePathList.find(path => path.endsWith(node.parent)) + '.children.' + nodeId
 
     // if this node is the first child of its parent, we need to set its parents activeChild
-    // to it so that the parent always has an activeChild
+    // to it so that the parent always has an `activeChild` value
     // we can tell if its parent has any children by checking the nodePathList for
     // entries containing '<parent>.children'
     const parentsChildPaths = this.nodePathList.find(path => path.includes(node.parent + '.children'))
@@ -70,6 +95,11 @@ class Lrud {
 
     _.set(this.tree, path, node)
     this.nodePathList.push(path)
+
+    // if the node is focusable, we want to add its path to our focusableNodePathList
+    if (this._isFocusableNode(node)) {
+      this.focusableNodePathList.push(path)
+    }
     return this
   }
 
@@ -83,7 +113,6 @@ class Lrud {
     // get a copy of the node to pass to the blur event
     const nodeClone = _.get(this.tree, path)
 
-    // get its parent, delete it, and reset the parent
     const parentNode = this.getNode(nodeClone.parent)
 
     delete parentNode.children[nodeId]
@@ -96,14 +125,25 @@ class Lrud {
       return !(nodeIdPath.includes('.' + nodeId))
     })
 
-    // if its parent's active child is the node we're unregistering, reset that
-    // and reset whats focused
+    // if the node we're unregistering was focusable, we need to remove it from
+    // our focusableNodePathList
+    this.focusableNodePathList = this.focusableNodePathList.filter(nodeIdPath => {
+      return !(nodeIdPath.includes('.' + nodeId))
+    })
+
+    // if its parent's active child is the node we're unregistering (i.e
+    // we're focused on the only leaf of a branch) then unset that, dig up
+    // to a workable node, grab that nodes previous child, and dig down from there
     if (parentNode.activeChild && parentNode.activeChild === nodeId) {
-      _.set(this.tree, this.getPathForNodeId(parentNode.id) + '.activeChild', null)
-      const focusableChild = this.digDown(parentNode)
-      this.assignFocus(focusableChild.id)
+      delete parentNode.activeChild
+      delete parentNode.children
+      const top = this.climbUp(parentNode, '*')
+      const prev = this.getPrevChild(top)
+      const child = this.digDown(prev)
+      this.assignFocus(child.id)
     }
 
+    // reset the parent after we've deleted it and amended the parents active child, etc.
     _.set(this.tree, this.getPathForNodeId(parentNode.id), parentNode)
 
     // blur on the nodeClone
@@ -112,14 +152,18 @@ class Lrud {
     return this
   }
 
+  /**
+   * return a node based on ID
+   * @param {string} nodeId node id
+   */
   getNode (nodeId) {
-    return this.getNodeByPath(this.getPathForNodeId(nodeId))
+    return _.get(this.tree, (this.getPathForNodeId(nodeId)))
   }
 
-  getNodeByPath (path) {
-    return _.get(this.tree, path)
-  }
-
+  /**
+   * return a node by ID and then unregister it from the instance
+   * @param {string} nodeId node id
+   */
   pickNode (nodeId) {
     const path = this.getPathForNodeId(nodeId)
 
@@ -127,9 +171,21 @@ class Lrud {
       return
     }
 
-    const node = this.getNodeByPath(path)
+    const node = _.get(this.tree, path)
     this.unregisterNode(nodeId)
     return node
+  }
+
+  _isNodeInFocusableNodePathList (node) {
+    return this.focusableNodePathList.some(nodeIdPath => {
+      if (nodeIdPath.includes('.' + node.id + '.')) {
+        return true
+      }
+      if (node.id === this.rootNodeId && nodeIdPath.includes(node.id + '.')) {
+        return true
+      }
+      return false
+    })
   }
 
   // climb up
@@ -150,6 +206,11 @@ class Lrud {
 
     // we have children, but the orientation doesn't match, so try our parent
     if (!this.isDirectionAndOrientationMatching(node.orientation, direction)) {
+      return this.climbUp(this.getNode(node.parent), direction)
+    }
+
+    // if the node we're on contains no focusable children, bubble up again
+    if (!this._isNodeInFocusableNodePathList(node)) {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
@@ -198,6 +259,10 @@ class Lrud {
     return this.getNode(node.activeChild)
   }
 
+  /**
+   * get the semantic "next" child for a node
+   * @param {object} node
+   */
   getNextChild (node) {
     const childKeys = Object.keys(node.children)
 
@@ -215,6 +280,10 @@ class Lrud {
     }
   }
 
+  /**
+   * get the semantic "previous" child for a node
+   * @param {object} node
+   */
   getPrevChild (node) {
     const childKeys = Object.keys(node.children)
 

@@ -11,7 +11,7 @@ describe('lrud', () => {
         selectAction: true
       })
 
-      expect(navigation.getRootNodeId()).toEqual('root')
+      expect(navigation.rootNodeId).toEqual('root')
       expect(navigation.tree).toMatchObject({
         root: {
           selectAction: true
@@ -119,6 +119,18 @@ describe('lrud', () => {
       expect(navigation.getNode('root').activeChild).toEqual('alpha')
       expect(navigation.getNode('alpha').activeChild).toEqual('charlie')
       expect(navigation.getNode('charlie').activeChild).toEqual('delta')
+    })
+  })
+
+  describe('getRootNode()', () => {
+    test('return the root node', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+
+      const node = navigation.getRootNode()
+
+      expect(node.id).toEqual('root')
     })
   })
 
@@ -359,6 +371,51 @@ describe('lrud', () => {
           }
         }
       })
+    })
+
+    test('unregistering a branch with only 1 leaf should reset focus properly one level up', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'vertical' })
+      navigation.registerNode('a', { parent: 'root', orientation: 'vertical' })
+      navigation.registerNode('b', { parent: 'root', orientation: 'vertical' })
+      navigation.registerNode('a-1', { parent: 'a', isFocusable: true })
+      navigation.registerNode('a-2', { parent: 'a', isFocusable: true })
+      navigation.registerNode('a-3', { parent: 'a', isFocusable: true })
+      navigation.registerNode('b-1', { parent: 'b', isFocusable: true })
+
+      navigation.assignFocus('b-1')
+
+      navigation.unregisterNode('b')
+
+      // so now we should be focused on `a-1`, as its the first relevant thing to be focused on
+
+      expect(navigation.currentFocusNodeId).toEqual('a-1')
+    })
+
+    test('unregistering the only leaf of a long line of single branches should reset focus properly', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'vertical' })
+
+      navigation.registerNode('a', { parent: 'root', orientation: 'vertical' })
+      navigation.registerNode('a-1', { parent: 'a', isFocusable: true })
+      navigation.registerNode('a-2', { parent: 'a', isFocusable: true })
+
+      navigation.registerNode('b', { parent: 'root', orientation: 'vertical' })
+      navigation.registerNode('c', { parent: 'b', orientation: 'vertical' })
+      navigation.registerNode('d', { parent: 'c', orientation: 'vertical' })
+      navigation.registerNode('e', { parent: 'd', orientation: 'vertical' })
+      navigation.registerNode('e-1', { parent: 'e', isFocusable: true })
+
+      navigation.assignFocus('e-1')
+
+      navigation.unregisterNode('e-1')
+
+      // we have to dig up to the first thing that has children, and then dig down for the next child
+      // so basically our focus should now be on `a-1`
+
+      expect(navigation.currentFocusNodeId).toEqual('a-1')
     })
   })
 
@@ -795,5 +852,41 @@ describe('lrud', () => {
         isFocusable: true
       })
     })
+
+    test('should jump between activeChild for 2 vertical panes side-by-side', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'horizontal' })
+      navigation.registerNode('l', { orientation: 'vertical' })
+      navigation.registerNode('l-1', { parent: 'l', isFocusable: true })
+      navigation.registerNode('l-2', { parent: 'l', isFocusable: true })
+      navigation.registerNode('l-3', { parent: 'l', isFocusable: true })
+      navigation.registerNode('r', { orientation: 'vertical' })
+      navigation.registerNode('r-1', { parent: 'r', isFocusable: true })
+      navigation.registerNode('r-2', { parent: 'r', isFocusable: true })
+      navigation.registerNode('r-3', { parent: 'r', isFocusable: true })
+
+      navigation.assignFocus('l-2')
+
+      // go down one...
+      navigation.handleKeyEvent({ direction: 'down' })
+      expect(navigation.currentFocusNodeId).toEqual('l-3')
+
+      // jump across to right pane, first focusable...
+      navigation.handleKeyEvent({ direction: 'right' })
+      expect(navigation.currentFocusNodeId).toEqual('r-1')
+
+      // go down one...
+      navigation.handleKeyEvent({ direction: 'down' })
+      expect(navigation.currentFocusNodeId).toEqual('r-2')
+
+      // go back left again...
+      navigation.handleKeyEvent({ direction: 'left' })
+      expect(navigation.currentFocusNodeId).toEqual('l-3')
+    })
+  })
+
+  describe('handleKeyEvent() - grid behaviour', () => {
+
   })
 })
