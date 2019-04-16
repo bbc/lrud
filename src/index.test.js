@@ -1060,7 +1060,7 @@ describe('lrud', () => {
       expect(navigation.currentFocusNodeId).toEqual('row-2-col-2')
     })
 
-    test('moving between 2 vertical wrappers inside a vertical wrapper', () => {
+    test('moving between 2 vertical wrappers inside a vertical wrapper [fig-3]', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'vertical' })
@@ -1089,13 +1089,13 @@ describe('lrud', () => {
       expect(navigation.currentFocusNodeId).toEqual('list-b-box-2')
     })
 
-    test.skip('column alignment between 2 higher level grid wrappers [fig-2]', () => {
+    test('column alignment between 2 higher level grid wrappers [fig-2]', () => {
       const navigation = new Lrud()
 
-      navigation.registerNode('root', { orientation: 'vertical', isIndexAlign: true })
+      navigation.registerNode('root', { orientation: 'vertical', isVerticalIndexAlign: true })
 
       // grid a
-      navigation.registerNode('grid-a', { orientation: 'vertical', isIndexAlign: true })
+      navigation.registerNode('grid-a', { orientation: 'vertical', isVerticalIndexAlign: true })
       navigation.registerNode('grid-a-row-1', { orientation: 'horizontal' })
       navigation.registerNode('grid-a-row-1-col-1', { parent: 'grid-a-row-1', isFocusable: true })
       navigation.registerNode('grid-a-row-1-col-2', { parent: 'grid-a-row-1', isFocusable: true })
@@ -1104,7 +1104,7 @@ describe('lrud', () => {
       navigation.registerNode('grid-a-row-2-col-2', { parent: 'grid-a-row-2', isFocusable: true })
 
       // grid-b
-      navigation.registerNode('grid-b', { orientation: 'vertical', isIndexAlign: true })
+      navigation.registerNode('grid-b', { orientation: 'vertical', isVerticalIndexAlign: true })
       navigation.registerNode('grid-b-row-1', { orientation: 'horizontal' })
       navigation.registerNode('grid-b-row-1-col-1', { parent: 'grid-b-row-1', isFocusable: true })
       navigation.registerNode('grid-b-row-1-col-2', { parent: 'grid-b-row-1', isFocusable: true })
@@ -1123,8 +1123,8 @@ describe('lrud', () => {
       navigation.handleKeyEvent({ direction: 'down' })
       expect(navigation.currentFocusNodeId).toEqual('grid-b-row-1-col-2')
 
-      // navigation.handleKeyEvent({ direction: 'down' })
-      // expect(navigation.currentFocusNodeId).toEqual('grid-b-row-2-col-2')
+      navigation.handleKeyEvent({ direction: 'down' })
+      expect(navigation.currentFocusNodeId).toEqual('grid-b-row-2-col-2')
     })
   })
 })

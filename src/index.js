@@ -6,8 +6,6 @@ const Closest = (values, goal) => values.reduce(function (prev, curr) {
   return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev)
 })
 
-// const getIndexes = nodes => nodes.index
-
 class Lrud {
   constructor ({ rootNodeId, currentFocusNodePath } = {}) {
     this.tree = {}
@@ -172,7 +170,6 @@ class Lrud {
     if (parentNode.activeChild && parentNode.activeChild === nodeId) {
       delete parentNode.activeChild
       const top = this.climbUp(parentNode, '*')
-      console.log('top', top)
       const prev = this.getPrevChild(top)
       const child = this.digDown(prev)
       this.assignFocus(child.id)
@@ -252,16 +249,13 @@ class Lrud {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
-    // if the activeChild of this node is the last node of its
-    // children, AND that child contains some focusable element
-    // at some point, see if its own parent can handle it (jumping from one container up to another)
-    // we check if the activeChild is in a focusable path for only-child branches (test fig-4)
-    if (this.getNextChildInDirection(node, direction).id === node.activeChild && this._isNodeInFocusableNodePathList(this.getNode(node.activeChild))) {
+    // if the next child in the direction is both the same as this node's activeChild
+    // AND a leaf, bubble up too - handles nested wrappers, like docs/test-diagrams/fig-3.png
+    const nextChildInDirection = this.getNextChildInDirection(node, direction)
+    if (nextChildInDirection && nextChildInDirection.id === node.activeChild && this._isFocusableNode(this.getNode(node.activeChild))) {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
-    // so now the orientation matches the direction, and it has children,
-    // AND its not already focused on its own last child, so we return it
     return node
   }
 
