@@ -1089,26 +1089,32 @@ describe('lrud', () => {
       expect(navigation.currentFocusNodeId).toEqual('list-b-box-2')
     })
 
+    /*
+    how can we know when we jump from one wrapper to another
+    to go to the first new row and not the 2nd?
+
+    its jumping to grid b row TWO because thats the 2nd index
+    */
     test('column alignment between 2 higher level grid wrappers [fig-2]', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'vertical', isVerticalIndexAlign: true })
 
       // grid a
-      navigation.registerNode('grid-a', { orientation: 'vertical', isVerticalIndexAlign: true })
-      navigation.registerNode('grid-a-row-1', { orientation: 'horizontal' })
+      navigation.registerNode('grid-a', { parent: 'root', orientation: 'vertical', isVerticalIndexAlign: true })
+      navigation.registerNode('grid-a-row-1', { parent: 'grid-a', orientation: 'horizontal' })
       navigation.registerNode('grid-a-row-1-col-1', { parent: 'grid-a-row-1', isFocusable: true })
       navigation.registerNode('grid-a-row-1-col-2', { parent: 'grid-a-row-1', isFocusable: true })
-      navigation.registerNode('grid-a-row-2', { orientation: 'horizontal' })
+      navigation.registerNode('grid-a-row-2', { parent: 'grid-a', orientation: 'horizontal' })
       navigation.registerNode('grid-a-row-2-col-1', { parent: 'grid-a-row-2', isFocusable: true })
       navigation.registerNode('grid-a-row-2-col-2', { parent: 'grid-a-row-2', isFocusable: true })
 
       // grid-b
-      navigation.registerNode('grid-b', { orientation: 'vertical', isVerticalIndexAlign: true })
-      navigation.registerNode('grid-b-row-1', { orientation: 'horizontal' })
+      navigation.registerNode('grid-b', { parent: 'root', orientation: 'vertical', isVerticalIndexAlign: true })
+      navigation.registerNode('grid-b-row-1', { parent: 'grid-b', orientation: 'horizontal' })
       navigation.registerNode('grid-b-row-1-col-1', { parent: 'grid-b-row-1', isFocusable: true })
       navigation.registerNode('grid-b-row-1-col-2', { parent: 'grid-b-row-1', isFocusable: true })
-      navigation.registerNode('grid-b-row-2', { orientation: 'horizontal' })
+      navigation.registerNode('grid-b-row-2', { parent: 'grid-b', orientation: 'horizontal' })
       navigation.registerNode('grid-b-row-2-col-1', { parent: 'grid-b-row-2', isFocusable: true })
       navigation.registerNode('grid-b-row-2-col-2', { parent: 'grid-b-row-2', isFocusable: true })
 

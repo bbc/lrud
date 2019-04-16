@@ -249,10 +249,19 @@ class Lrud {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
+    let nextChildInDirection = this.getNextChildInDirection(node, direction)
+
+    // if we dont have a next child, just return the node. this is primarily for use during unregistering
+    if (!nextChildInDirection) {
+      return node
+    }
+
     // if the next child in the direction is both the same as this node's activeChild
     // AND a leaf, bubble up too - handles nested wrappers, like docs/test-diagrams/fig-3.png
-    const nextChildInDirection = this.getNextChildInDirection(node, direction)
-    if (nextChildInDirection && nextChildInDirection.id === node.activeChild && this._isFocusableNode(this.getNode(node.activeChild))) {
+    const isNextChildCurrentActiveChild = (nextChildInDirection && nextChildInDirection.id === node.activeChild)
+    const isNextChildFocusable = this._isFocusableNode(this.getNode(node.activeChild))
+    const isNodeInFocusablePath = this._isNodeInFocusableNodePathList(node)
+    if (isNextChildCurrentActiveChild && (isNextChildFocusable || isNodeInFocusablePath)) {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
@@ -269,9 +278,12 @@ class Lrud {
       return node
     }
 
+    const parent = this.getNode(node.parent)
+
     // we're in index align mode, so set the `node.activeChild` to the node's child of the same index
     // that the current `this.currentFocusNodeIndex` is
-    if (this.isIndexAlignMode) {
+    // TODO probably refactor in specific alignment modes for vertical and horizontal
+    if (this.isIndexAlignMode && !(node.orientation === 'vertical' && parent.orientation === 'vertical')) {
       const closestIndexAlignedChild = this._findChildWithClosestIndex(node, this.currentFocusNodeIndex)
       node.activeChild = closestIndexAlignedChild.id
     }
@@ -331,7 +343,7 @@ class Lrud {
       return this.getPrevChild(node)
     }
 
-    return this.getNode(node.activeChild)
+    return null
   }
 
   /**
