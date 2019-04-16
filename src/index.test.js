@@ -1007,7 +1007,7 @@ describe('lrud', () => {
       })
     })
 
-    test.only('should jump between activeChild for 2 vertical panes side-by-side', () => {
+    test('should jump between activeChild for 2 vertical panes side-by-side', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'horizontal' })

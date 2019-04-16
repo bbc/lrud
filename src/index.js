@@ -256,7 +256,7 @@ class Lrud {
     // children, AND that child contains some focusable element
     // at some point, see if its own parent can handle it (jumping from one container up to another)
     // we check if the activeChild is in a focusable path for only-child branches (test fig-4)
-    if (this.getNodeLastChild(node).id === node.activeChild && this._isNodeInFocusableNodePathList(this.getNode(node.activeChild))) {
+    if (this.getNextChildInDirection(node, direction).id === node.activeChild && this._isNodeInFocusableNodePathList(this.getNode(node.activeChild))) {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
