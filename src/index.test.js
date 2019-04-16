@@ -120,6 +120,25 @@ describe('lrud', () => {
       expect(navigation.getNode('alpha').activeChild).toEqual('charlie')
       expect(navigation.getNode('charlie').activeChild).toEqual('delta')
     })
+
+    test('registering a node should add the index to the node', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('a')
+
+      navigation.registerNode('b')
+      navigation.registerNode('b-1', { parent: 'b' })
+      navigation.registerNode('b-2', { parent: 'b' })
+
+      navigation.registerNode('c')
+
+      expect(navigation.getNode('a').index).toEqual(1)
+      expect(navigation.getNode('b').index).toEqual(2)
+      expect(navigation.getNode('b-1').index).toEqual(1)
+      expect(navigation.getNode('b-2').index).toEqual(2)
+      expect(navigation.getNode('c').index).toEqual(3)
+    })
   })
 
   describe('getRootNode()', () => {
@@ -196,18 +215,18 @@ describe('lrud', () => {
     test('unregistering a leaf should remove it (set it to undefined)', () => {
       const navigation = new Lrud()
 
-      navigation.registerNode('root', { selectAction: 1 })
-      navigation.registerNode('NODE_A', { selectAction: 2 })
-      navigation.registerNode('NODE_B', { selectAction: 3 })
+      navigation.registerNode('root', { orientation: 'vertical' })
+      navigation.registerNode('NODE_A', { isFocusable: true })
+      navigation.registerNode('NODE_B', { isFocusable: true })
 
       navigation.unregisterNode('NODE_A')
 
       expect(navigation.tree).toMatchObject({
         root: {
-          selectAction: 1,
           children: {
             NODE_B: {
-              selectAction: 3,
+              isFocusable: true,
+              index: 2,
               parent: 'root'
             }
           }
@@ -331,18 +350,22 @@ describe('lrud', () => {
           children: {
             BOX_A: {
               id: 'BOX_A',
+              index: 1,
               parent: 'root',
               children: {
                 NODE_1: {
                   id: 'NODE_1',
+                  index: 1,
                   parent: 'BOX_A'
                 },
                 NODE_2: {
                   id: 'NODE_2',
+                  index: 2,
                   parent: 'BOX_A'
                 },
                 NODE_3: {
                   id: 'NODE_3',
+                  index: 3,
                   parent: 'BOX_A'
                 }
               }
@@ -355,18 +378,22 @@ describe('lrud', () => {
       expect(spy).toHaveBeenCalledWith({
         parent: 'root',
         id: 'BOX_B',
+        index: 2,
         activeChild: 'NODE_4',
         children: {
           NODE_4: {
             id: 'NODE_4',
+            index: 1,
             parent: 'BOX_B'
           },
           NODE_5: {
             id: 'NODE_5',
+            index: 2,
             parent: 'BOX_B'
           },
           NODE_6: {
             id: 'NODE_6',
+            index: 3,
             parent: 'BOX_B'
           }
         }
@@ -806,6 +833,7 @@ describe('lrud', () => {
 
       expect(spy).toHaveBeenCalledWith({
         parent: 'root',
+        index: 2,
         id: 'child_2',
         isFocusable: true
       })
@@ -817,6 +845,7 @@ describe('lrud', () => {
       expect(spy).toHaveBeenCalledWith({
         parent: 'root',
         id: 'child_3',
+        index: 3,
         isFocusable: true
       })
     })
@@ -839,6 +868,7 @@ describe('lrud', () => {
       expect(spy).toHaveBeenCalledWith({
         parent: 'root',
         id: 'child_2',
+        index: 2,
         isFocusable: true
       })
 
@@ -849,6 +879,7 @@ describe('lrud', () => {
       expect(spy).toHaveBeenCalledWith({
         parent: 'root',
         id: 'child_1',
+        index: 1,
         isFocusable: true
       })
     })
@@ -886,7 +917,24 @@ describe('lrud', () => {
     })
   })
 
-  describe('handleKeyEvent() - grid behaviour', () => {
+  describe.skip('handleKeyEvent() - grid behaviour', () => {
+    test('moving between two rows should keep column alignment', () => {
+      const navigation = new Lrud()
 
+      navigation.registerNode('root', { orientation: 'vertical', grid: true })
+      navigation.registerNode('row-1', { orientation: 'horizontal' })
+      navigation.registerNode('row-1-col-1', { parent: 'row-1', isFocusable: true })
+      navigation.registerNode('row-1-col-2', { parent: 'row-1', isFocusable: true })
+      navigation.registerNode('row-2', { orientation: 'horizontal' })
+      navigation.registerNode('row-2-col-1', { parent: 'row-2', isFocusable: true })
+      navigation.registerNode('row-2-col-2', { parent: 'row-2', isFocusable: true })
+      navigation.assignFocus('row-1-col-1')
+
+      navigation.handleKeyEvent({ direction: 'right' })
+      expect(navigation.currentFocusNodeId).toEqual('row-1-col-2')
+
+      navigation.handleKeyEvent({ direction: 'down' })
+      expect(navigation.currentFocusNodeId).toEqual('row-2-col-2')
+    })
   })
 })

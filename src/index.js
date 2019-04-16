@@ -9,6 +9,7 @@ class Lrud {
     this.focusableNodePathList = []
     this.rootNodeId = rootNodeId || null
     this.currentFocusNodeId = null
+    this.currentFocusNodeIndex = null
     this.emitter = new EventEmitter()
   }
 
@@ -61,10 +62,19 @@ class Lrud {
     return this.nodePathList.find(path => path.endsWith('.' + nodeId))
   }
 
+  /**
+   *
+   * @param {string} nodeId
+   * @param {object} node
+   * @param {object} [node.id] if null, `nodeId` is used
+   * @param {object} [node.parent] if null, value of `this.rootNodeId` is used
+   * @param {object} [node.index] if null, index is 1 more than the index of the last sibling. if no previous siblings, index is 1
+   */
   registerNode (nodeId, node = {}) {
     if (!node.id) {
       node.id = nodeId
     }
+
     // if this is the very first node, set it as root and return...
     if (Object.keys(this.tree).length <= 0) {
       this.rootNodeId = nodeId
@@ -73,26 +83,34 @@ class Lrud {
       return this
     }
 
-    // ...otherwise, set it up and insert it
     // if this node DOESNT have a parent assume its parent is root
     if (node.parent == null && nodeId !== this.rootNodeId) {
       node.parent = this.rootNodeId
     }
 
-    // path is the node's parent plus 'children' plus itself
-    let path = this.nodePathList.find(path => path.endsWith(node.parent)) + '.children.' + nodeId
-
-    // if this node is the first child of its parent, we need to set its parents activeChild
+    // if this node is the first child of its parent, we need to set its parent's `activeChild`
     // to it so that the parent always has an `activeChild` value
     // we can tell if its parent has any children by checking the nodePathList for
     // entries containing '<parent>.children'
     const parentsChildPaths = this.nodePathList.find(path => path.includes(node.parent + '.children'))
-
     if (parentsChildPaths == null) {
       const parentPath = this.getPathForNodeId(node.parent)
       _.set(this.tree, parentPath + '.activeChild', nodeId)
     }
 
+    // if no `index` set, calculate it
+    if (!node.index) {
+      let parentsChildren = this.getNode(node.parent).children
+      if (!parentsChildren) {
+        node.index = 1
+      } else {
+        node.index = (Object.keys(parentsChildren).length) + 1
+      }
+    }
+
+    // add the node into the tree
+    // path is the node's parent plus 'children' plus itself
+    let path = this.nodePathList.find(path => path.endsWith(node.parent)) + '.children.' + nodeId
     _.set(this.tree, path, node)
     this.nodePathList.push(path)
 
@@ -136,7 +154,6 @@ class Lrud {
     // to a workable node, grab that nodes previous child, and dig down from there
     if (parentNode.activeChild && parentNode.activeChild === nodeId) {
       delete parentNode.activeChild
-      delete parentNode.children
       const top = this.climbUp(parentNode, '*')
       const prev = this.getPrevChild(top)
       const child = this.digDown(prev)
@@ -289,6 +306,10 @@ class Lrud {
 
     const indexOfCurrentChild = childKeys.indexOf(node.activeChild)
 
+    if (indexOfCurrentChild === -1) {
+      return node.children[childKeys[0]]
+    }
+
     if (indexOfCurrentChild === childKeys[0]) {
       // we're on the first child
       if (node.wraps) {
@@ -362,6 +383,7 @@ class Lrud {
     }
 
     this.currentFocusNodeId = nodeId
+    this.currentFocusNodeIndex = node.index
 
     if (node.parent) {
       this._setActiveChild(node.parent, nodeId)
