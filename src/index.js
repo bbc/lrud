@@ -2,6 +2,12 @@ const _ = require('./lodash.custom.min.js')
 const EventEmitter = require('tiny-emitter')
 const KeyCodes = require('./key-codes')
 
+const Closest = (values, goal) => values.reduce(function (prev, curr) {
+  return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev)
+})
+
+// const getIndexes = nodes => nodes.index
+
 class Lrud {
   constructor ({ rootNodeId, currentFocusNodePath } = {}) {
     this.tree = {}
@@ -10,6 +16,7 @@ class Lrud {
     this.rootNodeId = rootNodeId || null
     this.currentFocusNodeId = null
     this.currentFocusNodeIndex = null
+    this.isIndexAlignMode = false
     this.emitter = new EventEmitter()
   }
 
@@ -69,6 +76,12 @@ class Lrud {
    * @param {object} [node.id] if null, `nodeId` is used
    * @param {object} [node.parent] if null, value of `this.rootNodeId` is used
    * @param {object} [node.index] if null, index is 1 more than the index of the last sibling. if no previous siblings, index is 1
+   * @param {object} [node.isFocusable]
+   * @param {object} [node.isWrapping]
+   * @param {object} [node.orientation]
+   * @param {object} [node.isVerticalIndexAlign]
+   * @param {object} [node.isHorizontalIndexAlign]
+   * @param {object} [node.isIndexAlign]
    */
   registerNode (nodeId, node = {}) {
     if (!node.id) {
@@ -121,6 +134,10 @@ class Lrud {
     return this
   }
 
+  /**
+   *
+   * @param {string} nodeId
+   */
   unregisterNode (nodeId) {
     const path = this.getPathForNodeId(nodeId)
 
@@ -133,6 +150,7 @@ class Lrud {
 
     const parentNode = this.getNode(nodeClone.parent)
 
+    // delete the node itself (delete from the parent and reset the parent later)
     delete parentNode.children[nodeId]
 
     // remove the relevant entry from the node id list
@@ -149,12 +167,12 @@ class Lrud {
       return !(nodeIdPath.includes('.' + nodeId))
     })
 
-    // if its parent's active child is the node we're unregistering (i.e
-    // we're focused on the only leaf of a branch) then unset that, dig up
-    // to a workable node, grab that nodes previous child, and dig down from there
+    // if its parent's activeChild is the node we're unregistering
+    // we need to reset the focus
     if (parentNode.activeChild && parentNode.activeChild === nodeId) {
       delete parentNode.activeChild
       const top = this.climbUp(parentNode, '*')
+      console.log('top', top)
       const prev = this.getPrevChild(top)
       const child = this.digDown(prev)
       this.assignFocus(child.id)
@@ -193,6 +211,10 @@ class Lrud {
     return node
   }
 
+  /**
+   * is the given node in the path of ANY node that is focusable
+   * @param {*} node
+   */
   _isNodeInFocusableNodePathList (node) {
     return this.focusableNodePathList.some(nodeIdPath => {
       if (nodeIdPath.includes('.' + node.id + '.')) {
@@ -205,19 +227,23 @@ class Lrud {
     })
   }
 
-  // climb up
+  /**
+   *
+   * @param {object} node
+   * @param {string} direction
+   */
   climbUp (node, direction) {
-    if (!node.orientation && !node.children) {
-      // we're on a leaf, try the parent
-      if (node.parent) {
-        return this.climbUp(this.getNode(node.parent), direction)
-      }
-      // if we dont have an orientation, or children, or a parent, its dead
+    if (!node) {
       return null
     }
 
-    // if we dont have any children, dig up
-    if (!node.children) {
+    // if we're on a leaf, climb up
+    if (this._isFocusableNode(node)) {
+      return this.climbUp(this.getNode(node.parent), direction)
+    }
+
+    // if the node we're on contains no focusable children, climb up
+    if (!this._isNodeInFocusableNodePathList(node)) {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
@@ -226,21 +252,34 @@ class Lrud {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
-    // if the node we're on contains no focusable children, bubble up again
-    if (!this._isNodeInFocusableNodePathList(node)) {
+    // if the activeChild of this node is the last node of its
+    // children, AND that child contains some focusable element
+    // at some point, see if its own parent can handle it (jumping from one container up to another)
+    // we check if the activeChild is in a focusable path for only-child branches (test fig-4)
+    if (this.getNodeLastChild(node).id === node.activeChild && this._isNodeInFocusableNodePathList(this.getNode(node.activeChild))) {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
     // so now the orientation matches the direction, and it has children,
-    // so we return it
+    // AND its not already focused on its own last child, so we return it
     return node
   }
 
-  // dig down
+  /**
+   *
+   * @param {object} node
+   */
   digDown (node) {
     // if the active child is focusable, return it
     if (this._isFocusableNode(node)) {
       return node
+    }
+
+    // we're in index align mode, so set the `node.activeChild` to the node's child of the same index
+    // that the current `this.currentFocusNodeIndex` is
+    if (this.isIndexAlignMode) {
+      const closestIndexAlignedChild = this._findChildWithClosestIndex(node, this.currentFocusNodeIndex)
+      node.activeChild = closestIndexAlignedChild.id
     }
 
     // if we dont have an active child, use the first child
@@ -255,6 +294,31 @@ class Lrud {
     }
 
     return this.digDown(activeChild)
+  }
+
+  _findChildWithClosestIndex (node, index) {
+    if (!node.children) {
+      return null
+    }
+    const indexes = Object.keys(node.children).map(childId => node.children[childId].index)
+    return this._findChildWithIndex(node, Closest(indexes, index))
+  }
+
+  _findChildWithIndex (node, index) {
+    if (!node.children) {
+      return null
+    }
+
+    const childIdWithMatchingIndex = Object.keys(node.children).find(childId => {
+      const childNode = node.children[childId]
+      return childNode.index === index
+    })
+
+    if (childIdWithMatchingIndex) {
+      return node.children[childIdWithMatchingIndex]
+    }
+
+    return null
   }
 
   getNextChildInDirection (node, direction) {
@@ -278,23 +342,27 @@ class Lrud {
 
   /**
    * get the semantic "next" child for a node
+   *
    * @param {object} node
    */
   getNextChild (node) {
-    const childKeys = Object.keys(node.children)
-
-    const indexOfCurrentChild = childKeys.indexOf(node.activeChild)
-
-    if (indexOfCurrentChild === childKeys.length - 1) {
-      // we're on the last child
-      if (node.wraps) {
-        return this.getNodeFirstChild(node)
-      } else {
-        return node.children[childKeys[indexOfCurrentChild]]
-      }
-    } else {
-      return node.children[childKeys[indexOfCurrentChild + 1]]
+    if (!node.activeChild) {
+      node.activeChild = this.getNodeFirstChild(node).id
     }
+
+    const currentActiveIndex = node.children[node.activeChild].index
+
+    let nextChild = this._findChildWithIndex(node, currentActiveIndex + 1)
+
+    if (!nextChild) {
+      if (node.isWrapping) {
+        nextChild = this.getNodeFirstChild(node)
+      } else {
+        nextChild = node.children[node.activeChild]
+      }
+    }
+
+    return nextChild
   }
 
   /**
@@ -302,54 +370,83 @@ class Lrud {
    * @param {object} node
    */
   getPrevChild (node) {
-    const childKeys = Object.keys(node.children)
-
-    const indexOfCurrentChild = childKeys.indexOf(node.activeChild)
-
-    if (indexOfCurrentChild === -1) {
-      return node.children[childKeys[0]]
+    if (!node.activeChild) {
+      node.activeChild = this.getNodeFirstChild(node).id
     }
 
-    if (indexOfCurrentChild === childKeys[0]) {
-      // we're on the first child
-      if (node.wraps) {
-        return this.getNodeLastChild(node)
+    const currentActiveIndex = node.children[node.activeChild].index
+
+    let prevChild = this._findChildWithIndex(node, currentActiveIndex - 1)
+
+    if (!prevChild) {
+      // cant find a prev child, so the prev child is the current child
+      if (node.isWrapping) {
+        prevChild = this.getNodeLastChild(node)
       } else {
-        return node.children[childKeys[indexOfCurrentChild]]
+        prevChild = node.children[node.activeChild]
       }
-    } else {
-      return node.children[childKeys[indexOfCurrentChild - 1]]
     }
+
+    return prevChild
   }
 
+  /**
+   * get the first child of a node, based on index
+   * @param {object} node
+   */
   getNodeFirstChild (node) {
     if (!node.children) {
       return undefined
     }
 
-    return this.getNode(Object.keys(node.children)[0])
+    const orderedIndexes = Object.keys(node.children).map(childId => node.children[childId].index).sort()
+
+    return this._findChildWithIndex(node, orderedIndexes[0])
   }
 
+  /**
+   * get the last child of a node, based on index
+   * @param {object} node
+   */
   getNodeLastChild (node) {
     if (!node.children) {
       return undefined
     }
 
-    const childrenIds = Object.keys(node.children)
+    const orderedIndexes = Object.keys(node.children).map(childId => node.children[childId].index).sort()
 
-    return this.getNode(childrenIds[childrenIds.length - 1])
+    return this._findChildWithIndex(node, orderedIndexes[orderedIndexes.length - 1])
   }
 
+  /**
+   *
+   * @param {*} event
+   */
   handleKeyEvent (event) {
-    const direction = event.direction
+    const direction = event.direction.toUpperCase()
 
     const currentFocusedNode = this.getNode(this.currentFocusNodeId)
 
     // dig up...
-    const actionableNode = this.climbUp(currentFocusedNode, direction)
+    const topNode = this.climbUp(currentFocusedNode, direction)
+
+    if (!topNode) {
+      return
+    }
+
+    // ...if we need to align indexes, turn the flag on now...
+    if ((direction === 'UP' || direction === 'DOWN') && topNode.isVerticalIndexAlign) {
+      this.isIndexAlignMode = true
+    }
+    if ((direction === 'LEFT' || direction === 'RIGHT') && topNode.isHorizontalIndexAlign) {
+      this.isIndexAlignMode = true
+    }
+    if (topNode.isIndexAlign) {
+      this.isIndexAlignMode = true
+    }
 
     // ...get the top's next child...
-    const nextChild = this.getNextChildInDirection(actionableNode, direction)
+    const nextChild = this.getNextChildInDirection(topNode, direction)
 
     // ...and dig down from that child
     const focusableNode = this.digDown(nextChild)
