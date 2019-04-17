@@ -139,6 +139,40 @@ describe('lrud', () => {
       expect(navigation.getNode('b-2').index).toEqual(2)
       expect(navigation.getNode('c').index).toEqual(3)
     })
+
+    test('can chain registers together', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('a')
+        .registerNode('b')
+        .registerNode('c')
+
+      expect(navigation.tree).toMatchObject({
+        root: {
+          id: 'root',
+          activeChild: 'a',
+          children: {
+            a: {
+              id: 'a',
+              parent: 'root',
+              index: 1
+            },
+            b: {
+              id: 'b',
+              parent: 'root',
+              index: 2
+            },
+            c: {
+              id: 'c',
+              parent: 'root',
+              index: 3
+            }
+          }
+        }
+      })
+    })
   })
 
   describe('getRootNode()', () => {

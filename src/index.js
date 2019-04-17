@@ -135,6 +135,7 @@ class Lrud {
     if (this._isFocusableNode(node)) {
       this.focusableNodePathList.push(path)
     }
+
     return this
   }
 
@@ -195,6 +196,8 @@ class Lrud {
       throw new Error('need an id to register an override')
     }
     this.overrides[overrideId] = override
+
+    return this
   }
 
   /**
@@ -470,7 +473,8 @@ class Lrud {
 
   /**
    *
-   * @param {*} event
+   * @param {object} event
+   * @param {string} event.direction
    */
   handleKeyEvent (event) {
     const direction = event.direction.toUpperCase()
@@ -494,12 +498,12 @@ class Lrud {
       this.isIndexAlignMode = true
     }
 
-    // ...get the top's next child...
+    // ...get the top's next child in the direction we're going...
     const nextChild = this.getNextChildInDirection(topNode, direction)
 
     let focusableNode
     if (nextChild) {
-      // ...if we a next child, dig down from that child
+      // ...if we have a next child, dig down from that child
       focusableNode = this.digDown(nextChild)
     } else {
       // ...otherwise, dig down from the top
