@@ -1165,10 +1165,10 @@ describe('lrud', () => {
 
       navigation.registerNode('root', { orientation: 'vertical', isVerticalIndexAlign: true })
       navigation.registerNode('row-a', { parent: 'root', orientation: 'horizontal' })
-      navigation.registerNode('row-a-box-1', { parent: 'row-a', isFocusable: true })
-      navigation.registerNode('row-a-box-2', { parent: 'row-a', isFocusable: true })
-      navigation.registerNode('row-a-box-3', { parent: 'row-a', isFocusable: true })
-      navigation.registerNode('row-a-box-4', { parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-1', { index: 1, parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-2', { index: 2, parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-3', { index: 3, parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-4', { index: 4, parent: 'row-a', isFocusable: true })
 
       navigation.registerNode('row-b', { parent: 'root', orientation: 'horizontal' })
       navigation.registerNode('row-b-box-1', { parent: 'row-b', indexRange: [1, 2], isFocusable: true })

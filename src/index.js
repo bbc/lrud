@@ -532,13 +532,17 @@ class Lrud {
   }
 
   assignFocus (nodeId) {
-    const node = this.getNode(nodeId)
+    let node = this.getNode(nodeId)
 
     if (!this._isFocusableNode(node)) {
+      node = this.digDown(node)
+    }
+
+    if (!node) {
       throw new Error('trying to assign focus to a non focusable node')
     }
 
-    this.currentFocusNodeId = nodeId
+    this.currentFocusNodeId = node.id
 
     if (node.indexRange) {
       this.currentFocusNodeIndex = node.indexRange[0]
@@ -547,7 +551,7 @@ class Lrud {
     }
 
     if (node.parent) {
-      this._setActiveChild(node.parent, nodeId)
+      this._setActiveChild(node.parent, node.id)
     }
 
     if (node.onFocus) {
