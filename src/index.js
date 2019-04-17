@@ -290,8 +290,15 @@ class Lrud {
     // that the current `this.currentFocusNodeIndex` is
     // TODO probably refactor in specific alignment modes for vertical and horizontal
     if (this.isIndexAlignMode && !(node.orientation === 'vertical' && parent.orientation === 'vertical')) {
-      const closestIndexAlignedChild = this._findChildWithClosestIndex(node, this.currentFocusNodeIndex)
-      node.activeChild = closestIndexAlignedChild.id
+      let child = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndex)
+
+      if (!child) {
+        child = this._findChildWithClosestIndex(node, this.currentFocusNodeIndex)
+      }
+
+      if (child) {
+        node.activeChild = child.id
+      }
     }
 
     // if we dont have an active child, use the first child
@@ -306,6 +313,21 @@ class Lrud {
     }
 
     return this.digDown(activeChild)
+  }
+
+  _findChildWithMatchingIndexRange (node, index) {
+    if (!node.children) {
+      return null
+    }
+
+    const childWithIndexRangeSpanningIndex = Object.keys(node.children).find(childId => {
+      const child = node.children[childId]
+      return child.indexRange && (child.indexRange[0] <= index && child.indexRange[1] >= index)
+    })
+
+    if (childWithIndexRangeSpanningIndex) {
+      return node.children[childWithIndexRangeSpanningIndex]
+    }
   }
 
   _findChildWithClosestIndex (node, index) {
@@ -490,7 +512,12 @@ class Lrud {
     }
 
     this.currentFocusNodeId = nodeId
-    this.currentFocusNodeIndex = node.index
+
+    if (node.indexRange) {
+      this.currentFocusNodeIndex = node.indexRange[0]
+    } else {
+      this.currentFocusNodeIndex = node.index
+    }
 
     if (node.parent) {
       this._setActiveChild(node.parent, nodeId)
