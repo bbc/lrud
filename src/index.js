@@ -1,21 +1,21 @@
 const _ = require('./lodash.custom.min.js')
 const EventEmitter = require('tiny-emitter')
-const KeyCodes = require('./key-codes')
 
 const Closest = (values, goal) => values.reduce(function (prev, curr) {
   return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev)
 })
 
 class Lrud {
-  constructor ({ rootNodeId, currentFocusNodePath } = {}) {
+  constructor () {
     this.tree = {}
     this.nodePathList = []
     this.focusableNodePathList = []
-    this.rootNodeId = rootNodeId || null
+    this.rootNodeId = null
     this.currentFocusNodeId = null
     this.currentFocusNodeIndex = null
     this.isIndexAlignMode = false
     this.emitter = new EventEmitter()
+    this.overrides = {}
   }
 
   /**
@@ -190,6 +190,13 @@ class Lrud {
     return this
   }
 
+  registerOverride (overrideId, override) {
+    if (!overrideId) {
+      throw new Error('need an id to register an override')
+    }
+    this.overrides[overrideId] = override
+  }
+
   /**
    * return a node based on ID
    * @param {string} nodeId node id
@@ -238,6 +245,15 @@ class Lrud {
   climbUp (node, direction) {
     if (!node) {
       return null
+    }
+
+    // if we have a matching override at this point in the climb, return that target node
+    const matchingOverrideId = Object.keys(this.overrides).find(overrideId => {
+      const override = this.overrides[overrideId]
+      return override.id === node.id && override.direction.toUpperCase() === direction.toUpperCase()
+    })
+    if (matchingOverrideId) {
+      return this.getNode(this.overrides[matchingOverrideId].target)
     }
 
     // if we're on a leaf, climb up
@@ -462,6 +478,7 @@ class Lrud {
     // climb up from where we are...
     const topNode = this.climbUp(this.getNode(this.currentFocusNodeId), direction)
 
+    // ... if we cant find a top node, its an invalid move - just return
     if (!topNode) {
       return
     }
@@ -480,8 +497,14 @@ class Lrud {
     // ...get the top's next child...
     const nextChild = this.getNextChildInDirection(topNode, direction)
 
-    // ...and dig down from that child
-    const focusableNode = this.digDown(nextChild)
+    let focusableNode
+    if (nextChild) {
+      // ...if we a next child, dig down from that child
+      focusableNode = this.digDown(nextChild)
+    } else {
+      // ...otherwise, dig down from the top
+      focusableNode = this.digDown(topNode)
+    }
 
     this.assignFocus(focusableNode.id)
 

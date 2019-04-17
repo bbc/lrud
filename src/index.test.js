@@ -1125,8 +1125,8 @@ describe('lrud', () => {
     })
   })
 
-  describe('handleKeyEvent() - col spans', () => {
-    test('2 rows, second row has index span [fig-5]', () => {
+  describe('handleKeyEvent() - index ranges', () => {
+    test('2 rows, second row has index range [fig-5]', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'vertical', isVerticalIndexAlign: true })
@@ -1161,6 +1161,29 @@ describe('lrud', () => {
       expect(navigation.currentFocusNodeId).toEqual('row-b-box-2')
 
       // ...and an up puts us on the 3rd item (as thats the index start) of the 1st row
+      navigation.handleKeyEvent({ direction: 'up' })
+      expect(navigation.currentFocusNodeId).toEqual('row-a-box-3')
+    })
+
+    test('1 row of 6, 2nd row has uneven index ranges [fig-6]', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'vertical', isVerticalIndexAlign: true })
+      navigation.registerNode('row-a', { parent: 'root', orientation: 'horizontal' })
+      navigation.registerNode('row-a-box-1', { parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-2', { parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-3', { parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-4', { parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-5', { parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-6', { parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-b', { parent: 'root', orientation: 'horizontal' })
+      navigation.registerNode('row-b-box-1', { parent: 'row-b', indexRange: [1, 2], isFocusable: true })
+      navigation.registerNode('row-b-box-2', { parent: 'row-b', indexRange: [3, 6], isFocusable: true })
+      navigation.assignFocus('row-a-box-6')
+
+      navigation.handleKeyEvent({ direction: 'down' })
+      expect(navigation.currentFocusNodeId).toEqual('row-b-box-2')
+
       navigation.handleKeyEvent({ direction: 'up' })
       expect(navigation.currentFocusNodeId).toEqual('row-a-box-3')
     })
