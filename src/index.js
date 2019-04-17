@@ -60,6 +60,10 @@ class Lrud {
     return node
   }
 
+  /**
+   * given a node id, return the full path for it
+   * @param {string} nodeId
+   */
   getPathForNodeId (nodeId) {
     if (nodeId === this.rootNodeId) {
       return this.rootNodeId
@@ -71,15 +75,17 @@ class Lrud {
    *
    * @param {string} nodeId
    * @param {object} node
-   * @param {object} [node.id] if null, `nodeId` is used
-   * @param {object} [node.parent] if null, value of `this.rootNodeId` is used
-   * @param {object} [node.index] if null, index is 1 more than the index of the last sibling. if no previous siblings, index is 1
-   * @param {object} [node.isFocusable]
-   * @param {object} [node.isWrapping]
-   * @param {object} [node.orientation]
-   * @param {object} [node.isVerticalIndexAlign]
-   * @param {object} [node.isHorizontalIndexAlign]
-   * @param {object} [node.isIndexAlign]
+   * @param {string} [node.id] if null, `nodeId` is used
+   * @param {string} [node.parent] if null, value of `this.rootNodeId` is used
+   * @param {number} [node.index] if null, index is 1 more than the index of the last sibling. if no previous siblings, index is 1
+   * @param {number[]} [node.indexRange] defaults to null. acts as a colspan, value [0] is lower bound, value [1] is upper bound
+   * @param {function} [node.selectAction]
+   * @param {boolean} [node.isFocusable]
+   * @param {boolean} [node.isWrapping]
+   * @param {string} [node.orientation]
+   * @param {boolean} [node.isVerticalIndexAlign]
+   * @param {boolean} [node.isHorizontalIndexAlign]
+   * @param {boolean} [node.isIndexAlign]
    */
   registerNode (nodeId, node = {}) {
     if (!node.id) {
@@ -431,10 +437,8 @@ class Lrud {
   handleKeyEvent (event) {
     const direction = event.direction.toUpperCase()
 
-    const currentFocusedNode = this.getNode(this.currentFocusNodeId)
-
-    // dig up...
-    const topNode = this.climbUp(currentFocusedNode, direction)
+    // climb up from where we are...
+    const topNode = this.climbUp(this.getNode(this.currentFocusNodeId), direction)
 
     if (!topNode) {
       return

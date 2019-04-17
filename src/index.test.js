@@ -1089,12 +1089,6 @@ describe('lrud', () => {
       expect(navigation.currentFocusNodeId).toEqual('list-b-box-2')
     })
 
-    /*
-    how can we know when we jump from one wrapper to another
-    to go to the first new row and not the 2nd?
-
-    its jumping to grid b row TWO because thats the 2nd index
-    */
     test('column alignment between 2 higher level grid wrappers [fig-2]', () => {
       const navigation = new Lrud()
 
@@ -1131,6 +1125,52 @@ describe('lrud', () => {
 
       navigation.handleKeyEvent({ direction: 'down' })
       expect(navigation.currentFocusNodeId).toEqual('grid-b-row-2-col-2')
+    })
+  })
+
+  describe.only('handleKeyEvent() - col spans', () => {
+    test.only('2 rows, second row has index span [fig-5]', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'vertical', isVerticalIndexAlign: true })
+      navigation.registerNode('row-a', { parent: 'root', orientation: 'horizontal' })
+      navigation.registerNode('row-a-box-1', { parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-2', { parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-3', { parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-4', { parent: 'row-a', isFocusable: true })
+
+      navigation.registerNode('row-b', { parent: 'root', orientation: 'horizontal' })
+
+      // todo finish implementing index range
+      navigation.registerNode('row-b-box-1', { parent: 'row-b', indexRange: [1, 2], isFocusable: true })
+      navigation.registerNode('row-b-box-2', { parent: 'row-b', indexRange: [3, 4], isFocusable: true })
+
+      navigation.assignFocus('row-a-box-2')
+      navigation.handleKeyEvent({ direction: 'down' })
+      expect(navigation.currentFocusNodeId).toEqual('row-b-box-1')
+
+      // should ALSO go back onto the item it came from
+      // navigation.handleKeyEvent({ direction: 'up' })
+      // expect(navigation.currentFocusNodeId).toEqual('row-a-box-3')
+    })
+
+    test('2 rows, second row has index span, longer rows', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', { orientation: 'vertical', isVerticalIndexAlign: true })
+      navigation.registerNode('row-a', { parent: 'root', orientation: 'horizontal' })
+      navigation.registerNode('row-a-box-1', { parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-2', { parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-3', { parent: 'row-a', isFocusable: true })
+      navigation.registerNode('row-a-box-4', { parent: 'row-a', isFocusable: true })
+
+      navigation.registerNode('row-b', { parent: 'root', orientation: 'horizontal' })
+      navigation.registerNode('row-b-box-1', { parent: 'row-b', indexSpan: 2, isFocusable: true })
+      navigation.registerNode('row-b-box-2', { parent: 'row-b', indexSpan: 2, isFocusable: true })
+
+      navigation.assignFocus('row-a-box-3')
+      navigation.handleKeyEvent({ direction: 'down' })
+      expect(navigation.currentFocusNodeId).toEqual('row-b-box-2')
     })
   })
 })
