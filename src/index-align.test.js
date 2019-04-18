@@ -51,25 +51,27 @@ describe('handleKeyEvent() - column alignment behaviour', () => {
   test('column alignment between 2 higher level grid wrappers [fig-2]', () => {
     const navigation = new Lrud()
 
-    navigation.registerNode('root', { orientation: 'vertical', isVerticalIndexAlign: true })
+    navigation.registerNode('root', { orientation: 'vertical', isIndexAlign: true })
 
     // grid a
-    navigation.registerNode('grid-a', { parent: 'root', orientation: 'vertical', isVerticalIndexAlign: true })
-    navigation.registerNode('grid-a-row-1', { parent: 'grid-a', orientation: 'horizontal' })
-    navigation.registerNode('grid-a-row-1-col-1', { parent: 'grid-a-row-1', isFocusable: true })
-    navigation.registerNode('grid-a-row-1-col-2', { parent: 'grid-a-row-1', isFocusable: true })
-    navigation.registerNode('grid-a-row-2', { parent: 'grid-a', orientation: 'horizontal' })
-    navigation.registerNode('grid-a-row-2-col-1', { parent: 'grid-a-row-2', isFocusable: true })
-    navigation.registerNode('grid-a-row-2-col-2', { parent: 'grid-a-row-2', isFocusable: true })
+    navigation
+      .registerNode('grid-a', { parent: 'root', orientation: 'vertical', isIndexAlign: true })
+      .registerNode('grid-a-row-1', { parent: 'grid-a', orientation: 'horizontal' })
+      .registerNode('grid-a-row-1-col-1', { parent: 'grid-a-row-1', isFocusable: true })
+      .registerNode('grid-a-row-1-col-2', { parent: 'grid-a-row-1', isFocusable: true })
+      .registerNode('grid-a-row-2', { parent: 'grid-a', orientation: 'horizontal' })
+      .registerNode('grid-a-row-2-col-1', { parent: 'grid-a-row-2', isFocusable: true })
+      .registerNode('grid-a-row-2-col-2', { parent: 'grid-a-row-2', isFocusable: true })
 
     // grid-b
-    navigation.registerNode('grid-b', { parent: 'root', orientation: 'vertical', isVerticalIndexAlign: true })
-    navigation.registerNode('grid-b-row-1', { parent: 'grid-b', orientation: 'horizontal' })
-    navigation.registerNode('grid-b-row-1-col-1', { parent: 'grid-b-row-1', isFocusable: true })
-    navigation.registerNode('grid-b-row-1-col-2', { parent: 'grid-b-row-1', isFocusable: true })
-    navigation.registerNode('grid-b-row-2', { parent: 'grid-b', orientation: 'horizontal' })
-    navigation.registerNode('grid-b-row-2-col-1', { parent: 'grid-b-row-2', isFocusable: true })
-    navigation.registerNode('grid-b-row-2-col-2', { parent: 'grid-b-row-2', isFocusable: true })
+    navigation
+      .registerNode('grid-b', { parent: 'root', orientation: 'vertical', isIndexAlign: true })
+      .registerNode('grid-b-row-1', { parent: 'grid-b', orientation: 'horizontal' })
+      .registerNode('grid-b-row-1-col-1', { parent: 'grid-b-row-1', isFocusable: true })
+      .registerNode('grid-b-row-1-col-2', { parent: 'grid-b-row-1', isFocusable: true })
+      .registerNode('grid-b-row-2', { parent: 'grid-b', orientation: 'horizontal' })
+      .registerNode('grid-b-row-2-col-1', { parent: 'grid-b-row-2', isFocusable: true })
+      .registerNode('grid-b-row-2-col-2', { parent: 'grid-b-row-2', isFocusable: true })
 
     navigation.assignFocus('grid-a-row-1-col-1')
 
@@ -85,13 +87,17 @@ describe('handleKeyEvent() - column alignment behaviour', () => {
     navigation.handleKeyEvent({ direction: 'down' })
     expect(navigation.currentFocusNodeId).toEqual('grid-b-row-2-col-2')
   })
+
+  test('with vertical index alignment', () => {
+
+  })
 })
 
 describe('handleKeyEvent() - index ranges', () => {
   test('2 rows, second row has index range [fig-5]', () => {
     const navigation = new Lrud()
 
-    navigation.registerNode('root', { orientation: 'vertical', isVerticalIndexAlign: true })
+    navigation.registerNode('root', { orientation: 'vertical', isIndexAlign: true })
     navigation.registerNode('row-a', { parent: 'root', orientation: 'horizontal' })
     navigation.registerNode('row-a-box-1', { index: 1, parent: 'row-a', isFocusable: true })
     navigation.registerNode('row-a-box-2', { index: 2, parent: 'row-a', isFocusable: true })
@@ -108,9 +114,9 @@ describe('handleKeyEvent() - index ranges', () => {
     navigation.handleKeyEvent({ direction: 'down' })
     expect(navigation.currentFocusNodeId).toEqual('row-b-box-1')
 
-    // ...should go back up to the first item in the index range array
+    // ...should go back up to 2nd item, as thats the active child and in the index range
     navigation.handleKeyEvent({ direction: 'up' })
-    expect(navigation.currentFocusNodeId).toEqual('row-a-box-1')
+    expect(navigation.currentFocusNodeId).toEqual('row-a-box-2')
 
     // ...3 rights put us at the last item of row 1
     navigation.handleKeyEvent({ direction: 'right' })
@@ -122,15 +128,15 @@ describe('handleKeyEvent() - index ranges', () => {
     navigation.handleKeyEvent({ direction: 'down' })
     expect(navigation.currentFocusNodeId).toEqual('row-b-box-2')
 
-    // ...and an up puts us on the 3rd item (as thats the index start) of the 1st row
+    // ...and an up puts us on the 4th item (as thats the activeChild) of the 1st row
     navigation.handleKeyEvent({ direction: 'up' })
-    expect(navigation.currentFocusNodeId).toEqual('row-a-box-3')
+    expect(navigation.currentFocusNodeId).toEqual('row-a-box-4')
   })
 
   test('1 row of 6, 2nd row has uneven index ranges [fig-6]', () => {
     const navigation = new Lrud()
 
-    navigation.registerNode('root', { orientation: 'vertical', isVerticalIndexAlign: true })
+    navigation.registerNode('root', { orientation: 'vertical', isIndexAlign: true })
     navigation.registerNode('row-a', { parent: 'root', orientation: 'horizontal' })
     navigation.registerNode('row-a-box-1', { parent: 'row-a', isFocusable: true })
     navigation.registerNode('row-a-box-2', { parent: 'row-a', isFocusable: true })
@@ -147,6 +153,6 @@ describe('handleKeyEvent() - index ranges', () => {
     expect(navigation.currentFocusNodeId).toEqual('row-b-box-2')
 
     navigation.handleKeyEvent({ direction: 'up' })
-    expect(navigation.currentFocusNodeId).toEqual('row-a-box-3')
+    expect(navigation.currentFocusNodeId).toEqual('row-a-box-6')
   })
 })

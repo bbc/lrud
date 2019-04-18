@@ -246,7 +246,7 @@ describe('lrud', () => {
   })
 
   describe('unregisterNode()', () => {
-    test('unregistering a leaf should remove it (set it to undefined)', () => {
+    test('unregistering a leaf should remove it', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'vertical' })
@@ -260,7 +260,7 @@ describe('lrud', () => {
           children: {
             NODE_B: {
               isFocusable: true,
-              index: 2,
+              index: 1,
               parent: 'root'
             }
           }

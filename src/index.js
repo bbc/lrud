@@ -44,6 +44,7 @@ class Lrud {
   }
 
   /**
+   * register a callback for an LRUD event
    *
    * @param {string} eventName event to subscribe to
    * @param {function} callback function to call on event
@@ -77,6 +78,7 @@ class Lrud {
   }
 
   /**
+   * register a new node into the LRUD tree
    *
    * @param {string} nodeId
    * @param {object} node
@@ -86,8 +88,8 @@ class Lrud {
    * @param {number[]} [node.indexRange] defaults to null. acts as a colspan, value [0] is lower bound, value [1] is upper bound
    * @param {function} [node.selectAction]
    * @param {boolean} [node.isFocusable]
-   * @param {boolean} [node.isWrapping]
-   * @param {string} [node.orientation]
+   * @param {boolean} [node.isWrapping] if true, when asking for the next child at the end or start of the node, the will "wrap around" and return the first/last (when asking for the last/first)
+   * @param {string} [node.orientation] can be "vertical" or "horizontal"
    * @param {boolean} [node.isVerticalIndexAlign]
    * @param {boolean} [node.isHorizontalIndexAlign]
    * @param {boolean} [node.isIndexAlign]
@@ -530,15 +532,7 @@ class Lrud {
     }
 
     // ...if we need to align indexes, turn the flag on now...
-    if ((direction === 'UP' || direction === 'DOWN') && topNode.isVerticalIndexAlign) {
-      this.isIndexAlignMode = true
-    }
-    if ((direction === 'LEFT' || direction === 'RIGHT') && topNode.isHorizontalIndexAlign) {
-      this.isIndexAlignMode = true
-    }
-    if (topNode.isIndexAlign) {
-      this.isIndexAlignMode = true
-    }
+    this.isIndexAlignMode = (topNode.isIndexAlign === true)
 
     // ...get the top's next child in the direction we're going...
     const nextChild = this.getNextChildInDirection(topNode, direction)

@@ -6,7 +6,7 @@ describe('test scenarios', () => {
   test('assigning focus to a branch should actually assign focus to the first active child', () => {
     const navigation = new Lrud()
 
-    navigation.registerNode('root', { isVerticalIndexAlign: true })
+    navigation.registerNode('root', { isIndexAlign: true })
     navigation
       .registerNode('row-1', { orientation: 'horizontal' })
       .registerNode('A', { parent: 'row-1', isFocusable: true })
@@ -21,7 +21,7 @@ describe('test scenarios', () => {
   test('navigating around a (mini) keyboard', () => {
     const navigation = new Lrud()
 
-    navigation.registerNode('keyboard', { orientation: 'vertical', isVerticalIndexAlign: true })
+    navigation.registerNode('keyboard', { orientation: 'vertical', isIndexAlign: true })
     navigation
       .registerNode('row-1', { orientation: 'horizontal' })
       .registerNode('A', { parent: 'row-1', isFocusable: true })
@@ -60,7 +60,7 @@ describe('test scenarios', () => {
   test('setting up a keyboard and forgetting to set the keyboard itself as vertical', () => {
     const navigation = new Lrud()
 
-    navigation.registerNode('keyboard', { isVerticalIndexAlign: true })
+    navigation.registerNode('keyboard', { isIndexAlign: true })
     navigation
       .registerNode('row-1', { orientation: 'horizontal' })
       .registerNode('A', { parent: 'row-1', isFocusable: true })
@@ -83,7 +83,7 @@ describe('test scenarios', () => {
   test('keyboard with space and delete', () => {
     const navigation = new Lrud()
 
-    navigation.registerNode('keyboard', { orientation: 'vertical', isVerticalIndexAlign: true })
+    navigation.registerNode('keyboard', { orientation: 'vertical', isIndexAlign: true })
     navigation
       .registerNode('row-1', { orientation: 'horizontal' })
       .registerNode('A', { parent: 'row-1', isFocusable: true })
