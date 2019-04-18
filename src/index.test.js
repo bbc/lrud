@@ -327,7 +327,7 @@ describe('lrud', () => {
       ])
     })
 
-    test('if unregistering the focused node, reassign focus (focused on the node were unregistering)', () => {
+    test('if unregistering the focused node, recalcualte focus', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'horizontal' })
@@ -342,7 +342,7 @@ describe('lrud', () => {
       expect(navigation.currentFocusNodeId).toEqual('NODE_1')
     })
 
-    test('if unregistering the focused node, set focus to undefined (focused on a nested node of the unregistered node)', () => {
+    test('if unregistering a parent or parent branch of the focused node, recalculate focus', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'vertical' })
@@ -1071,6 +1071,46 @@ describe('lrud', () => {
       // go back left again...
       navigation.handleKeyEvent({ direction: 'left' })
       expect(navigation.currentFocusNodeId).toEqual('l-3')
+    })
+  })
+
+  describe('_reindexChildrenOfNode', () => {
+    test('deleting a leaf should re-index the other leaves when leaves are added without indexes', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('c', { index: 9 })
+        .registerNode('a', { index: 4 })
+        .registerNode('d', { index: 13 })
+        .registerNode('b', { index: 6 })
+
+      let root = navigation.getNode('root')
+      root = navigation._reindexChildrenOfNode(root)
+
+      expect(root.children.a.index).toEqual(1)
+      expect(root.children.b.index).toEqual(2)
+      expect(root.children.c.index).toEqual(3)
+      expect(root.children.d.index).toEqual(4)
+    })
+
+    test('test it through unregister', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('c', { index: 9 })
+        .registerNode('a', { index: 4 })
+        .registerNode('e', { index: 16 })
+        .registerNode('d', { index: 13 })
+        .registerNode('b', { index: 6 })
+
+      navigation.unregisterNode('e')
+
+      expect(navigation.getNode('a').index).toEqual(1)
+      expect(navigation.getNode('b').index).toEqual(2)
+      expect(navigation.getNode('c').index).toEqual(3)
+      expect(navigation.getNode('d').index).toEqual(4)
     })
   })
 })

@@ -153,22 +153,22 @@ class Lrud {
   unregisterNode (nodeId) {
     const path = this.getPathForNodeId(nodeId)
 
+    // if we're trying to unregister a node that doesn't exist, exit out
     if (!path) {
       return
     }
 
-    // get a copy of the node to pass to the blur event
+    // get a copy of the node to pass to the blur event, and grab the parent to work with it
     const nodeClone = _.get(this.tree, path)
-
     const parentNode = this.getNode(nodeClone.parent)
 
-    // delete the node itself (delete from the parent and reset the parent later)
+    // delete the node itself (delete from the parent and re-set the parent later)
     delete parentNode.children[nodeId]
 
-    // remove the relevant entry from the node id list
+    // ...remove the relevant entry from the node id list
     this.nodePathList.splice(this.nodePathList.indexOf(path), 1)
 
-    // remove all its children from the node ID list
+    // ...remove all its children from the node ID list
     this.nodePathList = this.nodePathList.filter(nodeIdPath => {
       return !(nodeIdPath.includes('.' + nodeId))
     })
@@ -179,8 +179,8 @@ class Lrud {
       return !(nodeIdPath.includes('.' + nodeId))
     })
 
-    // if its parent's activeChild is the node we're unregistering
-    // we need to reset the focus
+    // ...if we're unregistering the activeChild of our parent (could be a leaf OR branch)
+    // we need to recalculate the focus...
     if (parentNode.activeChild && parentNode.activeChild === nodeId) {
       delete parentNode.activeChild
       const top = this.climbUp(parentNode, '*')
@@ -189,7 +189,10 @@ class Lrud {
       this.assignFocus(child.id)
     }
 
-    // reset the parent after we've deleted it and amended the parents active child, etc.
+    // ...we need to recalculate the indexes of all the parents children
+    this._reindexChildrenOfNode(parentNode)
+
+    // re-set the parent after we've deleted the node itself and amended the parents active child, etc.
     _.set(this.tree, this.getPathForNodeId(parentNode.id), parentNode)
 
     // blur on the nodeClone
@@ -387,6 +390,29 @@ class Lrud {
     }
 
     return null
+  }
+
+  _reindexChildrenOfNode (node) {
+    if (!node.children) {
+      return
+    }
+
+    const children = Object.keys(node.children).map(childId => node.children[childId])
+
+    children.sort(function (a, b) {
+      return a.index - b.index
+    })
+
+    node.children = {}
+
+    children.forEach((child, zeroBasedIndex) => {
+      child.index = zeroBasedIndex + 1
+      node.children[child.id] = child
+    })
+
+    _.set(this.tree, this.getPathForNodeId(node.id), node)
+
+    return node
   }
 
   getNextChildInDirection (node, direction) {
