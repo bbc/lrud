@@ -5,6 +5,8 @@ const Closest = (values, goal) => values.reduce(function (prev, curr) {
   return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev)
 })
 
+const isFocusable = (node) => !!(node.selectAction || node.isFocusable)
+
 class Lrud {
   constructor () {
     this.tree = {}
@@ -68,6 +70,7 @@ class Lrud {
 
   /**
    * given a node id, return the full path for it
+   *
    * @param {string} nodeId
    */
   getPathForNodeId (nodeId) {
@@ -90,11 +93,9 @@ class Lrud {
    * @param {boolean} [node.isFocusable]
    * @param {boolean} [node.isWrapping] if true, when asking for the next child at the end or start of the node, the will "wrap around" and return the first/last (when asking for the last/first)
    * @param {string} [node.orientation] can be "vertical" or "horizontal"
-   * @param {boolean} [node.isVerticalIndexAlign]
-   * @param {boolean} [node.isHorizontalIndexAlign]
-   * @param {boolean} [node.isIndexAlign]
-   * @param {function} [node.onLeave]
-   * @param {function} [node.onEnter]
+   * @param {boolean} [node.isIndexAlign] if a node is index aligned, its descendents should jump to nodes based on index instead of activeChild
+   * @param {function} [node.onLeave] if a node has an `onLeave` function, it will be run when a move event leaves this node
+   * @param {function} [node.onEnter] if a node has an `onEnter` function, it will be run when a move event enters this node
    */
   registerNode (nodeId, node = {}) {
     if (!node.id) {
@@ -141,7 +142,7 @@ class Lrud {
     this.nodePathList.push(path)
 
     // if the node is focusable, we want to add its path to our focusableNodePathList
-    if (this._isFocusableNode(node)) {
+    if (isFocusable(node)) {
       this.focusableNodePathList.push(path)
     }
 
@@ -149,7 +150,7 @@ class Lrud {
   }
 
   /**
-   *
+   * unregister a node from the navigation tree
    * @param {string} nodeId
    */
   unregisterNode (nodeId) {
@@ -203,6 +204,12 @@ class Lrud {
     return this
   }
 
+  /**
+   * register a new override onto the LRUD instance
+   *
+   * @param {string} overrideId
+   * @param {object} override
+   */
   registerOverride (overrideId, override) {
     if (!overrideId) {
       throw new Error('need an id to register an override')
@@ -213,7 +220,19 @@ class Lrud {
   }
 
   /**
-   * return a node based on ID
+   * unregister an override from the LRUD instance
+   *
+   * @param {string} overrideId
+   */
+  unregisterOverride (overrideId) {
+    delete this.overrides[overrideId]
+
+    return this
+  }
+
+  /**
+   * return a node for an ID
+   *
    * @param {string} nodeId node id
    */
   getNode (nodeId) {
@@ -222,6 +241,7 @@ class Lrud {
 
   /**
    * return a node by ID and then unregister it from the instance
+   *
    * @param {string} nodeId node id
    */
   pickNode (nodeId) {
@@ -238,6 +258,7 @@ class Lrud {
 
   /**
    * is the given node in the path of ANY node that is focusable
+   *
    * @param {*} node
    */
   _isNodeInFocusableNodePathList (node) {
@@ -253,6 +274,10 @@ class Lrud {
   }
 
   /**
+   * starting from a node, climb up the navigation tree until we find a node that can be
+   * actioned, based on the given direction. an actionable node is one whose orientation is valid
+   * for the given direction, has focusable children and whose activeChild isn't a leaf that is
+   * also its current activeChild
    *
    * @param {object} node
    * @param {string} direction
@@ -272,7 +297,7 @@ class Lrud {
     }
 
     // if we're on a leaf, climb up
-    if (this._isFocusableNode(node)) {
+    if (isFocusable(node)) {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
@@ -296,7 +321,7 @@ class Lrud {
     // if the next child in the direction is both the same as this node's activeChild
     // AND a leaf, bubble up too - handles nested wrappers, like docs/test-diagrams/fig-3.png
     const isNextChildCurrentActiveChild = (nextChildInDirection && nextChildInDirection.id === node.activeChild)
-    const isNextChildFocusable = this._isFocusableNode(this.getNode(node.activeChild))
+    const isNextChildFocusable = isFocusable(this.getNode(node.activeChild))
     const isNodeInFocusablePath = this._isNodeInFocusableNodePathList(node)
     if (isNextChildCurrentActiveChild && (isNextChildFocusable || isNodeInFocusablePath)) {
       return this.climbUp(this.getNode(node.parent), direction)
@@ -306,12 +331,17 @@ class Lrud {
   }
 
   /**
+   * starting from the given node, dig down the navigation tree until we find a focusable
+   * leaf, and return it. dig "direction" priority:
+   * - index align mode
+   * - active child
+   * - first child
    *
    * @param {object} node
    */
   digDown (node) {
     // if the active child is focusable, return it
-    if (this._isFocusableNode(node)) {
+    if (isFocusable(node)) {
       return node
     }
 
@@ -319,7 +349,7 @@ class Lrud {
 
     // we're in index align mode, so set the `node.activeChild` to the node's child of the same index
     // that the current `this.currentFocusNodeIndex` is
-    // TODO probably refactor in specific alignment modes for vertical and horizontal
+    // indexAlign mode only applies if the node itself AND its parent aren't both vertical
     if (this.isIndexAlignMode && !(node.orientation === 'vertical' && parent.orientation === 'vertical')) {
       let child = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndex)
 
@@ -339,13 +369,19 @@ class Lrud {
 
     const activeChild = this.getNode(node.activeChild)
 
-    if (this._isFocusableNode(activeChild)) {
+    if (isFocusable(activeChild)) {
       return activeChild
     }
 
     return this.digDown(activeChild)
   }
 
+  /**
+   * return a child from the given node whose indexRange encompases the given index
+   *
+   * @param {object} node
+   * @param {number} index
+   */
   _findChildWithMatchingIndexRange (node, index) {
     if (!node.children) {
       return null
@@ -361,6 +397,15 @@ class Lrud {
     }
   }
 
+  /**
+   * return a child from the given node whose index is numerically closest to the given
+   * index. if an indexRange is provided, first check if the node's activeChild is inside
+   * the indexRange. if it is, return the activeChild node instead
+   *
+   * @param {object} node
+   * @param {index} index
+   * @param {number[]} indexRange
+   */
   _findChildWithClosestIndex (node, index, indexRange = null) {
     if (!node.children) {
       return null
@@ -377,6 +422,12 @@ class Lrud {
     return this._findChildWithIndex(node, Closest(indexes, index))
   }
 
+  /**
+   * return a child from the given node whose index matches the given index
+   *
+   * @param {object} node
+   * @param {number} index
+   */
   _findChildWithIndex (node, index) {
     if (!node.children) {
       return null
@@ -394,6 +445,12 @@ class Lrud {
     return null
   }
 
+  /**
+   * reindex all the children of the node, assigning indexes numerically from 1. maintains
+   * original order of indexes, but normalises them all to be 1 based
+   *
+   * @param {object} node
+   */
   _reindexChildrenOfNode (node) {
     if (!node.children) {
       return
@@ -417,6 +474,14 @@ class Lrud {
     return node
   }
 
+  /**
+   * gets the semantic next child for a given direction
+   * if the direction is left or up, return the semantic previous child of the node
+   * if the direction is right or down, return the semantic next child of the node
+   *
+   * @param {object} node
+   * @param {string} direction
+   */
   getNextChildInDirection (node, direction) {
     direction = direction.toUpperCase()
 
@@ -559,10 +624,13 @@ class Lrud {
     return focusableNode
   }
 
-  _isFocusableNode (node) {
-    return !!(node.selectAction || node.isFocusable)
-  }
-
+  /**
+   * recursively sets the activeChild of the parentId node to the value of the childId node
+   * if the parent node has a parent itself, it digs up the tree and sets those activeChild values
+   *
+   * @param {string} parentId
+   * @param {string} childId
+   */
   _setActiveChild (parentId, childId) {
     const child = this.getNode(childId)
     const parent = this.getNode(parentId)
@@ -584,10 +652,18 @@ class Lrud {
     }
   }
 
+  /**
+   * set the current focus of the instance to the given node ID
+   * if the given node ID points to a non-focusable node, we dig down from
+   * the given node to find a node that can be focused on
+   * calls `onFocus` on the given node, if it exists, and emits a `focus` event
+   *
+   * @param {string} nodeId
+   */
   assignFocus (nodeId) {
     let node = this.getNode(nodeId)
 
-    if (!this._isFocusableNode(node)) {
+    if (!isFocusable(node)) {
       node = this.digDown(node)
     }
 

@@ -543,29 +543,6 @@ describe('lrud', () => {
     })
   })
 
-  describe('_isFocusableNode()', () => {
-    test('returns true for a node with a select action (`selectAction`)', () => {
-      const node = { selectAction: true, parent: 'root' }
-      const navigation = new Lrud()
-
-      expect(navigation._isFocusableNode(node)).toEqual(true)
-    })
-
-    test('returns true for a node with is focusable (`isFocusable`)', () => {
-      const node = { isFocusable: true, parent: 'root' }
-      const navigation = new Lrud()
-
-      expect(navigation._isFocusableNode(node)).toEqual(true)
-    })
-
-    test('returns false for a node with neither', () => {
-      const node = { parent: 'root' }
-      const navigation = new Lrud()
-
-      expect(navigation._isFocusableNode(node)).toEqual(false)
-    })
-  })
-
   describe('assignFocus()', () => {
     test('assigning focus should set the `activeChild` of all the nodes back up the tree', () => {
       const navigation = new Lrud()
