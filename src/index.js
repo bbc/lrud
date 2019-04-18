@@ -13,6 +13,7 @@ class Lrud {
     this.rootNodeId = null
     this.currentFocusNodeId = null
     this.currentFocusNodeIndex = null
+    this.currentFocusNodeIndexRange = null
     this.isIndexAlignMode = false
     this.emitter = new EventEmitter()
     this.overrides = {}
@@ -318,7 +319,7 @@ class Lrud {
       let child = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndex)
 
       if (!child) {
-        child = this._findChildWithClosestIndex(node, this.currentFocusNodeIndex)
+        child = this._findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange)
       }
 
       if (child) {
@@ -355,10 +356,18 @@ class Lrud {
     }
   }
 
-  _findChildWithClosestIndex (node, index) {
+  _findChildWithClosestIndex (node, index, indexRange = null) {
     if (!node.children) {
       return null
     }
+
+    // if we have an indexRange, and the nodes active child is inside that index range,
+    // just return the active child
+    const activeChild = this.getNode(node.activeChild)
+    if (indexRange && activeChild && activeChild.index >= indexRange[0] && activeChild.index <= indexRange[1]) {
+      return activeChild
+    }
+
     const indexes = Object.keys(node.children).map(childId => node.children[childId].index)
     return this._findChildWithIndex(node, Closest(indexes, index))
   }
@@ -570,6 +579,7 @@ class Lrud {
 
     if (node.indexRange) {
       this.currentFocusNodeIndex = node.indexRange[0]
+      this.currentFocusNodeIndexRange = node.indexRange
     } else {
       this.currentFocusNodeIndex = node.index
     }
