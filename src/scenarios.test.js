@@ -57,7 +57,7 @@ describe('test scenarios', () => {
     expect(navigation.currentFocusNodeId).toEqual('K')
   })
 
-  test.only('setting up a keyboard and forgetting to set the keyboard itself as vertical', () => {
+  test('setting up a keyboard and forgetting to set the keyboard itself as vertical', () => {
     const navigation = new Lrud()
 
     navigation.registerNode('keyboard', { isVerticalIndexAlign: true })
@@ -78,5 +78,9 @@ describe('test scenarios', () => {
     // nothing to bubble to, so should still be on A
     navigation.handleKeyEvent({ direction: 'down' })
     expect(navigation.currentFocusNodeId).toEqual('A')
+  })
+
+  test('keyboard with space and delete', () => {
+
   })
 })

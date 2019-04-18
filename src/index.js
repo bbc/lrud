@@ -28,6 +28,10 @@ class Lrud {
    * @param {string} direction
    */
   isDirectionAndOrientationMatching (orientation, direction) {
+    if (!orientation || !direction) {
+      return false
+    }
+
     orientation = orientation.toUpperCase()
     direction = direction.toUpperCase()
 
@@ -86,6 +90,8 @@ class Lrud {
    * @param {boolean} [node.isVerticalIndexAlign]
    * @param {boolean} [node.isHorizontalIndexAlign]
    * @param {boolean} [node.isIndexAlign]
+   * @param {function} [node.onLeave]
+   * @param {function} [node.onEnter]
    */
   registerNode (nodeId, node = {}) {
     if (!node.id) {
@@ -478,9 +484,10 @@ class Lrud {
    */
   handleKeyEvent (event) {
     const direction = event.direction.toUpperCase()
+    const currentFocusNode = this.getNode(this.currentFocusNodeId)
 
     // climb up from where we are...
-    const topNode = this.climbUp(this.getNode(this.currentFocusNodeId), direction)
+    const topNode = this.climbUp(currentFocusNode, direction)
 
     // ... if we cant find a top node, its an invalid move - just return
     if (!topNode) {
@@ -501,16 +508,24 @@ class Lrud {
     // ...get the top's next child in the direction we're going...
     const nextChild = this.getNextChildInDirection(topNode, direction)
 
-    let focusableNode
-    if (nextChild) {
-      // ...if we have a next child, dig down from that child
-      focusableNode = this.digDown(nextChild)
-    } else {
-      // ...otherwise, dig down from the top
-      focusableNode = this.digDown(topNode)
-    }
+    // ...and depending on if we're able to find a child, dig down from the child or from the original top...
+    const focusableNode = (nextChild) ? this.digDown(nextChild) : this.digDown(topNode)
 
+    // ...and then assign focus
     this.assignFocus(focusableNode.id)
+
+    // emit events and fire functions now that the move has completed
+    this.emitter.emit('move', {
+      leave: currentFocusNode,
+      enter: focusableNode,
+      offset: (direction === 'LEFT' || direction === 'UP') ? -1 : 1
+    })
+    if (currentFocusNode.onLeave) {
+      currentFocusNode.onLeave()
+    }
+    if (focusableNode.onEnter) {
+      focusableNode.onEnter()
+    }
 
     return focusableNode
   }
@@ -520,14 +535,23 @@ class Lrud {
   }
 
   _setActiveChild (parentId, childId) {
-    // set the activeChild of the parent to the child
-    const path = this.getPathForNodeId(parentId)
-    _.set(this.tree, path + '.activeChild', childId)
+    const child = this.getNode(childId)
+    const parent = this.getNode(parentId)
+    if (!child) {
+      return
+    }
 
-    // then see if the parent has its OWN parent, and if it does, call again
-    const parentsParent = _.get(this.tree, path + '.parent')
-    if (parentsParent) {
-      this._setActiveChild(parentsParent, parentId)
+    // the parent already has an active child, and its NOT the same child that we're now setting
+    if (parent.activeChild && parent.activeChild !== child.id) {
+      const currentActiveChild = this.getNode(parent.activeChild)
+      parent.activeChild = child.id
+      this.emitter.emit('inactive', currentActiveChild)
+      this.emitter.emit('active', child)
+    }
+
+    // if the parent has a parent, bubble up
+    if (parent.parent) {
+      this._setActiveChild(parent.parent, parent.id)
     }
   }
 
