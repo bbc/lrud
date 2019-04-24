@@ -29,7 +29,6 @@
     "url": "git@github.com:bbc/lrud.git"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.4.3",
     "eslint": "^4.19.1",
     "eslint-config-standard": "^11.0.0",
     "eslint-plugin-import": "^2.11.0",
@@ -37,11 +36,7 @@
     "eslint-plugin-promise": "^3.7.0",
     "eslint-plugin-standard": "^3.1.0",
     "jest": "^24.1.0",
-    "rimraf": "^2.6.2",
-    "rollup": "^0.58.2",
-    "rollup-plugin-commonjs": "^9.1.2",
-    "rollup-plugin-node-resolve": "^3.3.0",
-    "uglify-js": "^3.3.23"
+    "rimraf": "^2.6.2"
   },
   "dependencies": {
     "flat": "^4.1.0",
