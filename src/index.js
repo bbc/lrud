@@ -1,11 +1,33 @@
 const _ = require('./lodash.custom.min.js')
 const EventEmitter = require('tiny-emitter')
+const KeyCodes = require('./key-codes')
 
+/**
+ * given an array of values and a goal, return the value from values which is closest to the goal
+ * @param {number[]} values
+ * @param {number} goal
+ */
 const Closest = (values, goal) => values.reduce(function (prev, curr) {
   return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev)
 })
 
+/**
+ * check if a given node is focusable
+ * @param {object} node
+ */
 const isFocusable = (node) => !!(node.selectAction || node.isFocusable)
+
+/**
+ * given a keyCode, lookup and return the direction from the keycodes mapping file
+ * @param {number} keyCode
+ */
+const getDirectionForKeyCode = (keyCode) => {
+  const direction = KeyCodes.codes[keyCode]
+  if (direction) {
+    return direction.toUpperCase()
+  }
+  return null
+}
 
 class Lrud {
   constructor () {
@@ -245,13 +267,12 @@ class Lrud {
    * @param {string} nodeId node id
    */
   pickNode (nodeId) {
-    const path = this.getPathForNodeId(nodeId)
+    const node = this.getNode(nodeId)
 
-    if (!path) {
+    if (!node) {
       return
     }
 
-    const node = _.get(this.tree, path)
     this.unregisterNode(nodeId)
     return node
   }
@@ -582,11 +603,18 @@ class Lrud {
   /**
    *
    * @param {object} event
-   * @param {string} event.direction
+   * @param {string} [event.keyCode]
+   * @param {string} [event.direction]
    */
   handleKeyEvent (event) {
-    const direction = event.direction.toUpperCase()
+    const direction = (event.keyCode) ? getDirectionForKeyCode(event.keyCode) : event.direction.toUpperCase()
     const currentFocusNode = this.getNode(this.currentFocusNodeId)
+
+    // if all we're doing is processing an enter, just run the `onSelect` function of the current node...
+    if (direction === 'ENTER' && currentFocusNode.onSelect) {
+      currentFocusNode.onSelect()
+      return
+    }
 
     // climb up from where we are...
     const topNode = this.climbUp(currentFocusNode, direction)
