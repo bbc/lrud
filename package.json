@@ -8,10 +8,6 @@
     "umd",
     "src"
   ],
-  "author": {
-    "name": "Stuart Williams",
-    "url": "https://github.com/stuart-williams"
-  },
   "license": "Apache-2.0",
   "keywords": [
     "tv",
@@ -39,7 +35,6 @@
     "rimraf": "^2.6.2"
   },
   "dependencies": {
-    "flat": "^4.1.0",
     "tiny-emitter": "^2.0.2"
   },
   "scripts": {
