@@ -29,6 +29,7 @@
     "url": "git@github.com:bbc/lrud.git"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.4.3",
     "eslint": "^4.19.1",
     "eslint-config-standard": "^11.0.0",
     "eslint-plugin-import": "^2.11.0",
