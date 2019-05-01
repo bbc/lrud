@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const Lrud = require('./index')
+const Lrud = require('./index.js')
 
 describe('lrud', () => {
   describe('registerNode()', () => {

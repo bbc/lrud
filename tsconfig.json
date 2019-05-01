@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "module": "umd",
+        "target": "es5",
+        "lib": ["es6"],
+        "esModuleInterop": true,
+        "moduleResolution": "node"
+    },
+    "files": [
+        "src/index.ts"
+    ]
+}

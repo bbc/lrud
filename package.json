@@ -25,6 +25,8 @@
     "url": "git@github.com:bbc/lrud.git"
   },
   "devDependencies": {
+    "@types/lodash.get": "^4.4.6",
+    "@types/lodash.set": "^4.3.6",
     "eslint": "^4.19.1",
     "eslint-config-standard": "^11.0.0",
     "eslint-plugin-import": "^2.11.0",
@@ -35,14 +37,15 @@
     "rimraf": "^2.6.2"
   },
   "dependencies": {
-    "tiny-emitter": "^2.0.2"
+    "lodash.get": "^4.4.2",
+    "lodash.set": "^4.3.2",
+    "mitt": "^1.1.3"
   },
   "scripts": {
     "preversion": "npm test",
     "postversion": "git push && git push --tags",
     "clean": "rimraf umd",
     "lint": "eslint src/index.js",
-    "pretest": "npm run lint",
     "test": "jest",
     "minify": "uglifyjs umd/lrud.js --compress --mangle --output umd/lrud.min.js",
     "prebuild": "npm run clean",
