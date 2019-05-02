@@ -203,25 +203,55 @@ assign(Lrud.prototype, {
     return assign({ id: id, children: [] }, this.nodes[id], props)
   },
 
-  _updateGrid: function (activeId, nextId) {
-    var activeNode = this.nodes[activeId]
+  _updateGrid: function (nextId) {
+    // TODO: This does not work well for nested grids without full rows
     var nextNode = this.nodes[nextId]
+    if (!nextNode) return
 
-    // Ignore if we're not moving from a grid item to another grid item
-    if (!activeNode || !nextNode || !activeNode.grid || !nextNode.grid) return
+    var parentId = nextNode.parent
+    var parentNode = this.nodes[parentId]
+    if (!parentNode || !parentNode.grid) return
 
-    var activeChild = this._getActiveChild(activeNode)
-    var activeIndex = activeNode.children.indexOf(activeChild)
+    var siblingIds = parentNode.children
+    var grandparentNode = this.nodes[parentNode.parent]
+    if (!grandparentNode) return
 
-    var nodeToUpdate = !isList(nextNode) ? this.searchDown(nextNode, isList) : nextNode
+    var piblingIds = grandparentNode.children
+    var nextIndex = siblingIds.indexOf(nextId)
 
-    if (!nodeToUpdate) return
+    var i
+    var ceilingIndex
 
-    // Focus closest enabled node
-    var left = nodeToUpdate.children.slice(0, activeIndex).filter(isEnabled.bind(this))
-    var right = nodeToUpdate.children.slice(activeIndex).filter(isEnabled.bind(this))
+    // For current parent and subsequent piblings
+    ceilingIndex = siblingIds.length > nextIndex ? nextIndex : siblingIds.length - 1
+    for (i=piblingIds.indexOf(parentId); i<piblingIds.length; i++) {
+      var piblingId = piblingIds[i]
+      var piblingNode = this.nodes[piblingId]
 
-    this.setActiveIndex(nodeToUpdate.id, nodeToUpdate.children.indexOf(right[0] || left[left.length - 1]))
+      if (piblingNode.children.length > 0) {
+        if (piblingNode.children.length < ceilingIndex + 1) {
+          ceilingIndex = piblingNode.children.length - 1
+        }
+        this.setActiveIndex(piblingId, ceilingIndex)
+      }
+    }
+
+    // For piblings before current parent
+    ceilingIndex = siblingIds.length > nextIndex ? nextIndex : siblingIds.length - 1
+    for (i=piblingIds.indexOf(parentId) - 1; i>=0; i--) {
+      var piblingId = piblingIds[i]
+      var piblingNode = this.nodes[piblingId]
+
+      if (piblingNode.children.length > 0) {
+        if (piblingNode.children.length < ceilingIndex + 1) {
+          ceilingIndex = piblingNode.children.length - 1
+        }
+        this.setActiveIndex(piblingId, ceilingIndex)
+      }
+    }
+
+    // Update nested grids
+    this._updateGrid(nextNode.activeChild)
   },
 
   _getActiveChild: function (node) {
@@ -379,7 +409,7 @@ assign(Lrud.prototype, {
    * @param {object} node the navigation node we're acting on
    */
   _assignFocus: function (activeChildId, nextActiveChildId, nextActiveIndex, activeIndex, offset, event, node, moveId, moveLeaveId) {
-    this._updateGrid(activeChildId, nextActiveChildId)
+    this._updateGrid(nextActiveChildId)
     var moveEvent = assign({}, node, {
       offset: offset,
       enter: {
@@ -409,9 +439,9 @@ assign(Lrud.prototype, {
       node.onMove(moveEvent)
     }
 
-    this.emit('move', moveEvent)
-
     this.focus(nextActiveChildId)
+
+    this.emit('move', moveEvent)
     event.stopPropagation()
   }
 
