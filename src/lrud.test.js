@@ -246,7 +246,7 @@ describe('lrud', () => {
   })
 
   describe('unregisterNode()', () => {
-    test.only('unregistering a leaf should remove it', () => {
+    test('unregistering a leaf should remove it', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'vertical' })

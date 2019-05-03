@@ -27,7 +27,9 @@ Approved
 
 - user land usages of LRUD will need to update their code in order to make use of the new version. We are planning to keep breaking changes to a minimum, but some changes will be necessary.
 
-- slightly increased library size, affecting response payload sizes. The increase in size is small enough (an increase of 2.6kb when minified) that we deem this acceptable. Furthermore, the changes mean that "workaround" code in service land can be removed, reducing payload size in other areas
+- slightly increased library size, affecting response payload sizes. The increase in size is small enough (an increase of 2.6kb when minified) that we deem this acceptable. Furthermore, the changes mean that current "workaround" code in service land can be removed, reducing payload size in other areas.
+
+- slightly increased runtime computation. Usage of a real tree in memory requires extra computation. Dedicated testing will take place to ensure LRUD is still performant enough on low powered devices, but initial testing of 92 test cases in 2.4s suggests this is well within limits.
 
 ### Further Reading
 
