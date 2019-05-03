@@ -56,7 +56,9 @@ To run a specific test file, use `npx jest` from the project root.
 npx jest src/lrud.test.js
 ```
 
-We also have a specific test file (`src/build.test.js`)
+Several of the tests have associated diagrams, in order to better explain what is being tested. These can be found in `./docs/test-diagrams`.
+
+We also have a specific test file (`src/build.test.js`) in order to ensure that we haven't broken the Typescript/rollup.js build.
 
 ## Versioning
 

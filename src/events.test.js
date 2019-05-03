@@ -28,7 +28,7 @@ describe('event scenarios', () => {
       parent: 'left',
       isFocusable: true,
       id: 'b',
-      index: 2
+      index: 1
     })
   })
 
@@ -59,25 +59,25 @@ describe('event scenarios', () => {
         parent: 'right',
         isFocusable: true,
         id: 'd',
-        index: 2
+        index: 1
       })],
       [expect.objectContaining({
         id: 'right',
         parent: 'root',
-        index: 2,
+        index: 1,
         activeChild: 'd',
         children: {
           c: {
             parent: 'right',
             isFocusable: true,
             id: 'c',
-            index: 1
+            index: 0
           },
           d: {
             parent: 'right',
             isFocusable: true,
             id: 'd',
-            index: 2
+            index: 1
           }
         }
       })]
@@ -88,25 +88,25 @@ describe('event scenarios', () => {
         parent: 'right',
         isFocusable: true,
         id: 'c',
-        index: 1
+        index: 0
       })],
       [expect.objectContaining({
         id: 'left',
         parent: 'root',
-        index: 1,
+        index: 0,
         activeChild: 'a',
         children: {
           a: {
             parent: 'left',
             isFocusable: true,
             id: 'a',
-            index: 1
+            index: 0
           },
           b: {
             parent: 'left',
             isFocusable: true,
             id: 'b',
-            index: 2
+            index: 1
           }
         }
       })]
@@ -134,13 +134,13 @@ describe('event scenarios', () => {
     expect(moveSpy).toHaveBeenCalledWith({
       leave: {
         id: 'a',
-        index: 1,
+        index: 0,
         parent: 'root',
         isFocusable: true
       },
       enter: {
         id: 'b',
-        index: 2,
+        index: 1,
         parent: 'root',
         isFocusable: true
       },
@@ -169,13 +169,13 @@ describe('event scenarios', () => {
     expect(moveSpy).toHaveBeenCalledWith({
       leave: {
         id: 'b',
-        index: 2,
+        index: 1,
         parent: 'root',
         isFocusable: true
       },
       enter: {
         id: 'a',
-        index: 1,
+        index: 0,
         parent: 'root',
         isFocusable: true
       },

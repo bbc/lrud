@@ -91,7 +91,7 @@ describe('test scenarios', () => {
       .registerNode('C', { parent: 'row-1', isFocusable: true })
       .registerNode('D', { parent: 'row-1', isFocusable: true })
       .registerNode('E', { parent: 'row-1', isFocusable: true })
-      .registerNode('F', { parent: 'row-2', isFocusable: true })
+      .registerNode('F', { parent: 'row-1', isFocusable: true })
 
     navigation
       .registerNode('row-2', { orientation: 'horizontal' })
@@ -104,8 +104,8 @@ describe('test scenarios', () => {
 
     navigation
       .registerNode('row-3', { orientation: 'horizontal' })
-      .registerNode('Space', { parent: 'row-3', indexRange: [1, 3], isFocusable: true })
-      .registerNode('Delete', { parent: 'row-3', indexRange: [4, 6], isFocusable: true })
+      .registerNode('Space', { parent: 'row-3', indexRange: [0, 2], isFocusable: true })
+      .registerNode('Delete', { parent: 'row-3', indexRange: [3, 5], isFocusable: true })
 
     navigation.assignFocus('keyboard')
     expect(navigation.currentFocusNodeId).toEqual('A')

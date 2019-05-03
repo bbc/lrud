@@ -167,7 +167,7 @@ export class Lrud {
         if (!parentsChildren) {
           node.index = 0
         } else {
-          node.index = (Object.keys(parentsChildren).length) + 1
+          node.index = (Object.keys(parentsChildren).length)
         }
       }
     }
@@ -511,8 +511,8 @@ export class Lrud {
 
     node.children = {}
 
-    children.forEach((child, zeroBasedIndex) => {
-      child.index = zeroBasedIndex + 1
+    children.forEach((child, index) => {
+      child.index = index
       node.children[child.id] = child
     })
 

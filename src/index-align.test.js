@@ -145,8 +145,8 @@ describe('handleKeyEvent() - index ranges', () => {
     navigation.registerNode('row-a-box-5', { parent: 'row-a', isFocusable: true })
     navigation.registerNode('row-a-box-6', { parent: 'row-a', isFocusable: true })
     navigation.registerNode('row-b', { parent: 'root', orientation: 'horizontal' })
-    navigation.registerNode('row-b-box-1', { parent: 'row-b', indexRange: [1, 2], isFocusable: true })
-    navigation.registerNode('row-b-box-2', { parent: 'row-b', indexRange: [3, 6], isFocusable: true })
+    navigation.registerNode('row-b-box-1', { parent: 'row-b', indexRange: [0, 1], isFocusable: true })
+    navigation.registerNode('row-b-box-2', { parent: 'row-b', indexRange: [2, 5], isFocusable: true })
     navigation.assignFocus('row-a-box-6')
 
     navigation.handleKeyEvent({ direction: 'down' })

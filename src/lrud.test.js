@@ -133,11 +133,11 @@ describe('lrud', () => {
 
       navigation.registerNode('c')
 
-      expect(navigation.getNode('a').index).toEqual(1)
-      expect(navigation.getNode('b').index).toEqual(2)
-      expect(navigation.getNode('b-1').index).toEqual(1)
-      expect(navigation.getNode('b-2').index).toEqual(2)
-      expect(navigation.getNode('c').index).toEqual(3)
+      expect(navigation.getNode('a').index).toEqual(0)
+      expect(navigation.getNode('b').index).toEqual(1)
+      expect(navigation.getNode('b-1').index).toEqual(0)
+      expect(navigation.getNode('b-2').index).toEqual(1)
+      expect(navigation.getNode('c').index).toEqual(2)
     })
 
     test('can chain registers together', () => {
@@ -157,17 +157,17 @@ describe('lrud', () => {
             a: {
               id: 'a',
               parent: 'root',
-              index: 1
+              index: 0
             },
             b: {
               id: 'b',
               parent: 'root',
-              index: 2
+              index: 1
             },
             c: {
               id: 'c',
               parent: 'root',
-              index: 3
+              index: 2
             }
           }
         }
@@ -260,7 +260,7 @@ describe('lrud', () => {
           children: {
             NODE_B: {
               isFocusable: true,
-              index: 1,
+              index: 0,
               parent: 'root'
             }
           }
@@ -384,22 +384,22 @@ describe('lrud', () => {
           children: {
             BOX_A: {
               id: 'BOX_A',
-              index: 1,
+              index: 0,
               parent: 'root',
               children: {
                 NODE_1: {
                   id: 'NODE_1',
-                  index: 1,
+                  index: 0,
                   parent: 'BOX_A'
                 },
                 NODE_2: {
                   id: 'NODE_2',
-                  index: 2,
+                  index: 1,
                   parent: 'BOX_A'
                 },
                 NODE_3: {
                   id: 'NODE_3',
-                  index: 3,
+                  index: 2,
                   parent: 'BOX_A'
                 }
               }
@@ -412,22 +412,22 @@ describe('lrud', () => {
       expect(spy).toHaveBeenCalledWith({
         parent: 'root',
         id: 'BOX_B',
-        index: 2,
+        index: 1,
         activeChild: 'NODE_4',
         children: {
           NODE_4: {
             id: 'NODE_4',
-            index: 1,
+            index: 0,
             parent: 'BOX_B'
           },
           NODE_5: {
             id: 'NODE_5',
-            index: 2,
+            index: 1,
             parent: 'BOX_B'
           },
           NODE_6: {
             id: 'NODE_6',
-            index: 3,
+            index: 2,
             parent: 'BOX_B'
           }
         }
@@ -967,7 +967,7 @@ describe('lrud', () => {
 
       expect(spy).toHaveBeenCalledWith({
         parent: 'root',
-        index: 2,
+        index: 1,
         id: 'child_2',
         isFocusable: true
       })
@@ -979,7 +979,7 @@ describe('lrud', () => {
       expect(spy).toHaveBeenCalledWith({
         parent: 'root',
         id: 'child_3',
-        index: 3,
+        index: 2,
         isFocusable: true
       })
     })
@@ -1002,7 +1002,7 @@ describe('lrud', () => {
       expect(spy).toHaveBeenCalledWith({
         parent: 'root',
         id: 'child_2',
-        index: 2,
+        index: 1,
         isFocusable: true
       })
 
@@ -1013,7 +1013,7 @@ describe('lrud', () => {
       expect(spy).toHaveBeenCalledWith({
         parent: 'root',
         id: 'child_1',
-        index: 1,
+        index: 0,
         isFocusable: true
       })
     })
@@ -1065,10 +1065,10 @@ describe('lrud', () => {
       let root = navigation.getNode('root')
       root = navigation._reindexChildrenOfNode(root)
 
-      expect(root.children.a.index).toEqual(1)
-      expect(root.children.b.index).toEqual(2)
-      expect(root.children.c.index).toEqual(3)
-      expect(root.children.d.index).toEqual(4)
+      expect(root.children.a.index).toEqual(0)
+      expect(root.children.b.index).toEqual(1)
+      expect(root.children.c.index).toEqual(2)
+      expect(root.children.d.index).toEqual(3)
     })
 
     test('test it through unregister', () => {
@@ -1084,10 +1084,10 @@ describe('lrud', () => {
 
       navigation.unregisterNode('e')
 
-      expect(navigation.getNode('a').index).toEqual(1)
-      expect(navigation.getNode('b').index).toEqual(2)
-      expect(navigation.getNode('c').index).toEqual(3)
-      expect(navigation.getNode('d').index).toEqual(4)
+      expect(navigation.getNode('a').index).toEqual(0)
+      expect(navigation.getNode('b').index).toEqual(1)
+      expect(navigation.getNode('c').index).toEqual(2)
+      expect(navigation.getNode('d').index).toEqual(3)
     })
   })
 })
