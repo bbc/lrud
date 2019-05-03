@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const Lrud = require('./index')
+const Lrud = require('../dist/index')
 
 describe('event scenarios', () => {
   test('active events should be fired', () => {

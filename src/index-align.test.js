@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const Lrud = require('./index')
+const Lrud = require('../dist/index')
 
 describe('handleKeyEvent() - column alignment behaviour', () => {
   test('moving between two rows should keep column alignment [fig-1]', () => {

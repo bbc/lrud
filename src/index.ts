@@ -1,12 +1,7 @@
-import get from 'lodash.get'
-import set from 'lodash.set'
+import Get from './get'
+import Set from './set'
 import mitt from 'mitt'
 import KeyCodes from './key-codes'
-
-const _ = {
-  get,
-  set,
-}
 
 /**
  * given an array of values and a goal, return the value from values which is closest to the goal
@@ -35,7 +30,7 @@ const getDirectionForKeyCode = (keyCode) => {
   return null
 }
 
-export = class Lrud {
+export default class Lrud {
   tree: any;
   nodePathList: any;
   focusableNodePathList: any;
@@ -161,7 +156,7 @@ export = class Lrud {
     const parentsChildPaths = this.nodePathList.find(path => path.includes(node.parent + '.children'))
     if (parentsChildPaths == null) {
       const parentPath = this.getPathForNodeId(node.parent)
-      _.set(this.tree, parentPath + '.activeChild', nodeId)
+      Set(this.tree, parentPath + '.activeChild', nodeId)
     }
 
     // if no `index` set, calculate it
@@ -177,7 +172,7 @@ export = class Lrud {
     // add the node into the tree
     // path is the node's parent plus 'children' plus itself
     let path = this.nodePathList.find(path => path.endsWith(node.parent)) + '.children.' + nodeId
-    _.set(this.tree, path, node)
+    Set(this.tree, path, node)
     this.nodePathList.push(path)
 
     // if the node is focusable, we want to add its path to our focusableNodePathList
@@ -201,7 +196,7 @@ export = class Lrud {
     }
 
     // get a copy of the node to pass to the blur event, and grab the parent to work with it
-    const nodeClone = _.get(this.tree, path)
+    const nodeClone = Get(this.tree, path)
     const parentNode = this.getNode(nodeClone.parent)
 
     // delete the node itself (delete from the parent and re-set the parent later)
@@ -235,7 +230,7 @@ export = class Lrud {
     this._reindexChildrenOfNode(parentNode)
 
     // re-set the parent after we've deleted the node itself and amended the parents active child, etc.
-    _.set(this.tree, this.getPathForNodeId(parentNode.id), parentNode)
+    Set(this.tree, this.getPathForNodeId(parentNode.id), parentNode)
 
     // blur on the nodeClone
     this.emitter.emit('blur', nodeClone)
@@ -275,7 +270,7 @@ export = class Lrud {
    * @param {string} nodeId node id
    */
   getNode (nodeId) {
-    return _.get(this.tree, (this.getPathForNodeId(nodeId)))
+    return Get(this.tree, (this.getPathForNodeId(nodeId)))
   }
 
   /**
@@ -508,7 +503,7 @@ export = class Lrud {
       node.children[child.id] = child
     })
 
-    _.set(this.tree, this.getPathForNodeId(node.id), node)
+    Set(this.tree, this.getPathForNodeId(node.id), node)
 
     return node
   }

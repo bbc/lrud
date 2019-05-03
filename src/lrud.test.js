@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const Lrud = require('./index.js')
+const Lrud = require('./index')
 
 describe('lrud', () => {
   describe('registerNode()', () => {
@@ -246,7 +246,7 @@ describe('lrud', () => {
   })
 
   describe('unregisterNode()', () => {
-    test('unregistering a leaf should remove it', () => {
+    test.only('unregistering a leaf should remove it', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root', { orientation: 'vertical' })

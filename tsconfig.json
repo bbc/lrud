@@ -1,12 +1,11 @@
 {
     "compilerOptions": {
-        "module": "umd",
-        "target": "es5",
-        "lib": ["es6"],
         "esModuleInterop": true,
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "target": "es5"
     },
-    "files": [
-        "src/index.ts"
-    ]
+    "include": [
+        "src/**/*"
+      ],
+    "exclude": ["node_modules"],
 }

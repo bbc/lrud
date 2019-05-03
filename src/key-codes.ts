@@ -4,7 +4,7 @@ var up = 'UP'
 var down = 'DOWN'
 var enter = 'ENTER'
 
-module.exports = {
+const KeyCodes = {
   map: {
     LEFT: left,
     RIGHT: right,
@@ -45,3 +45,5 @@ module.exports = {
     195: enter
   }
 }
+
+export default KeyCodes
