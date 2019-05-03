@@ -165,7 +165,7 @@ export class Lrud {
       if (parentNode) {
         let parentsChildren = this.getNode(node.parent).children
         if (!parentsChildren) {
-          node.index = 1
+          node.index = 0
         } else {
           node.index = (Object.keys(parentsChildren).length) + 1
         }
@@ -244,6 +244,9 @@ export class Lrud {
 
     // blur on the nodeClone
     this.emitter.emit('blur', nodeClone)
+    if (nodeClone.onBlur) {
+      nodeClone.onBlur();
+    }
 
     return this
   }
@@ -635,6 +638,7 @@ export class Lrud {
 
     // if all we're doing is processing an enter, just run the `onSelect` function of the current node...
     if (direction === 'ENTER' && currentFocusNode.onSelect) {
+      this.emitter.emit('select', currentFocusNode);
       currentFocusNode.onSelect()
       return
     }
@@ -694,7 +698,13 @@ export class Lrud {
       const currentActiveChild = this.getNode(parent.activeChild)
       parent.activeChild = child.id
       this.emitter.emit('inactive', currentActiveChild)
+      if (currentActiveChild.onInactive) {
+        currentActiveChild.onInactive()
+      }
       this.emitter.emit('active', child)
+      if (child.onActive) {
+        child.onActive()
+      }
     }
 
     // if the parent has a parent, bubble up
@@ -708,6 +718,7 @@ export class Lrud {
    * if the given node ID points to a non-focusable node, we dig down from
    * the given node to find a node that can be focused on
    * calls `onFocus` on the given node, if it exists, and emits a `focus` event
+   * also calls `onBlur` on the node that WAS focused before this function was called
    *
    * @param {string} nodeId
    */
@@ -720,6 +731,14 @@ export class Lrud {
 
     if (!node) {
       throw new Error('trying to assign focus to a non focusable node')
+    }
+
+    if (this.currentFocusNodeId) {
+      let previouslyFocusedNode = this.getNode(this.currentFocusNodeId);
+      if (previouslyFocusedNode && previouslyFocusedNode.onBlur) {
+        this.emitter.emit('blur', previouslyFocusedNode)
+        previouslyFocusedNode.onBlur();
+      }
     }
 
     this.currentFocusNodeId = node.id

@@ -2,242 +2,74 @@
 
 A spatial navigation library for devices with input via directional controls
 
-## Installation
+## Getting Started
+
+```bash
+git clone git@github.com:bbc/lrud.git lrud
+cd lrud
+npm install
+```
+
+Lrud is written in [Typescript](https://www.typescriptlang.org/) and makes use of [mitt](https://github.com/developit/mitt).
+
+## Usage
 
 ```bash
 npm install lrud
 ```
 
-## Initialisation
-
 ```js
+const { Lrud } = require('Lrud')
+
+// create an instance, register some nodes and assign a default focus
 var navigation = new Lrud()
-```
+navigation
+  .registerNode('root', { orientation: 'vertical' })
+  .registerNode('item-a', { parent: 'root', isFocusable: true })
+  .registerNode('item-b', { parent: 'root', isFocusable: true })
+  .assignFocus('item-a')
 
-## Registering a node
+// handle a key event
+document.addEventListener('keypress', (event) => {
+  navigation.handleKeyEvent(event)
+});
 
-A node can be added to the navigation tree by calling `navigation.register` with the id of the node
-
-```js
-navigation.register('root')
-```
-
-```json
-// navigation.nodes
-{
-  "root": {
-    "children": []
-  }
-}
-```
-
-## Options
-
-### `orientation`
-
-`"vertical" | "horizontal"`
-
-A node (list) of vertical orientation will handle up/down key events while a horizontal list will handle left/right key events
-
-### `wrapping`
-
-`boolean`
-
-To be used in conjunction with orientation to make a list wrap at the top/bottom or left/right depending on orientation
-
-### `grid`
-
-`boolean`
-
-To be used in conjunction with orientation to give a list of lists grid functionality
-
-### `onFocus`
-
-`function`
-
-### `onBlur`
-
-`function`
-
-### `onSelect`
-
-`function`
-
-### `onMove`
-
-`function`
-
-### Parent/child relationship
-
-Create a vertical list with two children
-
-```js
-navigation.register('list', { orientation: 'vertical' })
-navigation.register('list-item-1', { parent: 'list' })
-navigation.register('list-item-2', { parent: 'list' })
-```
-
-```json
-// navigation.nodes
-{
-  "list": {
-    "orientation": "vertical",
-    "children": [
-      "list-item-1",
-      "list-item-2"
-    ]
-  },
-  "list-item-1": {
-    "parent": "list",
-    "children": []
-  },
-  "list-item-2": {
-    "parent": "list",
-    "children": []
-  }
-}
-```
-
-## Unregistering a node
-
-A node can be removed from the navigation tree by calling `navigation.unregister()` with the id of the node
-
-```js
-navigation.unregister('list-item-1')
-```
-
-```json
-// navigation.nodes
-{
-  "list": {
-    "children": [
-      "list-item-2"
-    ]
-  },
-  "list-item-2": {
-    "parent": "list",
-    "children": []
-  }
-}
-```
-
-Unregistering a node will also remove all of its children
-
-```js
-navigation.unregister('list')
-```
-
-```json
-// navigation.nodes is empty, see!
-{}
-```
-
-## Focus
-You can give focus to a particular node by calling `navigation.focus()` with the node id
-
-```js
-navigation.focus('list')
-```
-
-Calling `navigation.focus()` without an id will focus the root node
-
-```js
-navigation.focus()
-```
-
-## setActiveChild
-
-Manually set the active child of a node by its id
-
-```js
-navigation.setActiveChild(id, child)
-```
-
-## setActiveIndex
-
-Manually set the active child of a node by its index in `parent.children`
-
-```js
-navigation.setActiveIndex(id, index)
-```
-
-## Destroy
-
-An Lrud instance can be torn down, removing all event listeners, nodes and current focus
-
-```js
-navigation.destroy()
-```
-
-## Handling Key Events
-
-You can pass key events into Lrud using the `navigation.handleKeyEvent` function
-
-```js
-document.onkeydown = function (event) {
-  if (Lrud.KEY_CODES[event.keyCode]) {
-    navigation.handleKeyEvent(event)
-    event.preventDefault()
-  }
-}
-```
-
-## Events
-
-Lrud emits events in response to key events. See the [TAL docs](http://bbc.github.io/tal/widgets/focus-management.html) for an explanation of 'focused' and 'active' nodes
-
-* `navigation.on('focus', function)` - Focus was given to a node
-* `navigation.on('blur', function)` - Focus was taken from a node
-* `navigation.on('active', function)` - The node has become active
-* `navigation.on('inactive', function)` - The node has become inactive
-* `navigation.on('select', function)` - The current focused node was selected
-* `navigation.on('move', function)` - Triggered when focus is changed within a list
-
-```js
-navigation.on('focus', function (node) {
-  // Focus could add a class
-  document.getElementById(node.id).classList.add('focused')
-  // Or dispatching a redux action
-  store.dispatch({ type: 'FOCUS', payload: node.id })
-  // Or whatever
-})
-
-navigation.on('move', function (node) {
-  // node.offset - Direction of travel (depending on orientation): -1 = LEFT/UP, 1 = RIGHT/DOWN
-  // node.enter - { id, index } of the node we're navigating into
-  // node.leave - { id, index } of the node we're leaving
+// Lrud will output an event when it handles a move
+navigation.on('move', (moveEvent) => {
+  myApp.doSomethingOnNodeFocus(moveEvent.enter)
 })
 ```
 
-## Overrides
+See [usage docs](./docs/usage.md) for details full details.
 
-LRUD supports an override system, for times when correct product/UX behaviour requires focus to change in a way that is not strictly in accordance with the structure of the navigation tree.
+## Running the tests
 
-`navigation.overrides` is an object, each key representing an override object.
+All code is written in Typescript, so we make use of a `tsconfig.json` and `jest.config.js` to ensure tests run correctly.
 
-The override object below represents that when LRUD is bubbling its key event, when it hits the `box-1` node, and direction of travel is `DOWN`, STOP the propogation of the bubble event and focus directly on `box-2`.
-
-```js
-navigation.overrides = {
-  'override-1': {           // the name of the override
-    'id': 'box-1',          // the ID to trigger the override on
-    'direction': 'DOWN',    // the direction of travel in order for the override to trigger
-    'target': 'box-2'       // the ID of the node we want to focus on
-  }
-}
+```bash
+npm test
 ```
 
-# F.A.Q
+To run a specific test file, use `npx jest` from the project root.
 
-> Q: A node that should be focusabled is never receiving focus - whats happening?
+```bash
+npx jest src/lrud.test.js
+```
 
-A: Ensure that the parent nodes, etc. have the correct orientation in order to be able to jump inbetween nodes.
+We also have a specific test file (`src/build.test.js`)
 
-> Q: All my parents have orientations, everything is setup in the navigation tree, and I STILL can't focus on the element.
+## Versioning
 
-A: A node is considered invalid if it has 0 children AND no `selectAction` AND no orientation. 
+```bash
+npm version <patch:minor:major>
+npm publish
+```
 
-Make sure a node has at least 1 child, or a select action, or an orientation if you want it to be focusable. 
+## Built with
+
+- [Typescript](https://www.typescriptlang.org/)
+- [rollup.js](https://rollupjs.org/)
+- [mitt](https://github.com/developit/mitt)
 
 ## Inspiration
 
