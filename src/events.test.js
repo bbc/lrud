@@ -211,4 +211,91 @@ describe('event scenarios', () => {
     expect(hasLeft).toEqual(true)
     expect(hasEntered).toEqual(true)
   })
+
+  test('node onFocus', () => {
+    const navigation = new Lrud()
+
+    let hasRun = false
+
+    navigation
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('a', { isFocusable: true })
+      .registerNode('b', {
+        isFocusable: true,
+        onFocus: () => {
+          hasRun = true
+        }
+      })
+
+    navigation.assignFocus('a')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+
+    expect(hasRun).toEqual(true)
+  })
+
+  test('node onBlur', () => {
+    const navigation = new Lrud()
+
+    let hasRun = false
+
+    navigation
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('a', {
+        isFocusable: true,
+        onBlur: () => {
+          hasRun = true
+        }
+      })
+      .registerNode('b', {
+        isFocusable: true
+      })
+
+    navigation.assignFocus('a')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+
+    expect(hasRun).toEqual(true)
+    expect(navigation.currentFocusNodeId).toEqual('b')
+  })
+
+  test('node onActive - leaf', () => {
+    const navigation = new Lrud()
+    let activeChild = null
+
+    navigation
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('row-a', { orientation: 'vertical' })
+      .registerNode('A', { isFocusable: true, parent: 'row-a' })
+      .registerNode('row-b', { orientation: 'vertical' })
+      .registerNode('B', { isFocusable: true, parent: 'row-b' })
+      .registerNode('C', { isFocusable: true, parent: 'row-b', onActive: () => { activeChild = 'C' } })
+
+    navigation.assignFocus('A')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+    navigation.handleKeyEvent({ direction: 'down' })
+
+    expect(activeChild).toEqual('C')
+  })
+
+  test('node onInActive - branch', () => {
+    const navigation = new Lrud()
+    let inactiveChild = null
+
+    navigation
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('row-a', { orientation: 'vertical', onInactive: () => { inactiveChild = 'row-a' } })
+      .registerNode('A', { isFocusable: true, parent: 'row-a' })
+      .registerNode('row-b', { orientation: 'vertical' })
+      .registerNode('B', { isFocusable: true, parent: 'row-b' })
+      .registerNode('C', { isFocusable: true, parent: 'row-b' })
+
+    navigation.assignFocus('A')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+    navigation.handleKeyEvent({ direction: 'down' })
+
+    expect(inactiveChild).toEqual('row-a')
+  })
 })
