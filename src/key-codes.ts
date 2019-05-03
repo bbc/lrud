@@ -4,7 +4,7 @@ var up = 'UP'
 var down = 'DOWN'
 var enter = 'ENTER'
 
-const KeyCodes = {
+export const KeyCodes = {
   map: {
     LEFT: left,
     RIGHT: right,
@@ -45,5 +45,3 @@ const KeyCodes = {
     195: enter
   }
 }
-
-export default KeyCodes

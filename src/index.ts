@@ -1,7 +1,7 @@
-import Get from './get'
-import Set from './set'
+import { Get } from './get'
+import { Set } from './set'
+import { KeyCodes } from './key-codes'
 import mitt from 'mitt'
-import KeyCodes from './key-codes'
 
 /**
  * given an array of values and a goal, return the value from values which is closest to the goal
@@ -30,7 +30,7 @@ const getDirectionForKeyCode = (keyCode) => {
   return null
 }
 
-export default class Lrud {
+export class Lrud {
   tree: any;
   nodePathList: any;
   focusableNodePathList: any;

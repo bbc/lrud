@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const Lrud = require('../dist/index')
+const { Lrud } = require('./index')
 
 describe('test scenarios', () => {
   test('assigning focus to a branch should actually assign focus to the first active child', () => {

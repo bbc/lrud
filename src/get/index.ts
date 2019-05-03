@@ -5,9 +5,10 @@
  * @param {object} object
  * @param {string} path
  */
-const Get = (object, path) => {
+export const Get = (object, path) => {
+  if (!path) {
+    return undefined
+  }
   path = path.split('.')
   return path.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, object)
 }
-
-export default Get

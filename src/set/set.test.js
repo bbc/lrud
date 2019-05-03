@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const Set = require('.')
+const { Set } = require('./index')
 
 describe('set.js', () => {
   test('set a number into object - 1 level deep', () => {
@@ -123,6 +123,16 @@ describe('set.js', () => {
           3
         ]
       }
+    })
+  })
+
+  test('if path is undefined, dont do anything', () => {
+    const object = {}
+
+    Set(object, undefined, 1)
+
+    expect(object).toMatchObject({
+      a: 1
     })
   })
 })

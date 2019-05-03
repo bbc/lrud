@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const Lrud = require('../dist/index')
+const { Lrud } = require('./index')
 
 describe('overrides', () => {
   test('horizontal list with an override - override targets a leaf', () => {

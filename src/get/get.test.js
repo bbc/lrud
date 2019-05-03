@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const Get = require('.')
+const { Get } = require('./index')
 
 describe('get.js', () => {
   test('get a value from object - 1 level deep', () => {
@@ -88,5 +88,13 @@ describe('get.js', () => {
     }
 
     expect(Get(object, 'beta.2.delta')).toEqual(null)
+  })
+
+  test('if path is undefined, just return undefined', () => {
+    const object = {
+      alpha: 1
+    }
+
+    expect(Get(object, undefined)).toEqual(undefined)
   })
 })

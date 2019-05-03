@@ -4,7 +4,10 @@
  * @param path 
  * @param value 
  */
-const Set = (object, path, value) => {
+export const Set = (object, path, value) => {
+  if (!path) {
+    return undefined;
+  }
   const pathParts = path.split('.')
 
   pathParts.forEach((part, index) => {
@@ -26,5 +29,3 @@ const Set = (object, path, value) => {
 
   return object
 }
-
-export default Set

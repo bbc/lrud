@@ -1,5 +1,7 @@
 'use strict';
 
+Object.defineProperty(exports, '__esModule', { value: true });
+
 /**
  * get a value from an object using dot notation
  * taken from https://medium.com/javascript-inside/safely-accessing-deeply-nested-values-in-javascript-99bf72a0855a
@@ -8,9 +10,6 @@
  * @param {string} path
  */
 var Get = function (object, path) {
-    if (!path) {
-        return object;
-    }
     path = path.split('.');
     return path.reduce(function (xs, x) { return (xs && xs[x]) ? xs[x] : null; }, object);
 };
@@ -40,6 +39,53 @@ var Set = function (object, path, value) {
         object = object[part];
     });
     return object;
+};
+
+var left = 'LEFT';
+var right = 'RIGHT';
+var up = 'UP';
+var down = 'DOWN';
+var enter = 'ENTER';
+var KeyCodes = {
+    map: {
+        LEFT: left,
+        RIGHT: right,
+        UP: up,
+        DOWN: down,
+        ENTER: enter
+    },
+    codes: {
+        4: left,
+        21: left,
+        37: left,
+        214: left,
+        205: left,
+        218: left,
+        5: right,
+        22: right,
+        39: right,
+        213: right,
+        206: right,
+        217: right,
+        29460: up,
+        19: up,
+        38: up,
+        211: up,
+        203: up,
+        215: up,
+        29461: down,
+        20: down,
+        40: down,
+        212: down,
+        204: down,
+        216: down,
+        29443: enter,
+        13: enter,
+        67: enter,
+        32: enter,
+        23: enter,
+        195: enter
+    }
 };
 
 //      
@@ -103,53 +149,6 @@ function mitt(all                 ) {
 		}
 	};
 }
-
-var left = 'LEFT';
-var right = 'RIGHT';
-var up = 'UP';
-var down = 'DOWN';
-var enter = 'ENTER';
-var KeyCodes = {
-    map: {
-        LEFT: left,
-        RIGHT: right,
-        UP: up,
-        DOWN: down,
-        ENTER: enter
-    },
-    codes: {
-        4: left,
-        21: left,
-        37: left,
-        214: left,
-        205: left,
-        218: left,
-        5: right,
-        22: right,
-        39: right,
-        213: right,
-        206: right,
-        217: right,
-        29460: up,
-        19: up,
-        38: up,
-        211: up,
-        203: up,
-        215: up,
-        29461: down,
-        20: down,
-        40: down,
-        212: down,
-        204: down,
-        216: down,
-        29443: enter,
-        13: enter,
-        67: enter,
-        32: enter,
-        23: enter,
-        195: enter
-    }
-};
 
 /**
  * given an array of values and a goal, return the value from values which is closest to the goal
@@ -761,4 +760,4 @@ var Lrud = /** @class */ (function () {
     return Lrud;
 }());
 
-module.exports = Lrud;
+exports.Lrud = Lrud;
