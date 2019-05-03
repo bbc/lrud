@@ -161,11 +161,14 @@ export class Lrud {
 
     // if no `index` set, calculate it
     if (!node.index) {
-      let parentsChildren = this.getNode(node.parent).children
-      if (!parentsChildren) {
-        node.index = 1
-      } else {
-        node.index = (Object.keys(parentsChildren).length) + 1
+      let parentNode = this.getNode(node.parent)
+      if (parentNode) {
+        let parentsChildren = this.getNode(node.parent).children
+        if (!parentsChildren) {
+          node.index = 1
+        } else {
+          node.index = (Object.keys(parentsChildren).length) + 1
+        }
       }
     }
 
@@ -181,6 +184,13 @@ export class Lrud {
     }
 
     return this
+  }
+
+  /**
+   * maintained for legacy API reasons
+   */
+  register(nodeId, node : any = {}) {
+    return this.registerNode(nodeId, node)
   }
 
   /**

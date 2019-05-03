@@ -127,7 +127,9 @@ describe('set.js', () => {
   })
 
   test('if path is undefined, dont do anything', () => {
-    const object = {}
+    const object = {
+      a: 1
+    }
 
     Set(object, undefined, 1)
 
