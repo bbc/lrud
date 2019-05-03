@@ -49,7 +49,7 @@
     "mitt": "^1.1.3"
   },
   "scripts": {
-    "preversion": "npm test",
+    "preversion": "npm run build && npm test",
     "postversion": "git push && git push --tags",
     "clean": "rimraf dist",
     "lint": "eslint src/index.js",
