@@ -4,7 +4,7 @@ Below you can find the Lrud setup for various common scenarios. Hopefully these 
 
 ## Recipe 1 - A "keyboard"
 
-A miniature version of the search keyboard - utilising a grid and some buttons that are wider than others.
+A miniature version of a search keyboard - utilising a grid and some buttons that are wider than others.
 
 ```js
 navigation.registerNode('keyboard', { orientation: 'vertical', isIndexAlign: true })
@@ -28,15 +28,15 @@ navigation
 
 navigation
   .registerNode('row-3', { orientation: 'horizontal' })
-  .registerNode('Space', { parent: 'row-3', indexRange: [1, 3], isFocusable: true })
-  .registerNode('Delete', { parent: 'row-3', indexRange: [4, 6], isFocusable: true })
+  .registerNode('Space', { parent: 'row-3', indexRange: [1, 3], isFocusable: true })    // these buttons are wider, so are given index ranges
+  .registerNode('Delete', { parent: 'row-3', indexRange: [4, 6], isFocusable: true })   // these buttons are wider, so are given index ranges
 ```
 
-## Recipe 2 - Moving between nested indexAlign'd nodes
+## Recipe 2 - Moving between nested `isIndexAlign: true` nodes e.g nested grids
 
 See `docs/test-diagrams/fig-2.png` for the diagram of how this looks rendered out.
 
-We sometimes want to have 2 nodes `isIndexAlign: true`, that are _themselves_ also `isIndexAlign: true`.
+We sometimes want to have 2 nodes that are affected by their parent's `isIndexAlign: true`, that are _themselves_ also `isIndexAlign: true`.
 
 This could be thought of as "nested grids".
 

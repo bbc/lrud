@@ -1,4 +1,4 @@
-# Lrud
+# LRUD
 
 A spatial navigation library for devices with input via directional controls
 
@@ -41,6 +41,8 @@ navigation.on('move', (moveEvent) => {
 ```
 
 See [usage docs](./docs/usage.md) for details full details.
+
+For more "full" examples, covering common use cases, check [the recipes](./docs/recipes.md)
 
 ## Running the tests
 
