@@ -43,7 +43,7 @@ navigation
   .register('row-2_item-2', { isFocusable: true, parent: 'row-2' })
 ```
 
-Now, when the user enters the 2nd row (whos active child, as its never been focused on, is its first item) they will instead focus on the node that has the same index as the node they just left.
+Now, when the user enters the 2nd row (whose active child, as its never been focused on, is its first item) they will instead focus on the node that has the same index as the node they just left.
 
 ## Column spans?
 
