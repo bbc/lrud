@@ -87,10 +87,6 @@ describe('handleKeyEvent() - column alignment behaviour', () => {
     navigation.handleKeyEvent({ direction: 'down' })
     expect(navigation.currentFocusNodeId).toEqual('grid-b-row-2-col-2')
   })
-
-  test('with vertical index alignment', () => {
-
-  })
 })
 
 describe('handleKeyEvent() - index ranges', () => {

@@ -76,7 +76,7 @@ navigation
 
 To be used in conjunction with orientation to give a node index alignment functionality.
 
-Index alignment ensures that when focus would move from one this nodes descendants to another, Lrud will attempt to ensure that the focused node matches the index of the node that was left.
+Index alignment ensures that when focus would move from one of this nodes descendants to another, Lrud will attempt to ensure that the focused node matches the index of the node that was left.
 
 For further details, see the [docs on index alignment](./index-align.md).
 
