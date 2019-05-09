@@ -735,9 +735,11 @@ export class Lrud {
 
     if (this.currentFocusNodeId) {
       let previouslyFocusedNode = this.getNode(this.currentFocusNodeId);
-      if (previouslyFocusedNode && previouslyFocusedNode.onBlur) {
+      if (previouslyFocusedNode) {
         this.emitter.emit('blur', previouslyFocusedNode)
-        previouslyFocusedNode.onBlur();
+        if (previouslyFocusedNode.onBlur) {
+          previouslyFocusedNode.onBlur();
+        }
       }
     }
 
