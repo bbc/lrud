@@ -268,7 +268,19 @@ export class Lrud {
    */
   registerOverride (overrideId, override) {
     if (!overrideId) {
-      throw new Error('need an id to register an override')
+      throw new Error('need an ID to register an override')
+    }
+    if (this.overrides[overrideId]) {
+      throw new Error(`override with ID of ${overrideId} already exists`)
+    }
+    if (!override.id) {
+      throw new Error(`registering override: ${overrideId} - missing internal id`)
+    }
+    if (!override.direction) {
+      throw new Error(`registering override: ${overrideId} - missing internal direction`)
+    }
+    if (!override.target) {
+      throw new Error(`registering override: ${overrideId} - missing internal target`)
     }
     this.overrides[overrideId] = override
 
