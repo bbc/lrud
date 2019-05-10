@@ -2,14 +2,14 @@
 
 ## What?
 
-Index alignment is used to replicated the behaviour of a "grid" - consider the following scenario:
+Index alignment is used to replicate the behaviour of a "grid" - consider the following scenario:
 
 - there are 2 rows of items, each having 2 items.
 - the user is focused on the 2nd item of row 1
 - when they press "down", the typical behaviour would be to go to the 2nd row, but on item 1.
-    - This is because row 2 has never been focused before, and thus will use its first child.
+    - This is because row 2 has never been focused before, and thus its `activeChild` is its first child.
 
-In this scenario, we want the focus to _actually_ go to the 2nd item of the 2nd row. e.g we want the **indexes to be aligned between the rows**.
+In this scenario, we want the focus to _actually_ go to the **2nd** item of the 2nd row. e.g we want the **indexes to be aligned between the rows**.
 
 ## How?
 

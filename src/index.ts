@@ -161,9 +161,9 @@ export class Lrud {
 
     // if no `index` set, calculate it
     if (!node.index) {
-      let parentNode = this.getNode(node.parent)
+      const parentNode = this.getNode(node.parent)
       if (parentNode) {
-        let parentsChildren = this.getNode(node.parent).children
+        const parentsChildren = this.getNode(node.parent).children
         if (!parentsChildren) {
           node.index = 0
         } else {
@@ -247,6 +247,15 @@ export class Lrud {
     if (nodeClone.onBlur) {
       nodeClone.onBlur();
     }
+
+    // if we have any overrides whose target is the node we just unregistered, we should unregister
+    // those overrides (thus keeping state clean)
+    Object.keys(this.overrides).forEach(overrideId => {
+      const override = this.overrides[overrideId]
+      if (override.target === nodeClone.id || override.id === nodeClone.id) {
+        this.unregisterOverride(overrideId);
+      }
+    })
 
     return this
   }

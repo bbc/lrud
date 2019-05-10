@@ -48,6 +48,8 @@ For more "full" examples, covering common use cases, check [the recipes](./docs/
 
 All code is written in Typescript, so we make use of a `tsconfig.json` and `jest.config.js` to ensure tests run correctly.
 
+Test files are split up fairly arbitrarily, aiming to have larger sets of tests broken into their own file. 
+
 ```bash
 npm test
 ```
@@ -56,6 +58,12 @@ To run a specific test file, use `npx jest` from the project root.
 
 ```bash
 npx jest src/lrud.test.js
+```
+
+You can also run all the tests with verbose output. This is useful for listing out test scenarios to ensure that behaviour is covered.
+
+```bash
+npm run test:verbose
 ```
 
 Several of the tests have associated diagrams, in order to better explain what is being tested. These can be found in `./docs/test-diagrams`.

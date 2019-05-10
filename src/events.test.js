@@ -183,6 +183,55 @@ describe('event scenarios', () => {
     })
   })
 
+  test('standard blur and focus should fire after calling assign focus', () => {
+    const blurSpy = jest.fn()
+    const focusSpy = jest.fn()
+
+    const navigation = new Lrud()
+
+    navigation.on('blur', blurSpy)
+    navigation.on('focus', focusSpy)
+
+    navigation
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('a', { isFocusable: true })
+      .registerNode('b', { isFocusable: true })
+      .registerNode('c', { isFocusable: true })
+      .registerNode('d', { isFocusable: true })
+
+    navigation.assignFocus('a')
+    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', index: 0 })
+
+    navigation.assignFocus('b')
+    expect(blurSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', index: 0 })
+    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'b', parent: 'root', index: 1 })
+  })
+
+  test('standard blur and focus should fire after doing a move', () => {
+    const blurSpy = jest.fn()
+    const focusSpy = jest.fn()
+
+    const navigation = new Lrud()
+
+    navigation.on('blur', blurSpy)
+    navigation.on('focus', focusSpy)
+
+    navigation
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('a', { isFocusable: true })
+      .registerNode('b', { isFocusable: true })
+      .registerNode('c', { isFocusable: true })
+      .registerNode('d', { isFocusable: true })
+
+    navigation.assignFocus('a')
+    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', index: 0 })
+
+    navigation.handleKeyEvent({ direction: 'right' })
+
+    expect(blurSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', index: 0 })
+    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'b', parent: 'root', index: 1 })
+  })
+
   test('`onLeave` and `onEnter` functions should fire on a node', () => {
     const navigation = new Lrud()
 

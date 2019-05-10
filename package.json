@@ -54,6 +54,7 @@
     "clean": "rimraf dist",
     "lint": "eslint src/index.js",
     "test": "jest",
+    "test:verbose": "jest --verbose",
     "minify": "uglifyjs dist/index.js --compress --mangle -o dist/index.min.js",
     "prebuild": "npm run clean",
     "build": "rollup -c",
