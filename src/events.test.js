@@ -144,6 +144,7 @@ describe('event scenarios', () => {
         parent: 'root',
         isFocusable: true
       },
+      direction: 'RIGHT',
       offset: 1
     })
   })
@@ -179,6 +180,7 @@ describe('event scenarios', () => {
         parent: 'root',
         isFocusable: true
       },
+      direction: 'LEFT',
       offset: -1
     })
   })

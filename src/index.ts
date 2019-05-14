@@ -688,8 +688,20 @@ export class Lrud {
     this.emitter.emit('move', {
       leave: currentFocusNode,
       enter: focusableNode,
+      direction,
       offset: (direction === 'LEFT' || direction === 'UP') ? -1 : 1
     })
+
+    if (topNode.onMove) {
+      topNode.onMove({
+        node: topNode,
+        leave: currentFocusNode,
+        enter: focusableNode,
+        direction,
+        offset: (direction === 'LEFT' || direction === 'UP') ? -1 : 1
+      });
+    }
+
     if (currentFocusNode.onLeave) {
       currentFocusNode.onLeave(currentFocusNode)
     }
@@ -725,6 +737,13 @@ export class Lrud {
       this.emitter.emit('active', child)
       if (child.onActive) {
         child.onActive(child)
+      }
+      if (parent.onActiveChildChange) {
+        parent.onActiveChildChange({
+          node: parent,
+          leave: currentActiveChild,
+          enter: child
+        })
       }
     }
 
