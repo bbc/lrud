@@ -87,6 +87,33 @@ describe('handleKeyEvent() - column alignment behaviour', () => {
     navigation.handleKeyEvent({ direction: 'down' })
     expect(navigation.currentFocusNodeId).toEqual('grid-b-row-2-col-2')
   })
+
+  test('moving between 2 columns (row alignment)', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'horizontal', isIndexAlign: true })
+    navigation
+      .registerNode('left-col', { parent: 'root', orientation: 'vertical' })
+      .registerNode('a', { isFocusable: true, parent: 'left-col' })
+      .registerNode('b', { isFocusable: true, parent: 'left-col' })
+      .registerNode('c', { isFocusable: true, parent: 'left-col' })
+
+    navigation
+      .registerNode('right-col', { parent: 'root', orientation: 'vertical' })
+      .registerNode('d', { isFocusable: true, parent: 'right-col' })
+      .registerNode('e', { isFocusable: true, parent: 'right-col' })
+      .registerNode('f', { isFocusable: true, parent: 'right-col' })
+
+    navigation.assignFocus('a')
+
+    navigation.handleKeyEvent({ direction: 'down' })
+
+    expect(navigation.currentFocusNodeId).toEqual('b')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+
+    expect(navigation.currentFocusNodeId).toEqual('e')
+  })
 })
 
 describe('handleKeyEvent() - index ranges', () => {
