@@ -245,7 +245,7 @@ export class Lrud {
     // blur on the nodeClone
     this.emitter.emit('blur', nodeClone)
     if (nodeClone.onBlur) {
-      nodeClone.onBlur();
+      nodeClone.onBlur(nodeClone);
     }
 
     // if we have any overrides whose target is the node we just unregistered, we should unregister
@@ -660,7 +660,7 @@ export class Lrud {
     // if all we're doing is processing an enter, just run the `onSelect` function of the current node...
     if (direction === 'ENTER' && currentFocusNode.onSelect) {
       this.emitter.emit('select', currentFocusNode);
-      currentFocusNode.onSelect()
+      currentFocusNode.onSelect(currentFocusNode)
       return
     }
 
@@ -691,10 +691,10 @@ export class Lrud {
       offset: (direction === 'LEFT' || direction === 'UP') ? -1 : 1
     })
     if (currentFocusNode.onLeave) {
-      currentFocusNode.onLeave()
+      currentFocusNode.onLeave(currentFocusNode)
     }
     if (focusableNode.onEnter) {
-      focusableNode.onEnter()
+      focusableNode.onEnter(focusableNode)
     }
 
     return focusableNode
@@ -720,11 +720,11 @@ export class Lrud {
       parent.activeChild = child.id
       this.emitter.emit('inactive', currentActiveChild)
       if (currentActiveChild.onInactive) {
-        currentActiveChild.onInactive()
+        currentActiveChild.onInactive(currentActiveChild)
       }
       this.emitter.emit('active', child)
       if (child.onActive) {
-        child.onActive()
+        child.onActive(child)
       }
     }
 
@@ -759,7 +759,7 @@ export class Lrud {
       if (previouslyFocusedNode) {
         this.emitter.emit('blur', previouslyFocusedNode)
         if (previouslyFocusedNode.onBlur) {
-          previouslyFocusedNode.onBlur();
+          previouslyFocusedNode.onBlur(previouslyFocusedNode);
         }
       }
     }
@@ -778,7 +778,7 @@ export class Lrud {
     }
 
     if (node.onFocus) {
-      node.onFocus()
+      node.onFocus(node)
     }
 
     this.emitter.emit('focus', node)
