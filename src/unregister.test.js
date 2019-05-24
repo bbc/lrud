@@ -10,19 +10,11 @@ describe('unregisterNode()', () => {
     navigation.registerNode('NODE_A', { isFocusable: true })
     navigation.registerNode('NODE_B', { isFocusable: true })
 
+    expect(navigation.tree.root.children['NODE_A']).not.toBeUndefined()
+
     navigation.unregisterNode('NODE_A')
 
-    expect(navigation.tree).toMatchObject({
-      root: {
-        children: {
-          NODE_B: {
-            isFocusable: true,
-            index: 0,
-            parent: 'root'
-          }
-        }
-      }
-    })
+    expect(navigation.tree.root.children['NODE_A']).toBeUndefined()
 
     expect(navigation.getNode('NODE_A')).toEqual(undefined)
 
@@ -45,35 +37,21 @@ describe('unregisterNode()', () => {
     navigation.registerNode('NODE_5', { selectAction: 25, parent: 'BOX_B' })
     navigation.registerNode('NODE_6', { selectAction: 26, parent: 'BOX_B' })
 
+    expect(navigation.tree.root.children['BOX_A'].children['NODE_1']).not.toBeUndefined()
+    expect(navigation.tree.root.children['BOX_A'].children['NODE_2']).not.toBeUndefined()
+    expect(navigation.tree.root.children['BOX_A'].children['NODE_3']).not.toBeUndefined()
+    expect(navigation.tree.root.children['BOX_B'].children['NODE_4']).not.toBeUndefined()
+    expect(navigation.tree.root.children['BOX_B'].children['NODE_5']).not.toBeUndefined()
+    expect(navigation.tree.root.children['BOX_B'].children['NODE_6']).not.toBeUndefined()
+
     navigation.unregisterNode('BOX_B')
 
-    expect(navigation.tree).toMatchObject({
-      root: {
-        selectAction: 1,
-        children: {
-          BOX_A: {
-            selectAction: 2,
-            parent: 'root',
-            children: {
-              NODE_1: {
-                selectAction: 11,
-                parent: 'BOX_A'
-              },
-              NODE_2: {
-                selectAction: 12,
-                parent: 'BOX_A'
-              },
-              NODE_3: {
-                selectAction: 13,
-                parent: 'BOX_A'
-              }
-            }
-          }
-        }
-      }
-    })
-
-    expect(navigation.getNode('BOX_B')).toEqual(undefined)
+    expect(navigation.tree.root.children['BOX_A'].children['NODE_1']).not.toBeUndefined()
+    expect(navigation.tree.root.children['BOX_A'].children['NODE_2']).not.toBeUndefined()
+    expect(navigation.tree.root.children['BOX_A'].children['NODE_3']).not.toBeUndefined()
+    expect(navigation.tree.root.children['BOX_B']).toBeUndefined()
+    expect(navigation.tree.root.children['BOX_B']).toBeUndefined()
+    expect(navigation.tree.root.children['BOX_B']).toBeUndefined()
 
     expect(navigation.nodePathList).toEqual([
       'root',
@@ -135,39 +113,10 @@ describe('unregisterNode()', () => {
 
     navigation.unregisterNode('BOX_B')
 
-    expect(navigation.tree).toMatchObject({
-      root: {
-        id: 'root',
-        children: {
-          BOX_A: {
-            id: 'BOX_A',
-            index: 0,
-            parent: 'root',
-            children: {
-              NODE_1: {
-                id: 'NODE_1',
-                index: 0,
-                parent: 'BOX_A'
-              },
-              NODE_2: {
-                id: 'NODE_2',
-                index: 1,
-                parent: 'BOX_A'
-              },
-              NODE_3: {
-                id: 'NODE_3',
-                index: 2,
-                parent: 'BOX_A'
-              }
-            }
-          }
-        }
-      }
-    })
-
     // should trigger with the details of BOX_B
     expect(spy).toHaveBeenCalledWith({
       parent: 'root',
+      parents: ['root'],
       id: 'BOX_B',
       index: 1,
       activeChild: 'NODE_4',
@@ -175,17 +124,20 @@ describe('unregisterNode()', () => {
         NODE_4: {
           id: 'NODE_4',
           index: 0,
-          parent: 'BOX_B'
+          parent: 'BOX_B',
+          parents: ['BOX_B', 'root']
         },
         NODE_5: {
           id: 'NODE_5',
           index: 1,
-          parent: 'BOX_B'
+          parent: 'BOX_B',
+          parents: ['BOX_B', 'root']
         },
         NODE_6: {
           id: 'NODE_6',
           index: 2,
-          parent: 'BOX_B'
+          parent: 'BOX_B',
+          parents: ['BOX_B', 'root']
         }
       }
     })

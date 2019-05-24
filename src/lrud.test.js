@@ -3,178 +3,6 @@
 const { Lrud } = require('./index')
 
 describe('lrud', () => {
-  describe('registerNode()', () => {
-    test('registering the very first registered node sets it to the root node', () => {
-      const navigation = new Lrud()
-
-      navigation.registerNode('root', {
-        selectAction: true
-      })
-
-      expect(navigation.rootNodeId).toEqual('root')
-      expect(navigation.tree).toMatchObject({
-        root: {
-          selectAction: true
-        }
-      })
-    })
-
-    test('registering a node (after the root node) without a parent puts it under the root node', () => {
-      const navigation = new Lrud()
-
-      navigation.registerNode('alpha', { z: 1 })
-      navigation.registerNode('beta', { x: 1 })
-      navigation.registerNode('charlie', { x: 2 })
-
-      expect(navigation.tree).toMatchObject({
-        alpha: {
-          z: 1,
-          children: {
-            beta: { x: 1 },
-            charlie: { x: 2 }
-          }
-        }
-      })
-    })
-
-    test('registering a node with a nested parent', () => {
-      const navigation = new Lrud()
-
-      navigation.registerNode('alpha', { a: 1 })
-      navigation.registerNode('beta', { b: 2 })
-      navigation.registerNode('charlie', { c: 3, parent: 'beta' })
-
-      expect(navigation.tree).toMatchObject({
-        alpha: {
-          a: 1,
-          children: {
-            beta: {
-              b: 2,
-              parent: 'alpha',
-              children: {
-                charlie: { c: 3, parent: 'beta' }
-              }
-            }
-          }
-        }
-      })
-    })
-
-    test('registering a node with a deeply nested parent', () => {
-      const navigation = new Lrud()
-
-      navigation.registerNode('root')
-      navigation.registerNode('region-a', { parent: 'root' })
-      navigation.registerNode('region-b', { parent: 'root' })
-      navigation.registerNode('content-grid', { parent: 'region-b' })
-      navigation.registerNode('PID-X', { parent: 'content-grid' })
-      navigation.registerNode('PID-Y', { parent: 'content-grid' })
-      navigation.registerNode('PID-Z', { parent: 'content-grid' })
-
-      expect(navigation.tree).toMatchObject({
-        root: {
-          children: {
-            'region-a': {
-              parent: 'root'
-            },
-            'region-b': {
-              parent: 'root',
-              children: {
-                'content-grid': {
-                  parent: 'region-b',
-                  children: {
-                    'PID-X': {
-                      parent: 'content-grid'
-                    },
-                    'PID-Y': {
-                      parent: 'content-grid'
-                    },
-                    'PID-Z': {
-                      parent: 'content-grid'
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      })
-    })
-
-    // reword this
-    test('registering a new node with a parent that has no children sets its parent.activeChild to itself', () => {
-      const navigation = new Lrud()
-
-      navigation.registerNode('root')
-      navigation.registerNode('alpha', { parent: 'root' })
-      navigation.registerNode('beta', { parent: 'root' })
-      navigation.registerNode('charlie', { parent: 'alpha' })
-      navigation.registerNode('delta', { parent: 'charlie' })
-      navigation.registerNode('echo', { parent: 'root' })
-
-      // 'root' should have 3 children and its activeChild should be 'alpha'
-      // 'alpha' should have 1 children and its activeChild should be 'charlie'
-      // 'charlie' should have 1 children and its activeChild should be 'delta'
-
-      expect(navigation.getNode('root').activeChild).toEqual('alpha')
-      expect(navigation.getNode('alpha').activeChild).toEqual('charlie')
-      expect(navigation.getNode('charlie').activeChild).toEqual('delta')
-    })
-
-    test('registering a node should add the index to the node', () => {
-      const navigation = new Lrud()
-
-      navigation.registerNode('root')
-      navigation.registerNode('a')
-
-      navigation.registerNode('b')
-      navigation.registerNode('b-1', { parent: 'b' })
-      navigation.registerNode('b-2', { parent: 'b' })
-
-      navigation.registerNode('c')
-
-      expect(navigation.getNode('a').index).toEqual(0)
-      expect(navigation.getNode('b').index).toEqual(1)
-      expect(navigation.getNode('b-1').index).toEqual(0)
-      expect(navigation.getNode('b-2').index).toEqual(1)
-      expect(navigation.getNode('c').index).toEqual(2)
-    })
-
-    test('can chain registers together', () => {
-      const navigation = new Lrud()
-
-      navigation
-        .registerNode('root')
-        .registerNode('a')
-        .registerNode('b')
-        .registerNode('c')
-
-      expect(navigation.tree).toMatchObject({
-        root: {
-          id: 'root',
-          activeChild: 'a',
-          children: {
-            a: {
-              id: 'a',
-              parent: 'root',
-              index: 0
-            },
-            b: {
-              id: 'b',
-              parent: 'root',
-              index: 1
-            },
-            c: {
-              id: 'c',
-              parent: 'root',
-              index: 2
-            }
-          }
-        }
-      })
-    })
-  })
-
   describe('getRootNode()', () => {
     test('return the root node', () => {
       const navigation = new Lrud()
@@ -201,10 +29,7 @@ describe('lrud', () => {
 
       const node = navigation.getNode('PID-X')
 
-      expect(node).toMatchObject({
-        action: 1,
-        parent: 'content-grid'
-      })
+      expect(node.parent).toEqual('content-grid')
     })
 
     test('get a nested node with children by id and make sure the entire tree comes with it', () => {
@@ -223,25 +48,10 @@ describe('lrud', () => {
 
       const node = navigation.getNode('region-b')
 
-      expect(node).toMatchObject({
-        parent: 'root',
-        children: {
-          'content-grid': {
-            parent: 'region-b',
-            children: {
-              'PID-X': {
-                parent: 'content-grid'
-              },
-              'PID-Y': {
-                parent: 'content-grid'
-              },
-              'PID-Z': {
-                parent: 'content-grid'
-              }
-            }
-          }
-        }
-      })
+      expect(node.id).toEqual('region-b')
+      expect(node.children['content-grid'].children['PID-X']).not.toBeUndefined()
+      expect(node.children['content-grid'].children['PID-Y']).not.toBeUndefined()
+      expect(node.children['content-grid'].children['PID-Z']).not.toBeUndefined()
     })
   })
 
@@ -285,28 +95,10 @@ describe('lrud', () => {
 
       const node2 = navigation.pickNode('NODE_2')
 
-      expect(node2).toMatchObject({ selectAction: 12, parent: 'BOX_A' })
-      expect(navigation.tree).toMatchObject({
-        root: {
-          selectAction: 1,
-          children: {
-            BOX_A: {
-              selectAction: 2,
-              parent: 'root',
-              children: {
-                NODE_1: {
-                  selectAction: 11,
-                  parent: 'BOX_A'
-                },
-                NODE_3: {
-                  selectAction: 13,
-                  parent: 'BOX_A'
-                }
-              }
-            }
-          }
-        }
-      })
+      expect(node2.selectAction).toEqual(12)
+      expect(node2.parent).toEqual('BOX_A')
+      expect(node2.parents).toEqual(['BOX_A', 'root'])
+      expect(navigation.tree.root.children['BOX_A'].children['NODE_2']).toBeUndefined()
     })
   })
 

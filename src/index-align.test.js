@@ -2,7 +2,7 @@
 
 const { Lrud } = require('./index')
 
-describe('handleKeyEvent() - column alignment behaviour', () => {
+describe.skip('handleKeyEvent() - column alignment behaviour', () => {
   test('moving between two rows should keep column alignment [fig-1]', () => {
     const navigation = new Lrud()
 
@@ -116,7 +116,7 @@ describe('handleKeyEvent() - column alignment behaviour', () => {
   })
 })
 
-describe('handleKeyEvent() - index ranges', () => {
+describe.skip('handleKeyEvent() - index ranges', () => {
   test('2 rows, second row has index range [fig-5]', () => {
     const navigation = new Lrud()
 
@@ -226,8 +226,8 @@ describe('handleKeyEvent() - index ranges', () => {
   })
 })
 
-describe.only('moving between nested grids', () => {
-  test.only('moving right between multiple grids that are aligned, and horizontally next to each other', () => {
+describe.skip('moving between nested grids', () => {
+  test('moving right between multiple grids that are aligned, and horizontally next to each other', () => {
     const navigation = new Lrud()
 
     navigation.registerNode('root', { orientation: 'horizontal', isIndexAlign: true })

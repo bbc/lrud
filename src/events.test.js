@@ -26,6 +26,7 @@ describe('event scenarios', () => {
     // only called once, as `left` is already the activeChild of `root`
     expect(activeSpy).toHaveBeenCalledWith({
       parent: 'left',
+      parents: ['left', 'root'],
       isFocusable: true,
       id: 'b',
       index: 1
@@ -57,6 +58,7 @@ describe('event scenarios', () => {
     expect(activeSpy.mock.calls).toEqual([
       [expect.objectContaining({
         parent: 'right',
+        parents: ['right', 'root'],
         isFocusable: true,
         id: 'd',
         index: 1
@@ -64,17 +66,20 @@ describe('event scenarios', () => {
       [expect.objectContaining({
         id: 'right',
         parent: 'root',
+        parents: ['root'],
         index: 1,
         activeChild: 'd',
         children: {
           c: {
             parent: 'right',
+            parents: ['right', 'root'],
             isFocusable: true,
             id: 'c',
             index: 0
           },
           d: {
             parent: 'right',
+            parents: ['right', 'root'],
             isFocusable: true,
             id: 'd',
             index: 1
@@ -86,24 +91,28 @@ describe('event scenarios', () => {
     expect(inactiveSpy.mock.calls).toEqual([
       [expect.objectContaining({
         parent: 'right',
+        parents: ['right', 'root'],
         isFocusable: true,
         id: 'c',
         index: 0
       })],
       [expect.objectContaining({
         id: 'left',
+        parents: ['root'],
         parent: 'root',
         index: 0,
         activeChild: 'a',
         children: {
           a: {
             parent: 'left',
+            parents: ['left', 'root'],
             isFocusable: true,
             id: 'a',
             index: 0
           },
           b: {
             parent: 'left',
+            parents: ['left', 'root'],
             isFocusable: true,
             id: 'b',
             index: 1
@@ -136,12 +145,14 @@ describe('event scenarios', () => {
         id: 'a',
         index: 0,
         parent: 'root',
+        parents: ['root'],
         isFocusable: true
       },
       enter: {
         id: 'b',
         index: 1,
         parent: 'root',
+        parents: ['root'],
         isFocusable: true
       },
       direction: 'RIGHT',
@@ -172,12 +183,14 @@ describe('event scenarios', () => {
         id: 'b',
         index: 1,
         parent: 'root',
+        parents: ['root'],
         isFocusable: true
       },
       enter: {
         id: 'a',
         index: 0,
         parent: 'root',
+        parents: ['root'],
         isFocusable: true
       },
       direction: 'LEFT',
@@ -202,11 +215,11 @@ describe('event scenarios', () => {
       .registerNode('d', { isFocusable: true })
 
     navigation.assignFocus('a')
-    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', index: 0 })
+    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', parents: ['root'], index: 0 })
 
     navigation.assignFocus('b')
-    expect(blurSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', index: 0 })
-    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'b', parent: 'root', index: 1 })
+    expect(blurSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', parents: ['root'], index: 0 })
+    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'b', parent: 'root', parents: ['root'], index: 1 })
   })
 
   test('standard blur and focus should fire after doing a move', () => {
@@ -226,12 +239,12 @@ describe('event scenarios', () => {
       .registerNode('d', { isFocusable: true })
 
     navigation.assignFocus('a')
-    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', index: 0 })
+    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', parents: ['root'], index: 0 })
 
     navigation.handleKeyEvent({ direction: 'right' })
 
-    expect(blurSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', index: 0 })
-    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'b', parent: 'root', index: 1 })
+    expect(blurSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', parents: ['root'], index: 0 })
+    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'b', parent: 'root', parents: ['root'], index: 1 })
   })
 
   test('`onLeave` and `onEnter` functions should fire on a node', () => {

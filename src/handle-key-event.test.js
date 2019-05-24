@@ -80,6 +80,7 @@ describe('handleKeyEvent()', () => {
 
     expect(spy).toHaveBeenCalledWith({
       parent: 'root',
+      parents: ['root'],
       index: 1,
       id: 'child_2',
       isFocusable: true
@@ -91,6 +92,7 @@ describe('handleKeyEvent()', () => {
 
     expect(spy).toHaveBeenCalledWith({
       parent: 'root',
+      parents: ['root'],
       id: 'child_3',
       index: 2,
       isFocusable: true
@@ -114,6 +116,7 @@ describe('handleKeyEvent()', () => {
 
     expect(spy).toHaveBeenCalledWith({
       parent: 'root',
+      parents: ['root'],
       id: 'child_2',
       index: 1,
       isFocusable: true
@@ -125,6 +128,7 @@ describe('handleKeyEvent()', () => {
 
     expect(spy).toHaveBeenCalledWith({
       parent: 'root',
+      parents: ['root'],
       id: 'child_1',
       index: 0,
       isFocusable: true

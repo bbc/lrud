@@ -2,7 +2,7 @@
 
 const { Lrud } = require('./index')
 
-describe('test scenarios', () => {
+describe.skip('test scenarios', () => {
   test('assigning focus to a branch should actually assign focus to the first active child', () => {
     const navigation = new Lrud()
 

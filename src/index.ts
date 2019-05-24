@@ -146,9 +146,15 @@ export class Lrud {
       return this
     }
 
-    // if this node DOESNT have a parent assume its parent is root
+    // if this node has no parent, assume its parent is root
     if (node.parent == null && nodeId !== this.rootNodeId) {
       node.parent = this.rootNodeId
+    }
+    
+    // if we have a parent but no parents, work out the parents
+    if (node.parent && node.parents == null) {
+      const list = this.nodePathList.find(path => path.includes(node.parent));
+      node.parents = list.split('.').filter(i => i != 'children').reverse();
     }
 
     // if this node is the first child of its parent, we need to set its parent's `activeChild`
@@ -415,47 +421,9 @@ export class Lrud {
       return node
     }
 
-    // otherwise, if we're in indexAlignMode, find the matching node for the index
+    // otherwise, if we're in indexAlignMode, find the matching leaf node 
     if (this.isIndexAlignMode) {
-      const parent = this.getNode(node.parent)
-
-      if (node.orientation !== parent.orientation) {
-        // we might have come from something with an index range instead of an index
-        // in that case, we need to use the direction to determine if we need to get the upper
-        // or lower bound of the index range
-
-        // try and find an item whose indexRange matches what we have
-        let child
-        if (direction) {
-          if (direction.toUpperCase() === 'UP' || direction.toUpperCase() === 'LEFT') {
-            child = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndexRangeLowerBound)  
-          } else if (direction.toUpperCase() === 'DOWN' || direction.toUpperCase() === 'RIGHT') {
-            child = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndexRangeUpperBound)
-          }
-        } else {
-          child = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndex)
-        }
-
-        // if we cant find an item with an index range, look for the closest we can get, including
-        // using our OWN indexRange
-        if (!child) {
-          if (direction) {
-            if (direction.toUpperCase() === 'UP' || direction.toUpperCase() === 'LEFT') {
-              child = this._findChildWithClosestIndex(node, this.currentFocusNodeIndexRangeLowerBound, this.currentFocusNodeIndexRange)  
-            } else if (direction.toUpperCase() === 'DOWN' || direction.toUpperCase() === 'RIGHT') {
-              child = this._findChildWithClosestIndex(node, this.currentFocusNodeIndexRangeUpperBound, this.currentFocusNodeIndexRange)
-            }
-          } else {
-            child = this._findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange)
-          }
-        }
-
-        if (child) {
-          node.activeChild = child.id
-        }
-
-        this.isIndexAlignMode = false;
-      }
+      
     }
 
     // if we dont have an active child, use the first child
