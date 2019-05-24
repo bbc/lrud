@@ -122,14 +122,14 @@ describe('handleKeyEvent() - index ranges', () => {
 
     navigation.registerNode('root', { orientation: 'vertical', isIndexAlign: true })
     navigation.registerNode('row-a', { parent: 'root', orientation: 'horizontal' })
-    navigation.registerNode('row-a-box-1', { index: 1, parent: 'row-a', isFocusable: true })
-    navigation.registerNode('row-a-box-2', { index: 2, parent: 'row-a', isFocusable: true })
-    navigation.registerNode('row-a-box-3', { index: 3, parent: 'row-a', isFocusable: true })
-    navigation.registerNode('row-a-box-4', { index: 4, parent: 'row-a', isFocusable: true })
+    navigation.registerNode('row-a-box-1', { index: 0, parent: 'row-a', isFocusable: true })
+    navigation.registerNode('row-a-box-2', { index: 1, parent: 'row-a', isFocusable: true })
+    navigation.registerNode('row-a-box-3', { index: 2, parent: 'row-a', isFocusable: true })
+    navigation.registerNode('row-a-box-4', { index: 3, parent: 'row-a', isFocusable: true })
 
     navigation.registerNode('row-b', { parent: 'root', orientation: 'horizontal' })
-    navigation.registerNode('row-b-box-1', { parent: 'row-b', indexRange: [1, 2], isFocusable: true })
-    navigation.registerNode('row-b-box-2', { parent: 'row-b', indexRange: [3, 4], isFocusable: true })
+    navigation.registerNode('row-b-box-1', { parent: 'row-b', indexRange: [0, 1], isFocusable: true })
+    navigation.registerNode('row-b-box-2', { parent: 'row-b', indexRange: [2, 3], isFocusable: true })
 
     navigation.assignFocus('row-a-box-2')
 
@@ -177,5 +177,181 @@ describe('handleKeyEvent() - index ranges', () => {
 
     navigation.handleKeyEvent({ direction: 'up' })
     expect(navigation.currentFocusNodeId).toEqual('row-a-box-6')
+  })
+
+  test('2 rows, second row has index range, go from row 1 button 4 to row 2 button 2 [fig-5]', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'vertical', isIndexAlign: true })
+    navigation.registerNode('row-a', { parent: 'root', orientation: 'horizontal' })
+    navigation.registerNode('row-a-box-1', { index: 0, parent: 'row-a', isFocusable: true })
+    navigation.registerNode('row-a-box-2', { index: 1, parent: 'row-a', isFocusable: true })
+    navigation.registerNode('row-a-box-3', { index: 2, parent: 'row-a', isFocusable: true })
+    navigation.registerNode('row-a-box-4', { index: 3, parent: 'row-a', isFocusable: true })
+
+    navigation.registerNode('row-b', { parent: 'root', orientation: 'horizontal' })
+    navigation.registerNode('row-b-box-1', { parent: 'row-b', indexRange: [0, 1], isFocusable: true })
+    navigation.registerNode('row-b-box-2', { parent: 'row-b', indexRange: [2, 3], isFocusable: true })
+
+    navigation.assignFocus('row-a-box-4')
+
+    // ...down one puts us on the 2nd item of the 2nd row
+    navigation.handleKeyEvent({ direction: 'down' })
+    expect(navigation.currentFocusNodeId).toEqual('row-b-box-2')
+  })
+
+  test('2 rows, second row has index range, going from button 2nd button down and back again [fig-5]', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'vertical', isIndexAlign: true })
+    navigation.registerNode('row-a', { parent: 'root', orientation: 'horizontal' })
+    navigation.registerNode('row-a-box-1', { index: 0, parent: 'row-a', isFocusable: true })
+    navigation.registerNode('row-a-box-2', { index: 1, parent: 'row-a', isFocusable: true })
+    navigation.registerNode('row-a-box-3', { index: 2, parent: 'row-a', isFocusable: true })
+    navigation.registerNode('row-a-box-4', { index: 3, parent: 'row-a', isFocusable: true })
+
+    navigation.registerNode('row-b', { parent: 'root', orientation: 'horizontal' })
+    navigation.registerNode('row-b-box-1', { parent: 'row-b', indexRange: [0, 1], isFocusable: true })
+    navigation.registerNode('row-b-box-2', { parent: 'row-b', indexRange: [2, 3], isFocusable: true })
+
+    navigation.assignFocus('row-a-box-2')
+
+    // ...down one puts us on the 2nd item of the 2nd row
+    navigation.handleKeyEvent({ direction: 'down' })
+    expect(navigation.currentFocusNodeId).toEqual('row-b-box-1')
+
+    // ...down one puts us on the 2nd item of the 2nd row
+    navigation.handleKeyEvent({ direction: 'up' })
+    expect(navigation.currentFocusNodeId).toEqual('row-a-box-2')
+  })
+})
+
+describe.only('moving between nested grids', () => {
+  test.only('moving right between multiple grids that are aligned, and horizontally next to each other', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'horizontal', isIndexAlign: true })
+
+    navigation
+      .registerNode('grid1', { parent: 'root', orientation: 'vertical', isIndexAlign: true })
+      .registerNode('grid1_row1', { parent: 'grid1', orientation: 'horizontal' })
+      .registerNode('grid1_item1', { parent: 'grid1_row1', isFocusable: true })
+      .registerNode('grid1_item2', { parent: 'grid1_row1', isFocusable: true })
+      .registerNode('grid1_item3', { parent: 'grid1_row1', isFocusable: true })
+      .registerNode('grid1_row2', { parent: 'grid1', orientation: 'horizontal' })
+      .registerNode('grid1_item4', { parent: 'grid1_row2', isFocusable: true })
+      .registerNode('grid1_item5', { parent: 'grid1_row2', isFocusable: true })
+      .registerNode('grid1_item6', { parent: 'grid1_row2', isFocusable: true })
+
+    navigation
+      .registerNode('grid2', { parent: 'root', orientation: 'vertical', isIndexAlign: true })
+      .registerNode('grid2_row1', { parent: 'grid2', orientation: 'horizontal' })
+      .registerNode('grid2_item1', { parent: 'grid2_row1', isFocusable: true })
+      .registerNode('grid2_item2', { parent: 'grid2_row1', isFocusable: true })
+      .registerNode('grid2_item3', { parent: 'grid2_row1', isFocusable: true })
+      .registerNode('grid2_row2', { parent: 'grid2', orientation: 'horizontal' })
+      .registerNode('grid2_item4', { parent: 'grid2_row2', isFocusable: true })
+      .registerNode('grid2_item5', { parent: 'grid2_row2', isFocusable: true })
+      .registerNode('grid2_item6', { parent: 'grid2_row2', isFocusable: true })
+
+    navigation.assignFocus('grid1_item6')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+    expect(navigation.currentFocusNodeId).toEqual('grid2_item4')
+  })
+
+  test.only('moving left between multiple grids that are aligned, and horizontally next to each other', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'horizontal', isIndexAlign: true })
+
+    navigation
+      .registerNode('grid1', { parent: 'root', orientation: 'vertical', isIndexAlign: true })
+      .registerNode('grid1_row1', { parent: 'grid1', orientation: 'horizontal' })
+      .registerNode('grid1_item1', { parent: 'grid1_row1', isFocusable: true })
+      .registerNode('grid1_item2', { parent: 'grid1_row1', isFocusable: true })
+      .registerNode('grid1_item3', { parent: 'grid1_row1', isFocusable: true })
+      .registerNode('grid1_row2', { parent: 'grid1', orientation: 'horizontal' })
+      .registerNode('grid1_item4', { parent: 'grid1_row2', isFocusable: true })
+      .registerNode('grid1_item5', { parent: 'grid1_row2', isFocusable: true })
+      .registerNode('grid1_item6', { parent: 'grid1_row2', isFocusable: true })
+
+    navigation
+      .registerNode('grid2', { parent: 'root', orientation: 'vertical', isIndexAlign: true })
+      .registerNode('grid2_row1', { parent: 'grid2', orientation: 'horizontal' })
+      .registerNode('grid2_item1', { parent: 'grid2_row1', isFocusable: true })
+      .registerNode('grid2_item2', { parent: 'grid2_row1', isFocusable: true })
+      .registerNode('grid2_item3', { parent: 'grid2_row1', isFocusable: true })
+      .registerNode('grid2_row2', { parent: 'grid2', orientation: 'horizontal' })
+      .registerNode('grid2_item4', { parent: 'grid2_row2', isFocusable: true })
+      .registerNode('grid2_item5', { parent: 'grid2_row2', isFocusable: true })
+      .registerNode('grid2_item6', { parent: 'grid2_row2', isFocusable: true })
+
+    navigation.assignFocus('grid2_item4')
+
+    navigation.handleKeyEvent({ direction: 'left' })
+    expect(navigation.currentFocusNodeId).toEqual('grid1_item6')
+  })
+
+  test('moving between multiple grids that are aligned, and horizontally next to each other with nodes that use index ranges', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'horizontal', isIndexAlign: true })
+
+    navigation
+      .registerNode('grid1', { parent: 'root', orientation: 'vertical', isIndexAlign: true })
+      .registerNode('grid1_row1', { parent: 'grid1', orientation: 'horizontal' })
+      .registerNode('grid1_item1', { parent: 'grid1_row1', isFocusable: true })
+      .registerNode('grid1_item2', { parent: 'grid1_row1', isFocusable: true })
+      .registerNode('grid1_item3', { parent: 'grid1_row1', isFocusable: true })
+      .registerNode('grid1_row2', { parent: 'grid1', orientation: 'horizontal' })
+      .registerNode('grid1_item4', { parent: 'grid1_row2', indexRange: [0, 2], isFocusable: true })
+
+    navigation
+      .registerNode('grid2', { parent: 'root', orientation: 'vertical', isIndexAlign: true })
+      .registerNode('grid2_row1', { parent: 'grid2', orientation: 'horizontal' })
+      .registerNode('grid2_item1', { parent: 'grid2_row1', isFocusable: true })
+      .registerNode('grid2_item2', { parent: 'grid2_row1', isFocusable: true })
+      .registerNode('grid2_item3', { parent: 'grid2_row1', isFocusable: true })
+      .registerNode('grid2_row2', { parent: 'grid2', orientation: 'horizontal' })
+      .registerNode('grid2_item4', { parent: 'grid2_row2', isFocusable: true })
+      .registerNode('grid2_item5', { parent: 'grid2_row2', isFocusable: true })
+      .registerNode('grid2_item6', { parent: 'grid2_row2', isFocusable: true })
+
+    navigation.assignFocus('grid1_item4')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+    expect(navigation.currentFocusNodeId).toEqual('grid2_item4')
+  })
+
+  test.skip('moving between multiple grids that are aligned, and horizontally next to each other with nodes that use index ranges', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'horizontal', isIndexAlign: true })
+
+    navigation
+      .registerNode('grid1', { parent: 'root', orientation: 'vertical', isIndexAlign: true })
+      .registerNode('grid1_row1', { parent: 'grid1', orientation: 'horizontal' })
+      .registerNode('grid1_item1', { parent: 'grid1_row1', isFocusable: true })
+      .registerNode('grid1_item2', { parent: 'grid1_row1', isFocusable: true })
+      .registerNode('grid1_item3', { parent: 'grid1_row1', isFocusable: true })
+      .registerNode('grid1_row2', { parent: 'grid1', orientation: 'horizontal' })
+      .registerNode('grid1_item4', { parent: 'grid1_row2', isFocusable: true })
+      .registerNode('grid1_item5', { parent: 'grid1_row2', isFocusable: true })
+      .registerNode('grid1_item6', { parent: 'grid1_row2', isFocusable: true })
+
+    navigation
+      .registerNode('grid2', { parent: 'root', orientation: 'vertical', isIndexAlign: true })
+      .registerNode('grid2_row1', { parent: 'grid2', orientation: 'horizontal' })
+      .registerNode('grid2_item1', { parent: 'grid2_row1', isFocusable: true })
+      .registerNode('grid2_item2', { parent: 'grid2_row1', isFocusable: true })
+      .registerNode('grid2_item3', { parent: 'grid2_row1', isFocusable: true })
+      .registerNode('grid2_row2', { parent: 'grid2', orientation: 'horizontal' })
+      .registerNode('grid2_item4', { parent: 'grid2_row2', indexRange: [0, 2], isFocusable: true })
+
+    navigation.assignFocus('grid2_item4')
+
+    navigation.handleKeyEvent({ direction: 'left' })
+    expect(navigation.currentFocusNodeId).toEqual('grid1_item6')
   })
 })

@@ -38,6 +38,8 @@ export class Lrud {
   currentFocusNodeId: any;
   currentFocusNodeIndex: any;
   currentFocusNodeIndexRange: any;
+  currentFocusNodeIndexRangeLowerBound: any;
+  currentFocusNodeIndexRangeUpperBound: any;
   isIndexAlignMode: any;
   emitter: mitt.Emitter
   overrides: any;
@@ -407,26 +409,52 @@ export class Lrud {
    *
    * @param {object} node
    */
-  digDown (node) {
+  digDown (node, direction = null) {
     // if the active child is focusable, return it
     if (isFocusable(node)) {
       return node
     }
 
-    const parent = this.getNode(node.parent)
+    // otherwise, if we're in indexAlignMode, find the matching node for the index
+    if (this.isIndexAlignMode) {
+      const parent = this.getNode(node.parent)
 
-    // we're in index align mode, so set the `node.activeChild` to the node's child of the same index
-    // that the current `this.currentFocusNodeIndex` is
-    // indexAlign mode only applies if the node itself AND its parent aren't both vertical
-    if (this.isIndexAlignMode && !(node.orientation === 'vertical' && parent.orientation === 'vertical')) {
-      let child = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndex)
+      if (node.orientation !== parent.orientation) {
+        // we might have come from something with an index range instead of an index
+        // in that case, we need to use the direction to determine if we need to get the upper
+        // or lower bound of the index range
 
-      if (!child) {
-        child = this._findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange)
-      }
+        // try and find an item whose indexRange matches what we have
+        let child
+        if (direction) {
+          if (direction.toUpperCase() === 'UP' || direction.toUpperCase() === 'LEFT') {
+            child = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndexRangeLowerBound)  
+          } else if (direction.toUpperCase() === 'DOWN' || direction.toUpperCase() === 'RIGHT') {
+            child = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndexRangeUpperBound)
+          }
+        } else {
+          child = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndex)
+        }
 
-      if (child) {
-        node.activeChild = child.id
+        // if we cant find an item with an index range, look for the closest we can get, including
+        // using our OWN indexRange
+        if (!child) {
+          if (direction) {
+            if (direction.toUpperCase() === 'UP' || direction.toUpperCase() === 'LEFT') {
+              child = this._findChildWithClosestIndex(node, this.currentFocusNodeIndexRangeLowerBound, this.currentFocusNodeIndexRange)  
+            } else if (direction.toUpperCase() === 'DOWN' || direction.toUpperCase() === 'RIGHT') {
+              child = this._findChildWithClosestIndex(node, this.currentFocusNodeIndexRangeUpperBound, this.currentFocusNodeIndexRange)
+            }
+          } else {
+            child = this._findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange)
+          }
+        }
+
+        if (child) {
+          node.activeChild = child.id
+        }
+
+        this.isIndexAlignMode = false;
       }
     }
 
@@ -482,7 +510,7 @@ export class Lrud {
     // if we have an indexRange, and the nodes active child is inside that index range,
     // just return the active child
     const activeChild = this.getNode(node.activeChild)
-    if (indexRange && activeChild && activeChild.index >= indexRange[0] && activeChild.index <= indexRange[1]) {
+    if (indexRange && activeChild && activeChild.index >= indexRange[0] && activeChild.index <= indexRange[1] && isFocusable(activeChild)) {
       return activeChild
     }
 
@@ -673,13 +701,13 @@ export class Lrud {
     }
 
     // ...if we need to align indexes, turn the flag on now...
-    this.isIndexAlignMode = (topNode.isIndexAlign === true)
+    this.isIndexAlignMode = topNode.isIndexAlign === true
 
     // ...get the top's next child in the direction we're going...
     const nextChild = this.getNextChildInDirection(topNode, direction)
 
     // ...and depending on if we're able to find a child, dig down from the child or from the original top...
-    const focusableNode = (nextChild) ? this.digDown(nextChild) : this.digDown(topNode)
+    const focusableNode = (nextChild) ? this.digDown(nextChild, direction) : this.digDown(topNode, direction)
 
     // ...and then assign focus
     this.assignFocus(focusableNode.id)
@@ -787,9 +815,13 @@ export class Lrud {
 
     if (node.indexRange) {
       this.currentFocusNodeIndex = node.indexRange[0]
+      this.currentFocusNodeIndexRangeLowerBound = node.indexRange[0]
+      this.currentFocusNodeIndexRangeUpperBound = node.indexRange[1]
       this.currentFocusNodeIndexRange = node.indexRange
     } else {
       this.currentFocusNodeIndex = node.index
+      this.currentFocusNodeIndexRangeLowerBound = node.index
+      this.currentFocusNodeIndexRangeUpperBound = node.index
     }
 
     if (node.parent) {
