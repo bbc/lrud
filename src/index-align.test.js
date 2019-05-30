@@ -2,7 +2,7 @@
 
 const { Lrud } = require('./index')
 
-describe('handleKeyEvent() - index alignment behaviour', () => {
+describe('handleKeyEvent() - simple index alignment behaviour', () => {
   test('moving between two rows should keep column alignment [fig-1]', () => {
     const navigation = new Lrud()
 
@@ -157,7 +157,7 @@ describe('handleKeyEvent() - index ranges', () => {
   })
 })
 
-describe('moving between nested grids', () => {
+describe('handleKeyEvent() - moving between nested grids', () => {
   test('moving right between multiple grids that are aligned, and horizontally next to each other', () => {
     const navigation = new Lrud()
 
@@ -225,7 +225,7 @@ describe('moving between nested grids', () => {
     expect(navigation.currentFocusNodeId).toEqual('grid1_item6')
   })
 
-  test('nested grid, moving vertically down [fig-2]', () => {
+  test('moving down between multiple grids that are aligned, and vertically next to each other [fig-2]', () => {
     const navigation = new Lrud()
 
     navigation.registerNode('root', { orientation: 'vertical', isIndexAlign: true })
@@ -256,7 +256,7 @@ describe('moving between nested grids', () => {
     expect(navigation.currentFocusNodeId).toEqual('grid-b-row-1-col-2')
   })
 
-  test('nested grid, moving vertically up [fig-2]', () => {
+  test('moving up between multiple grids that are aligned, and vertically next to each other [fig-2]', () => {
     const navigation = new Lrud()
 
     navigation.registerNode('root', { orientation: 'vertical', isIndexAlign: true })
