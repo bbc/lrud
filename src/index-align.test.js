@@ -13,39 +13,10 @@ describe('handleKeyEvent() - index alignment behaviour', () => {
     navigation.registerNode('row-2', { orientation: 'horizontal' })
     navigation.registerNode('row-2-col-1', { parent: 'row-2', isFocusable: true })
     navigation.registerNode('row-2-col-2', { parent: 'row-2', isFocusable: true })
-    navigation.assignFocus('row-1-col-2')
 
+    navigation.assignFocus('row-1-col-2')
     navigation.handleKeyEvent({ direction: 'down' })
     expect(navigation.currentFocusNodeId).toEqual('row-2-col-2')
-  })
-
-  test('moving between 2 vertical wrappers inside a vertical wrapper, non-index aligned [fig-3]', () => {
-    const navigation = new Lrud()
-
-    navigation.registerNode('root', { orientation: 'vertical' })
-    navigation.registerNode('list-a', { orientation: 'vertical' })
-    navigation.registerNode('list-a-box-1', { parent: 'list-a', isFocusable: true })
-    navigation.registerNode('list-a-box-2', { parent: 'list-a', isFocusable: true })
-    navigation.registerNode('list-a-box-3', { parent: 'list-a', isFocusable: true })
-
-    navigation.registerNode('list-b', { orientation: 'vertical' })
-    navigation.registerNode('list-b-box-1', { parent: 'list-b', isFocusable: true })
-    navigation.registerNode('list-b-box-2', { parent: 'list-b', isFocusable: true })
-    navigation.registerNode('list-b-box-3', { parent: 'list-b', isFocusable: true })
-
-    navigation.assignFocus('list-a-box-1')
-
-    navigation.handleKeyEvent({ direction: 'down' })
-    expect(navigation.currentFocusNodeId).toEqual('list-a-box-2')
-
-    navigation.handleKeyEvent({ direction: 'down' })
-    expect(navigation.currentFocusNodeId).toEqual('list-a-box-3')
-
-    navigation.handleKeyEvent({ direction: 'down' })
-    expect(navigation.currentFocusNodeId).toEqual('list-b-box-1')
-
-    navigation.handleKeyEvent({ direction: 'down' })
-    expect(navigation.currentFocusNodeId).toEqual('list-b-box-2')
   })
 
   test('moving between 2 columns (row alignment)', () => {

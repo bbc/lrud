@@ -166,4 +166,33 @@ describe('handleKeyEvent()', () => {
     navigation.handleKeyEvent({ direction: 'left' })
     expect(navigation.currentFocusNodeId).toEqual('l-3')
   })
+
+  test('moving between 2 vertical wrappers inside a vertical wrapper, non-index aligned [fig-3]', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'vertical' })
+    navigation.registerNode('list-a', { orientation: 'vertical' })
+    navigation.registerNode('list-a-box-1', { parent: 'list-a', isFocusable: true })
+    navigation.registerNode('list-a-box-2', { parent: 'list-a', isFocusable: true })
+    navigation.registerNode('list-a-box-3', { parent: 'list-a', isFocusable: true })
+
+    navigation.registerNode('list-b', { orientation: 'vertical' })
+    navigation.registerNode('list-b-box-1', { parent: 'list-b', isFocusable: true })
+    navigation.registerNode('list-b-box-2', { parent: 'list-b', isFocusable: true })
+    navigation.registerNode('list-b-box-3', { parent: 'list-b', isFocusable: true })
+
+    navigation.assignFocus('list-a-box-1')
+
+    navigation.handleKeyEvent({ direction: 'down' })
+    expect(navigation.currentFocusNodeId).toEqual('list-a-box-2')
+
+    navigation.handleKeyEvent({ direction: 'down' })
+    expect(navigation.currentFocusNodeId).toEqual('list-a-box-3')
+
+    navigation.handleKeyEvent({ direction: 'down' })
+    expect(navigation.currentFocusNodeId).toEqual('list-b-box-1')
+
+    navigation.handleKeyEvent({ direction: 'down' })
+    expect(navigation.currentFocusNodeId).toEqual('list-b-box-2')
+  })
 })
