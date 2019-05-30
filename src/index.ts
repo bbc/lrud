@@ -441,117 +441,47 @@ export class Lrud {
 
     if we're in a nested grid
       and we're going HORIZONTAL LEFT
-        take the matching index, and then the last child
+        take the matching index of the same depth, and then the last child
       and we're going HORIZONTAL RIGHT
-        take the matching index, and then the first child
+        take the matching index of the same depth, and then the first child
 
     if its not a nested grid, take the matching index
     */
 
     if (this.isIndexAlignMode) {
       if (node.isIndexAlign) {
-      const nodeParent = this.getNode(node.parent);
-
+        const nodeParent = this.getNode(node.parent);
         if (nodeParent.orientation === 'vertical') {
           if (direction === 'UP') {
-            return this.digDown(this._findChildWithIndex(this.getNodeLastChild(node), this.currentFocusNodeIndex), direction);
+            return this.digDown(this._findChildWithClosestIndex(this.getNodeLastChild(node), this.currentFocusNodeIndex), direction);
           }
-          if (direction === 'UP') {
-            return this.digDown(this._findChildWithIndex(this.getNodeFirstChild(node), this.currentFocusNodeIndex), direction);
+          if (direction === 'DOWN') {
+            return this.digDown(this._findChildWithClosestIndex(this.getNodeFirstChild(node), this.currentFocusNodeIndex), direction);
           }
-
         }
 
-
-
+        if (nodeParent.orientation === 'horizontal') {
+          if (direction === 'LEFT') {
+            const firstStep = this._findChildWithClosestIndex(node, this.getNode(this.currentFocusNode.parent).index);
+            return this.digDown(this.getNodeLastChild(firstStep), direction);
+          }
+          if (direction === 'RIGHT') {
+            const firstStep = this._findChildWithClosestIndex(node, this.getNode(this.currentFocusNode.parent).index);
+            return this.digDown(this.getNodeFirstChild(firstStep), direction);
+          }
+        }
       }
 
+      // try and find the node with a matching index range
+      const matchingViaIndexRange = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndex)
+
+      if (matchingViaIndexRange) {
+        return this.digDown(matchingViaIndexRange, direction);
+      }
 
       // we're not in a nested grid, so just return the child of node that has the same index as where we left
-      return this.digDown(this._findChildWithIndex(node, this.currentFocusNodeIndex), direction);
+      return this.digDown(this._findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
     }
-
-
-
-
-
-
-    // otherwise, if we're in indexAlignMode, find the matching leaf node 
-    // if (this.isIndexAlignMode) {
-    //   const depth = this.getDepth(node);
-    //   const currentFocusParentAtDepth = this.getNode(this.getParentAtDepth(this.currentFocusNode, depth));
-    //   const currentFocusParentsActiveChildIndex = this.getNode(currentFocusParentAtDepth.activeChild).index;
-
-    //   const currentFocusNodeDepth = this.getDepth(this.currentFocusNode) 
-    //   const nodeParent = this.getNode(node.parent);
-
-
-    //   // currentFocusParentAtDepth
-    //   // node.id
-
-    //   console.log('currentFocusParentAtDepth.id', currentFocusParentAtDepth.id);
-    //   console.log('node.id', node.id);
-
-      // console.log(`digging down from ${node.id} (which is depth ${depth}) and whose parent is ${nodeParent.id} - the matching node from the current focus is ${currentFocusParentAtDepth.id}`);
-      // console.log(`...and the activeChild of ${currentFocusParentAtDepth.id} is ${currentFocusParentAtDepth.activeChild}`);
-      // console.log(`...which has an index of ${currentFocusParentsActiveChildIndex}`);
-      // console.log(`...${node.id} has a depth of ${depth}, and the current focus node depth is ${currentFocusNodeDepth}`);
-
-
-        // const currentNodeChildWithSameIndex = Object.keys(node.children)
-        // .map(childId =>  this.getNode(childId))
-        // .find(child => child.index === currentFocusParentsActiveChildIndex)
-        // // console.log(`...so we're getting the node with an index of ${currentNodeChildWithSameIndex.index} which is ${currentNodeChildWithSameIndex.id}`);
-        // return this.digDown(currentNodeChildWithSameIndex, direction)
-
-      // if (depth === (currentFocusNodeDepth - 1) || this.isDirectionAndOrientationMatching(nodeParent.orientation, direction)) {
-      //   console.log(`...so we're going to dig down to the first/last child of ${node.id}`);
-      //   return this.digDown(
-      //     (direction === 'LEFT' || direction === 'UP') ? this.getNodeLastChild(node) : this.getNodeFirstChild(node), 
-      //     direction
-      //   )
-      // } else {
-      //   const currentNodeChildWithSameIndex = Object.keys(node.children)
-      //   .map(childId =>  this.getNode(childId))
-      //   .find(child => child.index === currentFocusParentsActiveChildIndex)
-      //   console.log(`...so we're getting the node with an index of ${currentNodeChildWithSameIndex.index} which is ${currentNodeChildWithSameIndex.id}`);
-      //   return this.digDown(currentNodeChildWithSameIndex, direction)
-      // }
-
-
-
-
-      // if (depth === 1) {
-      //   // console.log('...but were at depth 1');
-      //   const currentNodeChildWithSameIndex = Object.keys(node.children)
-      //   .map(childId =>  this.getNode(childId))
-      //   .find(child => child.index === currentFocusParentsActiveChildIndex)
-
-      //   // console.log(`...and so we should return the CURRENT nodes child with the same index, which is ${currentNodeChildWithSameIndex.id}`);
-        
-      //   return this.digDown(currentNodeChildWithSameIndex, direction)
-      // }
-
-      // our depth is now greater than 2
-      // so we need to return the "last" index based on the direction of travel
-      // console.log('...but were deeper than 1');
-
-      // console.log(`...and we're doing ${direction} so we need to get the last child of ${node.id}`);
-      // const nodeParent = this.getNode(node.parent);
-
-      // if (this.isDirectionAndOrientationMatching(nodeParent.orientation, direction)) {
-      //   return this.digDown(
-      //     (direction === 'LEFT' || direction === 'UP') ? this.getNodeLastChild(node) : this.getNodeFirstChild(node), 
-      //     direction
-      //   )
-      // }
-      
-
-      // return this.digDown(
-      //   (direction === 'LEFT' || direction === 'UP') ? this.getNodeLastChild(node) : this.getNodeFirstChild(node), 
-      //   direction
-      // )
-    // }
 
     // if we dont have an active child, use the first child
     if (!node.activeChild) {
