@@ -119,7 +119,7 @@ navigation
   .registerNode('grid2_item6', { parent: 'grid2_row2', isFocusable: true })
 ```
 
-We have 2 "grids", each with 2 rows and 3 items per row. As we can see that the `root` node is `orientation: 'horizontal'`, these 2 grids would be sat next to each other horizontally.
+We have 2 "grids", each with 2 rows and 3 items per row. As the `root` node is `orientation: 'horizontal'`, these 2 grids would be sat next to each other horizontally.
 
 If the user was focused on `grid1_item6` (the last item of the 2nd row of the grid on the left) and the user pressed `right`, ordinally, LRUD would then put your focus onto `grid2_item1` (the first focussable `activeChild` of the grid on the right).
 

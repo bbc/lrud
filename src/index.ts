@@ -453,10 +453,10 @@ export class Lrud {
         const nodeParent = this.getNode(node.parent);
         if (nodeParent.orientation === 'vertical') {
           if (direction === 'UP') {
-            return this.digDown(this._findChildWithClosestIndex(this.getNodeLastChild(node), this.currentFocusNodeIndex), direction);
+            return this.digDown(this._findChildWithClosestIndex(this.getNodeLastChild(node), this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
           }
           if (direction === 'DOWN') {
-            return this.digDown(this._findChildWithClosestIndex(this.getNodeFirstChild(node), this.currentFocusNodeIndex), direction);
+            return this.digDown(this._findChildWithClosestIndex(this.getNodeFirstChild(node), this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
           }
         }
 
