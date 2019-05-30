@@ -128,3 +128,9 @@ But what if we wanted the grids themselves to be index aligned between each othe
 It may make sense to _instead_ have the focus land on `grid2_item4` (the _first_ item of 2nd row of the grid on the right). This would be as though the users focus had "hopped over" to the 2nd grid, and landed in the "closest" place.
 
 In order to make this happen, all we have to do is add an `isIndexAlign: true` to the root node (the parent of the 2 grids).
+
+### Nested Grid Limitations
+
+Nested grids currently only work 1 level deep, and support for nested grids working with index ranges varies from minimal to untested.
+
+If you encounter a scenario with a nested grid that you think should work and isn't doing, feel free to open a Github issue.
