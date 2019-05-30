@@ -408,14 +408,6 @@ export class Lrud {
     return node
   }
 
-  getDepth(node) {
-    return node.parents.length || 0
-  }
-
-  getParentAtDepth(node, depth) {
-    return [...node.parents].reverse()[depth]
-  }
-
   /**
    * starting from the given node, dig down the navigation tree until we find a focusable
    * leaf, and return it. dig "direction" priority:
@@ -450,6 +442,7 @@ export class Lrud {
 
     if (this.isIndexAlignMode) {
       if (node.isIndexAlign) {
+        // we're in a nested grid, so need to take into account orientation and direction of travel
         const nodeParent = this.getNode(node.parent);
         if (nodeParent.orientation === 'vertical') {
           if (direction === 'UP') {
@@ -472,14 +465,11 @@ export class Lrud {
         }
       }
 
-      // try and find the node with a matching index range
+      // we're not in a nested grid, so just look for matching index ranges or index
       const matchingViaIndexRange = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndex)
-
       if (matchingViaIndexRange) {
         return this.digDown(matchingViaIndexRange, direction);
       }
-
-      // we're not in a nested grid, so just return the child of node that has the same index as where we left
       return this.digDown(this._findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
     }
 
