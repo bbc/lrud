@@ -55,34 +55,6 @@ describe('lrud', () => {
     })
   })
 
-  describe('isDirectionAndOrientationMatching()', () => {
-    const navigation = new Lrud()
-    test('vertical and up is true', () => {
-      expect(navigation.isDirectionAndOrientationMatching('vertical', 'up')).toEqual(true)
-    })
-    test('vertical and down is true', () => {
-      expect(navigation.isDirectionAndOrientationMatching('vertical', 'down')).toEqual(true)
-    })
-    test('horizontal and left is true', () => {
-      expect(navigation.isDirectionAndOrientationMatching('horizontal', 'left')).toEqual(true)
-    })
-    test('horizontal and right is true', () => {
-      expect(navigation.isDirectionAndOrientationMatching('horizontal', 'right')).toEqual(true)
-    })
-    test('vertical and left is false', () => {
-      expect(navigation.isDirectionAndOrientationMatching('vertical', 'left')).toEqual(false)
-    })
-    test('vertical and right is false', () => {
-      expect(navigation.isDirectionAndOrientationMatching('vertical', 'right')).toEqual(false)
-    })
-    test('horizontal and up is false', () => {
-      expect(navigation.isDirectionAndOrientationMatching('horizontal', 'up')).toEqual(false)
-    })
-    test('horizontal and down is false', () => {
-      expect(navigation.isDirectionAndOrientationMatching('horizontal', 'down')).toEqual(false)
-    })
-  })
-
   describe('pickNode()', () => {
     test('pick a nested node', () => {
       const navigation = new Lrud()
@@ -448,7 +420,7 @@ describe('lrud', () => {
     })
   })
 
-  describe('_reindexChildrenOfNode', () => {
+  describe('reindexChildrenOfNode', () => {
     test('deleting a leaf should re-index the other leaves when leaves are added without indexes', () => {
       const navigation = new Lrud()
 
@@ -460,7 +432,7 @@ describe('lrud', () => {
         .registerNode('b', { index: 6 })
 
       let root = navigation.getNode('root')
-      root = navigation._reindexChildrenOfNode(root)
+      root = navigation.reindexChildrenOfNode(root)
 
       expect(root.children.a.index).toEqual(0)
       expect(root.children.b.index).toEqual(1)

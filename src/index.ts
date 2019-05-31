@@ -1,6 +1,16 @@
 import { Get } from './get'
 import { Set } from './set'
 
+import {
+  isNodeFocusable,
+  getDirectionForKeyCode,
+  isDirectionAndOrientationMatching,
+  isNodeInPaths,
+  _findChildWithMatchingIndexRange,
+  _findChildWithClosestIndex,
+  _findChildWithIndex
+} from './utils'
+
 import mitt from 'mitt'
 
 export class Lrud {
@@ -167,7 +177,7 @@ export class Lrud {
     this.nodePathList.push(path)
 
     // if the node is focusable, we want to add its path to our focusableNodePathList
-    if (isFocusable(node)) {
+    if (isNodeFocusable(node)) {
       this.focusableNodePathList.push(path)
     }
 
@@ -225,7 +235,7 @@ export class Lrud {
     }
 
     // ...we need to recalculate the indexes of all the parents children
-    this._reindexChildrenOfNode(parentNode)
+    this.reindexChildrenOfNode(parentNode)
 
     // re-set the parent after we've deleted the node itself and amended the parents active child, etc.
     Set(this.tree, this.getPathForNodeId(parentNode.id), parentNode)
@@ -336,17 +346,17 @@ export class Lrud {
     }
 
     // if we're on a leaf, climb up
-    if (isFocusable(node)) {
+    if (isNodeFocusable(node)) {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
     // if the node we're on contains no focusable children, climb up
-    if (!this._isNodeInFocusableNodePathList(node)) {
+    if (!isNodeInPaths(this.focusableNodePathList, node)) {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
     // we have children, but the orientation doesn't match, so try our parent
-    if (!this.isDirectionAndOrientationMatching(node.orientation, direction)) {
+    if (!isDirectionAndOrientationMatching(node.orientation, direction)) {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
@@ -360,8 +370,8 @@ export class Lrud {
     // if the next child in the direction is both the same as this node's activeChild
     // AND a leaf, bubble up too - handles nested wrappers, like docs/test-diagrams/fig-3.png
     const isNextChildCurrentActiveChild = (nextChildInDirection && nextChildInDirection.id === node.activeChild)
-    const isNextChildFocusable = isFocusable(this.getNode(node.activeChild))
-    const isNodeInFocusablePath = this._isNodeInFocusableNodePathList(node)
+    const isNextChildFocusable = isNodeFocusable(this.getNode(node.activeChild))
+    const isNodeInFocusablePath = isNodeInPaths(this.focusableNodePathList, node)
     if (isNextChildCurrentActiveChild && (isNextChildFocusable || isNodeInFocusablePath)) {
       return this.climbUp(this.getNode(node.parent), direction)
     }
@@ -380,7 +390,7 @@ export class Lrud {
    */
   digDown (node, direction = null) {
     // if the active child is focusable, return it
-    if (isFocusable(node)) {
+    if (isNodeFocusable(node)) {
       return node
     }
 
@@ -406,31 +416,31 @@ export class Lrud {
         const nodeParent = this.getNode(node.parent);
         if (nodeParent.orientation === 'vertical') {
           if (direction === 'UP') {
-            return this.digDown(this._findChildWithClosestIndex(this.getNodeLastChild(node), this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
+            return this.digDown(_findChildWithClosestIndex(this.getNodeLastChild(node), this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
           }
           if (direction === 'DOWN') {
-            return this.digDown(this._findChildWithClosestIndex(this.getNodeFirstChild(node), this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
+            return this.digDown(_findChildWithClosestIndex(this.getNodeFirstChild(node), this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
           }
         }
 
         if (nodeParent.orientation === 'horizontal') {
           if (direction === 'LEFT') {
-            const firstStep = this._findChildWithClosestIndex(node, this.getNode(this.currentFocusNode.parent).index);
+            const firstStep = _findChildWithClosestIndex(node, this.getNode(this.currentFocusNode.parent).index);
             return this.digDown(this.getNodeLastChild(firstStep), direction);
           }
           if (direction === 'RIGHT') {
-            const firstStep = this._findChildWithClosestIndex(node, this.getNode(this.currentFocusNode.parent).index);
+            const firstStep = _findChildWithClosestIndex(node, this.getNode(this.currentFocusNode.parent).index);
             return this.digDown(this.getNodeFirstChild(firstStep), direction);
           }
         }
       }
 
       // we're not in a nested grid, so just look for matching index ranges or index
-      const matchingViaIndexRange = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndex)
+      const matchingViaIndexRange = _findChildWithMatchingIndexRange(node, this.currentFocusNodeIndex)
       if (matchingViaIndexRange) {
         return this.digDown(matchingViaIndexRange, direction);
       }
-      return this.digDown(this._findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
+      return this.digDown(_findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
     }
 
     // if we dont have an active child, use the first child
@@ -438,9 +448,9 @@ export class Lrud {
       node.activeChild = this.getNodeFirstChild(node).id
     }
 
-    const activeChild = this.getNode(node.activeChild)
+    const activeChild = node.children[node.activeChild]
 
-    if (isFocusable(activeChild)) {
+    if (isNodeFocusable(activeChild)) {
       return activeChild
     }
 
@@ -486,7 +496,7 @@ export class Lrud {
 
     const currentActiveIndex = node.children[node.activeChild].index
 
-    let nextChild = this._findChildWithIndex(node, currentActiveIndex + 1)
+    let nextChild = _findChildWithIndex(node, currentActiveIndex + 1)
 
     if (!nextChild) {
       if (node.isWrapping) {
@@ -510,7 +520,7 @@ export class Lrud {
 
     const currentActiveIndex = node.children[node.activeChild].index
 
-    let prevChild = this._findChildWithIndex(node, currentActiveIndex - 1)
+    let prevChild = _findChildWithIndex(node, currentActiveIndex - 1)
 
     if (!prevChild) {
       // cant find a prev child, so the prev child is the current child
@@ -535,7 +545,7 @@ export class Lrud {
 
     const orderedIndexes = Object.keys(node.children).map(childId => node.children[childId].index).sort()
 
-    return this._findChildWithIndex(node, orderedIndexes[0])
+    return _findChildWithIndex(node, orderedIndexes[0])
   }
 
   /**
@@ -549,7 +559,7 @@ export class Lrud {
 
     const orderedIndexes = Object.keys(node.children).map(childId => node.children[childId].index).sort()
 
-    return this._findChildWithIndex(node, orderedIndexes[orderedIndexes.length - 1])
+    return _findChildWithIndex(node, orderedIndexes[orderedIndexes.length - 1])
   }
 
   /**
@@ -672,7 +682,7 @@ export class Lrud {
   assignFocus (nodeId) {
     let node = this.getNode(nodeId)
 
-    if (!isFocusable(node)) {
+    if (!isNodeFocusable(node)) {
       node = this.digDown(node)
     }
 
@@ -705,7 +715,7 @@ export class Lrud {
     }
 
     if (node.parent) {
-      this._setActiveChild(node.parent, node.id)
+      this.setActiveChild(node.parent, node.id)
     }
 
     if (node.onFocus) {
