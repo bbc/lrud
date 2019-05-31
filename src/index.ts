@@ -193,6 +193,17 @@ export class Lrud {
 
   /**
    * unregister a node from the navigation tree
+   * kept for backwards compatibility reasons
+   * 
+   * @param {string} nodeId
+   */
+  unregister (nodeId) {
+    this.unregisterNode(nodeId);
+  }
+
+  /**
+   * unregister a node from the navigation tree
+   * 
    * @param {string} nodeId
    */
   unregisterNode (nodeId) {
