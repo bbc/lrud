@@ -80,6 +80,7 @@ describe('handleKeyEvent()', () => {
 
     expect(spy).toHaveBeenCalledWith({
       parent: 'root',
+      parents: ['root'],
       index: 1,
       id: 'child_2',
       isFocusable: true
@@ -91,6 +92,7 @@ describe('handleKeyEvent()', () => {
 
     expect(spy).toHaveBeenCalledWith({
       parent: 'root',
+      parents: ['root'],
       id: 'child_3',
       index: 2,
       isFocusable: true
@@ -114,6 +116,7 @@ describe('handleKeyEvent()', () => {
 
     expect(spy).toHaveBeenCalledWith({
       parent: 'root',
+      parents: ['root'],
       id: 'child_2',
       index: 1,
       isFocusable: true
@@ -125,6 +128,7 @@ describe('handleKeyEvent()', () => {
 
     expect(spy).toHaveBeenCalledWith({
       parent: 'root',
+      parents: ['root'],
       id: 'child_1',
       index: 0,
       isFocusable: true
@@ -161,5 +165,34 @@ describe('handleKeyEvent()', () => {
     // go back left again...
     navigation.handleKeyEvent({ direction: 'left' })
     expect(navigation.currentFocusNodeId).toEqual('l-3')
+  })
+
+  test('moving between 2 vertical wrappers inside a vertical wrapper, non-index aligned [fig-3]', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'vertical' })
+    navigation.registerNode('list-a', { orientation: 'vertical' })
+    navigation.registerNode('list-a-box-1', { parent: 'list-a', isFocusable: true })
+    navigation.registerNode('list-a-box-2', { parent: 'list-a', isFocusable: true })
+    navigation.registerNode('list-a-box-3', { parent: 'list-a', isFocusable: true })
+
+    navigation.registerNode('list-b', { orientation: 'vertical' })
+    navigation.registerNode('list-b-box-1', { parent: 'list-b', isFocusable: true })
+    navigation.registerNode('list-b-box-2', { parent: 'list-b', isFocusable: true })
+    navigation.registerNode('list-b-box-3', { parent: 'list-b', isFocusable: true })
+
+    navigation.assignFocus('list-a-box-1')
+
+    navigation.handleKeyEvent({ direction: 'down' })
+    expect(navigation.currentFocusNodeId).toEqual('list-a-box-2')
+
+    navigation.handleKeyEvent({ direction: 'down' })
+    expect(navigation.currentFocusNodeId).toEqual('list-a-box-3')
+
+    navigation.handleKeyEvent({ direction: 'down' })
+    expect(navigation.currentFocusNodeId).toEqual('list-b-box-1')
+
+    navigation.handleKeyEvent({ direction: 'down' })
+    expect(navigation.currentFocusNodeId).toEqual('list-b-box-2')
   })
 })

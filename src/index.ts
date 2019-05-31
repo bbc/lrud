@@ -35,9 +35,12 @@ export class Lrud {
   nodePathList: any;
   focusableNodePathList: any;
   rootNodeId: any;
+  currentFocusNode: any;
   currentFocusNodeId: any;
   currentFocusNodeIndex: any;
   currentFocusNodeIndexRange: any;
+  currentFocusNodeIndexRangeLowerBound: any;
+  currentFocusNodeIndexRangeUpperBound: any;
   isIndexAlignMode: any;
   emitter: mitt.Emitter
   overrides: any;
@@ -47,6 +50,7 @@ export class Lrud {
     this.nodePathList = []
     this.focusableNodePathList = []
     this.rootNodeId = null
+    this.currentFocusNode = null
     this.currentFocusNodeId = null
     this.currentFocusNodeIndex = null
     this.currentFocusNodeIndexRange = null
@@ -144,9 +148,15 @@ export class Lrud {
       return this
     }
 
-    // if this node DOESNT have a parent assume its parent is root
+    // if this node has no parent, assume its parent is root
     if (node.parent == null && nodeId !== this.rootNodeId) {
       node.parent = this.rootNodeId
+    }
+    
+    // if we have a parent but no parents, work out the parents
+    if (node.parent && node.parents == null) {
+      const list = this.nodePathList.find(path => path.includes(node.parent));
+      node.parents = list.split('.').filter(i => i != 'children').reverse();
     }
 
     // if this node is the first child of its parent, we need to set its parent's `activeChild`
@@ -407,27 +417,60 @@ export class Lrud {
    *
    * @param {object} node
    */
-  digDown (node) {
+  digDown (node, direction = null) {
     // if the active child is focusable, return it
     if (isFocusable(node)) {
       return node
     }
 
-    const parent = this.getNode(node.parent)
 
-    // we're in index align mode, so set the `node.activeChild` to the node's child of the same index
-    // that the current `this.currentFocusNodeIndex` is
-    // indexAlign mode only applies if the node itself AND its parent aren't both vertical
-    if (this.isIndexAlignMode && !(node.orientation === 'vertical' && parent.orientation === 'vertical')) {
-      let child = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndex)
+    /*
+    if we're in a nested grid
+      if we're going VERTICAL DOWN 
+        take the first child, and then match the index
+      if we're going VERTICAL UP
+        take the last child, and then match the index
 
-      if (!child) {
-        child = this._findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange)
+    if we're in a nested grid
+      and we're going HORIZONTAL LEFT
+        take the matching index of the same depth, and then the last child
+      and we're going HORIZONTAL RIGHT
+        take the matching index of the same depth, and then the first child
+
+    if its not a nested grid, take the matching index
+    */
+
+    if (this.isIndexAlignMode) {
+      if (node.isIndexAlign) {
+        // we're in a nested grid, so need to take into account orientation and direction of travel
+        const nodeParent = this.getNode(node.parent);
+        if (nodeParent.orientation === 'vertical') {
+          if (direction === 'UP') {
+            return this.digDown(this._findChildWithClosestIndex(this.getNodeLastChild(node), this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
+          }
+          if (direction === 'DOWN') {
+            return this.digDown(this._findChildWithClosestIndex(this.getNodeFirstChild(node), this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
+          }
+        }
+
+        if (nodeParent.orientation === 'horizontal') {
+          if (direction === 'LEFT') {
+            const firstStep = this._findChildWithClosestIndex(node, this.getNode(this.currentFocusNode.parent).index);
+            return this.digDown(this.getNodeLastChild(firstStep), direction);
+          }
+          if (direction === 'RIGHT') {
+            const firstStep = this._findChildWithClosestIndex(node, this.getNode(this.currentFocusNode.parent).index);
+            return this.digDown(this.getNodeFirstChild(firstStep), direction);
+          }
+        }
       }
 
-      if (child) {
-        node.activeChild = child.id
+      // we're not in a nested grid, so just look for matching index ranges or index
+      const matchingViaIndexRange = this._findChildWithMatchingIndexRange(node, this.currentFocusNodeIndex)
+      if (matchingViaIndexRange) {
+        return this.digDown(matchingViaIndexRange, direction);
       }
+      return this.digDown(this._findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
     }
 
     // if we dont have an active child, use the first child
@@ -441,7 +484,7 @@ export class Lrud {
       return activeChild
     }
 
-    return this.digDown(activeChild)
+    return this.digDown(activeChild, direction)
   }
 
   /**
@@ -482,7 +525,7 @@ export class Lrud {
     // if we have an indexRange, and the nodes active child is inside that index range,
     // just return the active child
     const activeChild = this.getNode(node.activeChild)
-    if (indexRange && activeChild && activeChild.index >= indexRange[0] && activeChild.index <= indexRange[1]) {
+    if (indexRange && activeChild && activeChild.index >= indexRange[0] && activeChild.index <= indexRange[1] && isFocusable(activeChild)) {
       return activeChild
     }
 
@@ -673,13 +716,13 @@ export class Lrud {
     }
 
     // ...if we need to align indexes, turn the flag on now...
-    this.isIndexAlignMode = (topNode.isIndexAlign === true)
+    this.isIndexAlignMode = topNode.isIndexAlign === true
 
     // ...get the top's next child in the direction we're going...
     const nextChild = this.getNextChildInDirection(topNode, direction)
 
     // ...and depending on if we're able to find a child, dig down from the child or from the original top...
-    const focusableNode = (nextChild) ? this.digDown(nextChild) : this.digDown(topNode)
+    const focusableNode = (nextChild) ? this.digDown(nextChild, direction) : this.digDown(topNode, direction)
 
     // ...and then assign focus
     this.assignFocus(focusableNode.id)
@@ -784,12 +827,17 @@ export class Lrud {
     }
 
     this.currentFocusNodeId = node.id
+    this.currentFocusNode = node
 
     if (node.indexRange) {
       this.currentFocusNodeIndex = node.indexRange[0]
+      this.currentFocusNodeIndexRangeLowerBound = node.indexRange[0]
+      this.currentFocusNodeIndexRangeUpperBound = node.indexRange[1]
       this.currentFocusNodeIndexRange = node.indexRange
     } else {
       this.currentFocusNodeIndex = node.index
+      this.currentFocusNodeIndexRangeLowerBound = node.index
+      this.currentFocusNodeIndexRangeUpperBound = node.index
     }
 
     if (node.parent) {

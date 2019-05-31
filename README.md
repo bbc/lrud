@@ -40,7 +40,7 @@ navigation.on('move', (moveEvent) => {
 })
 ```
 
-See [usage docs](./docs/usage.md) for details full details.
+See [usage docs](./docs/usage.md) for details full API details.
 
 For more "full" examples, covering common use cases, check [the recipes](./docs/recipes.md)
 
