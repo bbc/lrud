@@ -2,7 +2,7 @@
 
 A spatial navigation library for devices with input via directional controls
 
-## Upgrading from V2
+## Upgrading from V2
 
 **v3 is a major rewrite, covering many new features. However, it unfortunately breaks some backwards compatibility.**
 
