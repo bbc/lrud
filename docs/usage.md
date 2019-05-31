@@ -34,7 +34,7 @@ navigation
     .registerNode('alpha', { isFocusable: true, parent: 'root' })
 ```
 
-## Registering options
+## Registration options
 
 Most options affect behaviour for when Lrud is handling key events and assigning focus.
 
@@ -54,7 +54,7 @@ Used in conjunction with orientation to make a list wrap at the top/bottom or le
 
 `number`
 
-The index of the node, relative to its siblings. If no idex is given, it will be set as the _next_ index under its parent.
+The zero-based index of the node, relative to its siblings. If no idex is given, it will be set as the _next_ index under its parent.
 
 ```js
 navigation
@@ -92,7 +92,7 @@ For further details, see the [docs on index alignment](./index-align.md).
 
 ---
 
-Several functions can also be registered onto a node. These functions will be called at specific state change points for the node.
+Several functions can also be given as registration options to a node. These functions will be called at specific state change points for the node.
 
 ### `onFocus`
 
@@ -151,6 +151,8 @@ You can give focus to a particular node by calling `navigation.assignFocus()` wi
 ```js
 navigation.assignFocus('list')
 ```
+
+If the node that has been assigned focus is not focusable, LRUD will attempt to find the first active child of the node that _is_ focusable, and focus on that instead.
 
 ## Handling Key Events
 

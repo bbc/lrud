@@ -356,4 +356,47 @@ describe('handleKeyEvent() - moving between nested grids', () => {
     navigation.handleKeyEvent({ direction: 'down' })
     expect(navigation.currentFocusNodeId).toEqual('grid-b-row-2-col-2')
   })
+
+  test('moving down between multiple grids that are aligned, and vertically next to each other - moving from the middle column [fig-2]', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'vertical', isIndexAlign: true })
+
+    // grid a
+    navigation
+      .registerNode('grid-a', { parent: 'root', orientation: 'vertical', isIndexAlign: true })
+      .registerNode('grid-a-row-1', { parent: 'grid-a', orientation: 'horizontal' })
+      .registerNode('grid-a-row-1-col-1', { parent: 'grid-a-row-1', isFocusable: true })
+      .registerNode('grid-a-row-1-col-2', { parent: 'grid-a-row-1', isFocusable: true })
+      .registerNode('grid-a-row-1-col-3', { parent: 'grid-a-row-1', isFocusable: true })
+      .registerNode('grid-a-row-2', { parent: 'grid-a', orientation: 'horizontal' })
+      .registerNode('grid-a-row-2-col-1', { parent: 'grid-a-row-2', isFocusable: true })
+      .registerNode('grid-a-row-2-col-2', { parent: 'grid-a-row-2', isFocusable: true })
+      .registerNode('grid-a-row-2-col-3', { parent: 'grid-a-row-2', isFocusable: true })
+
+    // grid-b
+    navigation
+      .registerNode('grid-b', { parent: 'root', orientation: 'vertical', isIndexAlign: true })
+      .registerNode('grid-b-row-1', { parent: 'grid-b', orientation: 'horizontal' })
+      .registerNode('grid-b-row-1-col-1', { parent: 'grid-b-row-1', isFocusable: true })
+      .registerNode('grid-b-row-1-col-2', { parent: 'grid-b-row-1', isFocusable: true })
+      .registerNode('grid-b-row-1-col-3', { parent: 'grid-b-row-1', isFocusable: true })
+      .registerNode('grid-b-row-2', { parent: 'grid-b', orientation: 'horizontal' })
+      .registerNode('grid-b-row-2-col-1', { parent: 'grid-b-row-2', isFocusable: true })
+      .registerNode('grid-b-row-2-col-2', { parent: 'grid-b-row-2', isFocusable: true })
+      .registerNode('grid-b-row-2-col-3', { parent: 'grid-b-row-2', isFocusable: true })
+
+    navigation.assignFocus('grid-a-row-2-col-2')
+
+    navigation.handleKeyEvent({ direction: 'down' })
+    expect(navigation.currentFocusNodeId).toEqual('grid-b-row-1-col-2')
+    navigation.handleKeyEvent({ direction: 'down' })
+    expect(navigation.currentFocusNodeId).toEqual('grid-b-row-2-col-2')
+    navigation.handleKeyEvent({ direction: 'right' })
+    expect(navigation.currentFocusNodeId).toEqual('grid-b-row-2-col-3')
+    navigation.handleKeyEvent({ direction: 'up' })
+    expect(navigation.currentFocusNodeId).toEqual('grid-b-row-1-col-3')
+    navigation.handleKeyEvent({ direction: 'up' })
+    expect(navigation.currentFocusNodeId).toEqual('grid-a-row-2-col-3')
+  })
 })
