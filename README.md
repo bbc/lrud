@@ -2,6 +2,15 @@
 
 A spatial navigation library for devices with input via directional controls
 
+## Upgrading from V2
+
+**v3 is a major rewrite, covering many new features. However, it unfortunately breaks some backwards compatibility.**
+
+We are currently in the process of writing more detailed docs for an upgrade process. However, the main things to note at the minute at;
+
+- changes in events, which ones are emitted and what they are emitted with
+- removal of `grid` in favour of `isIndexAligned` behaviour
+
 ## Getting Started
 
 ```bash
