@@ -277,4 +277,21 @@ describe('unregisterNode()', () => {
       }
     })
   })
+
+  test('unregistering the root node should leave an empty tree and empty overrides', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'vertical' })
+    navigation.registerNode('left', { orientation: 'vertical' })
+    navigation.registerNode('right', { orientation: 'vertical' })
+    navigation.registerOverride('x', {
+      id: 'left',
+      direction: 'up',
+      target: 'down'
+    })
+    navigation.unregisterNode('root')
+
+    expect(navigation.tree).toMatchObject({})
+    expect(navigation.overrides).toMatchObject({})
+  })
 })
