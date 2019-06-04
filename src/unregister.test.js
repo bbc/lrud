@@ -294,4 +294,14 @@ describe('unregisterNode()', () => {
     expect(navigation.tree).toMatchObject({})
     expect(navigation.overrides).toMatchObject({})
   })
+
+  test.only('unregistering the focused node when there is nothing else that can be focused on', () => {
+    const nav = new Lrud()
+
+    nav.registerNode('root', { orientation: 'vertical' })
+    nav.registerNode('row1', { orientation: 'horizontal', parent: 'root' })
+    nav.registerNode('item1', { isFocusable: true, parent: 'row1' })
+
+    nav.unregisterNode('item1')
+  })
 })
