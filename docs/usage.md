@@ -144,6 +144,8 @@ Unregistering a node will also remove all of its children and trigger events cor
 
 If an unregister causes the current focused node to be removed, focus will be moved to the _last_ node that could be focused. This also works when unregistering a branch.
 
+Unregistering the root node will cause the tree to become empty and also remove all overrides that have been set (see Overrides, below).
+
 ## Assigning Focus
 
 You can give focus to a particular node by calling `navigation.assignFocus()` with the node id
@@ -192,6 +194,8 @@ The `move` event callback is called with a move event in the following shape:
 ## Overrides
 
 LRUD supports an override system, for times when correct product/UX behaviour requires focus to change in a way that is not strictly in accordance with the structure of the navigation tree.
+
+New overrides can be registered with `navigation.registerOverride(<overrideId>, <overrideOptions>)`.
 
 `navigation.overrides` is an object, each key representing an override object.
 
