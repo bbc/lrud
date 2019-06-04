@@ -129,7 +129,7 @@ export class Lrud {
     }
 
     if (this.getNode(nodeId)) {
-      throw Error(`Node with an ID of ${nodeId} already exists`);
+      throw Error(`Node with an ID of ${nodeId} has already been registered`);
     }
 
     // if this is the very first node, set it as root and return...
