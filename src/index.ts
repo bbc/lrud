@@ -128,6 +128,10 @@ export class Lrud {
       node.id = nodeId
     }
 
+    if (this.getNode(nodeId)) {
+      throw Error(`Node with an ID of ${nodeId} already exists`);
+    }
+
     // if this is the very first node, set it as root and return...
     if (Object.keys(this.tree).length <= 0) {
       this.rootNodeId = nodeId

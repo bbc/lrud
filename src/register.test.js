@@ -104,4 +104,18 @@ describe('registerNode()', () => {
     expect(navigation.tree.root.children.b).not.toBeUndefined()
     expect(navigation.tree.root.children.c).not.toBeUndefined()
   })
+
+  test('registering a node that already exists should throw an error', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root')
+
+    const node = navigation.getNode('root')
+
+    expect(node.id).toEqual('root')
+
+    expect(() => {
+      navigation.registerNode('root')
+    }).toThrow()
+  })
 })
