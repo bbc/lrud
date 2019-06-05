@@ -311,4 +311,25 @@ describe('unregisterNode()', () => {
     expect(nav.getNode('root').activeChild).toEqual('row1')
     expect(nav.getNode('row1').activeChild).toEqual(undefined)
   })
+
+  test('unregistering the focused node when there is nothing else that can be focused on - more nesting', () => {
+    const nav = new Lrud()
+
+    nav.registerNode('root', { orientation: 'vertical' })
+    nav.registerNode('boxa', { orientation: 'horizontal', parent: 'root' })
+    nav.registerNode('boxb', { orientation: 'horizontal', parent: 'boxa' })
+    nav.registerNode('boxc', { orientation: 'horizontal', parent: 'boxb' })
+    nav.registerNode('item1', { isFocusable: true, parent: 'boxc' })
+
+    // nothing else to focus on, but we shouldn't throw an exception
+    expect(() => {
+      nav.unregisterNode('item1')
+    }).not.toThrow()
+
+    // root should still have an activeChild of row 1
+    expect(nav.getNode('root').activeChild).toEqual('boxa')
+    expect(nav.getNode('boxa').activeChild).toEqual('boxb')
+    expect(nav.getNode('boxb').activeChild).toEqual('boxc')
+    expect(nav.getNode('boxc').activeChild).toEqual(undefined)
+  })
 })
