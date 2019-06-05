@@ -246,9 +246,11 @@ export class Lrud {
     if (parentNode.activeChild && parentNode.activeChild === nodeId) {
       delete parentNode.activeChild
       const top = this.climbUp(parentNode, '*')
-      const prev = this.getPrevChild(top)
-      const child = this.digDown(prev)
-      this.assignFocus(child.id)
+      if (top) {
+        const prev = this.getPrevChild(top)
+        const child = this.digDown(prev)
+        this.assignFocus(child.id)
+      }
     }
 
     // ...we need to recalculate the indexes of all the parents children
