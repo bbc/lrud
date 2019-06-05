@@ -1,6 +1,6 @@
 import { Get } from './get'
 import { Set } from './set'
-import { Node, Override } from './interfaces'
+import { Node, Override, KeyEvent } from './interfaces'
 
 import {
   isNodeFocusable,
@@ -585,7 +585,7 @@ export class Lrud {
    * @param {string} [event.keyCode]
    * @param {string} [event.direction]
    */
-  handleKeyEvent(event) {
+  handleKeyEvent(event: KeyEvent) {
     const direction = (event.keyCode) ? getDirectionForKeyCode(event.keyCode) : event.direction.toUpperCase()
     const currentFocusNode = this.getNode(this.currentFocusNodeId)
 

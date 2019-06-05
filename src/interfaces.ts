@@ -1,7 +1,6 @@
 export interface Node {
     id: string;
     parent?: string;
-    parents?: string;
     index?: number;
     indexRange?: number[];
     selectAction?: Function;
@@ -19,4 +18,9 @@ export interface Override {
     id: string;
     direction: string;
     target: string;
+}
+
+export interface KeyEvent {
+    keyCode: number;
+    direction: string;
 }

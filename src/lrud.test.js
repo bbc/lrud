@@ -69,7 +69,6 @@ describe('lrud', () => {
 
       expect(node2.selectAction).toEqual(12)
       expect(node2.parent).toEqual('BOX_A')
-      expect(node2.parents).toEqual(['BOX_A', 'root'])
       expect(navigation.tree.root.children['BOX_A'].children['NODE_2']).toBeUndefined()
     })
   })

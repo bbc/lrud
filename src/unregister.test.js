@@ -116,7 +116,6 @@ describe('unregisterNode()', () => {
     // should trigger with the details of BOX_B
     expect(spy).toHaveBeenCalledWith({
       parent: 'root',
-      parents: ['root'],
       id: 'BOX_B',
       index: 1,
       activeChild: 'NODE_4',
@@ -124,20 +123,17 @@ describe('unregisterNode()', () => {
         NODE_4: {
           id: 'NODE_4',
           index: 0,
-          parent: 'BOX_B',
-          parents: ['BOX_B', 'root']
+          parent: 'BOX_B'
         },
         NODE_5: {
           id: 'NODE_5',
           index: 1,
-          parent: 'BOX_B',
-          parents: ['BOX_B', 'root']
+          parent: 'BOX_B'
         },
         NODE_6: {
           id: 'NODE_6',
           index: 2,
-          parent: 'BOX_B',
-          parents: ['BOX_B', 'root']
+          parent: 'BOX_B'
         }
       }
     })
