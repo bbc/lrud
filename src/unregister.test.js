@@ -295,13 +295,20 @@ describe('unregisterNode()', () => {
     expect(navigation.overrides).toMatchObject({})
   })
 
-  test.only('unregistering the focused node when there is nothing else that can be focused on', () => {
+  test('unregistering the focused node when there is nothing else that can be focused on', () => {
     const nav = new Lrud()
 
     nav.registerNode('root', { orientation: 'vertical' })
     nav.registerNode('row1', { orientation: 'horizontal', parent: 'root' })
     nav.registerNode('item1', { isFocusable: true, parent: 'row1' })
 
-    nav.unregisterNode('item1')
+    // nothing else to focus on, but we shouldn't throw an exception
+    expect(() => {
+      nav.unregisterNode('item1')
+    }).not.toThrow()
+
+    // root should still have an activeChild of row 1
+    expect(nav.getNode('root').activeChild).toEqual('row1')
+    expect(nav.getNode('row1').activeChild).toEqual(undefined)
   })
 })
