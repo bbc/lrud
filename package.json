@@ -58,7 +58,7 @@
     "minify": "uglifyjs dist/index.js --compress --mangle -o dist/index.min.js",
     "prebuild": "npm run clean",
     "build": "rollup -c",
-    "postbuild": "npm run minify",
+    "postbuild": "npx tsc && npm run minify",
     "watch": "npm run build -- -w"
   }
 }
