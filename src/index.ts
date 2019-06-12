@@ -186,7 +186,7 @@ export class Lrud {
   /**
    * maintained for legacy API reasons
    */
-  register(nodeId: string, node: any = {}) {
+  register(nodeId: string, node: Node = { id: null }) {
     return this.registerNode(nodeId, node)
   }
 
@@ -744,5 +744,30 @@ export class Lrud {
     }
 
     this.emitter.emit('focus', node)
+  }
+
+  /**
+   * given an Lrud instance, copy all the data across from the other instance
+   * to this instance
+   * 
+   * @param {Lrud} otherInstance 
+   */
+  populateFrom(otherInstance: Lrud) {
+    const clone = (obj) => {
+      return JSON.parse(JSON.stringify(obj))
+    }
+
+    this.tree = clone(otherInstance.tree);
+    this.nodePathList = clone(otherInstance.nodePathList);
+    this.focusableNodePathList = clone(otherInstance.focusableNodePathList);
+    this.rootNodeId = clone(otherInstance.rootNodeId);
+    this.currentFocusNode = clone(otherInstance.currentFocusNode);
+    this.currentFocusNodeId = clone(otherInstance.currentFocusNodeId);
+    this.currentFocusNodeIndex = clone(otherInstance.currentFocusNodeIndex);
+    this.currentFocusNodeIndexRange = clone(otherInstance.currentFocusNodeIndexRange);
+    this.currentFocusNodeIndexRangeLowerBound = clone(otherInstance.currentFocusNodeIndexRangeLowerBound);
+    this.currentFocusNodeIndexRangeUpperBound = clone(otherInstance.currentFocusNodeIndexRangeUpperBound);
+    this.isIndexAlignMode = clone(otherInstance.isIndexAlignMode);
+    this.overrides = clone(otherInstance.overrides);
   }
 }
