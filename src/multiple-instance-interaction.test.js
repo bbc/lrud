@@ -2,7 +2,7 @@
 
 const { Lrud } = require('./index')
 
-describe.only('registerTree()', () => {
+describe('registerTree()', () => {
   test('register a tree from one instance into another instance', () => {
     const Alpha = new Lrud()
     const Beta = new Lrud()
