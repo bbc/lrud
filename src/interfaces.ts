@@ -2,7 +2,7 @@
  * a node is both stored in the tree, and passed to functions to register nodes
  */
 export interface Node {
-    id: string;
+    id?: string;
     parent?: string;
     index?: number;
     indexRange?: number[];
