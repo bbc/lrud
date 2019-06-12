@@ -116,7 +116,7 @@ export class Lrud {
    * @param {string} [node.parent] if null, value of `this.rootNodeId` is used
    * @param {number} [node.index] if null, index is 1 more than the index of the last sibling. if no previous siblings, index is 1
    * @param {number[]} [node.indexRange] defaults to null. acts as a colspan, value [0] is lower bound, value [1] is upper bound
-   * @param {function} [node.selectAction] if a node has a selectAction, it is focusable
+   * @param {object} [node.selectAction] if a node has a selectAction, it is focusable
    * @param {boolean} [node.isFocusable] if a node is explicitly set as isFocusable, it is focusable
    * @param {boolean} [node.isWrapping] if true, when asking for the next child at the end or start of the node, the will "wrap around" and return the first/last (when asking for the last/first)
    * @param {string} [node.orientation] can be "vertical" or "horizontal". is used in conjuction when handling direction of key press, to determine which child is "next"
@@ -264,7 +264,7 @@ export class Lrud {
       nodeClone.onBlur(nodeClone);
     }
 
-    // if we have any overrides whose target is the node we just unregistered, we should unregister
+    // if we have any overrides whose target or ID is the node we just unregistered, we should unregister
     // those overrides (thus keeping state clean)
     Object.keys(this.overrides).forEach(overrideId => {
       const override = this.overrides[overrideId]
@@ -747,27 +747,37 @@ export class Lrud {
   }
 
   /**
-   * given an Lrud instance, copy all the data across from the other instance
-   * to this instance
+   * given a tree, return an array of Nodes in that tree
    * 
-   * @param {Lrud} otherInstance 
+   * @param {object} tree 
    */
-  populateFrom(otherInstance: Lrud) {
-    const clone = (obj) => {
-      return JSON.parse(JSON.stringify(obj))
+
+  getNodesFromTree(tree: object): Node[] {
+    const nodes: Node[] = []
+
+    const _getNodesFromTree = (tree) => {
+      Object.keys(tree).forEach(treeProperty => {
+        nodes.push({...tree[treeProperty], children: undefined });
+
+        if (tree[treeProperty].children) {
+          _getNodesFromTree(tree[treeProperty].children)
+        }
+      })
     }
 
-    this.tree = clone(otherInstance.tree);
-    this.nodePathList = clone(otherInstance.nodePathList);
-    this.focusableNodePathList = clone(otherInstance.focusableNodePathList);
-    this.rootNodeId = clone(otherInstance.rootNodeId);
-    this.currentFocusNode = clone(otherInstance.currentFocusNode);
-    this.currentFocusNodeId = clone(otherInstance.currentFocusNodeId);
-    this.currentFocusNodeIndex = clone(otherInstance.currentFocusNodeIndex);
-    this.currentFocusNodeIndexRange = clone(otherInstance.currentFocusNodeIndexRange);
-    this.currentFocusNodeIndexRangeLowerBound = clone(otherInstance.currentFocusNodeIndexRangeLowerBound);
-    this.currentFocusNodeIndexRangeUpperBound = clone(otherInstance.currentFocusNodeIndexRangeUpperBound);
-    this.isIndexAlignMode = clone(otherInstance.isIndexAlignMode);
-    this.overrides = clone(otherInstance.overrides);
+    _getNodesFromTree(tree);
+
+    return nodes;
+  }
+
+  /**
+   * given a tree, register all of its nodes into this instance
+   * 
+   * @param {object} tree 
+   */
+  registerTree(tree: object) {
+      this.getNodesFromTree(tree).forEach(node => {
+        this.registerNode(node.id, node)
+      })
   }
 }
