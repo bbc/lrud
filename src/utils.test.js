@@ -8,7 +8,8 @@ const {
   isNodeInPaths,
   _findChildWithMatchingIndexRange,
   _findChildWithClosestIndex,
-  _findChildWithIndex
+  _findChildWithIndex,
+  isNodeInTree
 } = require('./utils')
 
 describe('Closest()', () => {
@@ -458,5 +459,86 @@ describe('_findChildWithIndex()', () => {
 
     const found = _findChildWithIndex(node, 5)
     expect(found).toEqual(null)
+  })
+})
+
+describe.only('isNodeInTree()', () => {
+  test('node is in tree at top level, return true', () => {
+    const tree = {
+      root: {
+        children: {
+          node_a: true,
+          node_b: true
+        }
+      }
+    }
+
+    expect(isNodeInTree('root', tree)).toEqual(true)
+  })
+
+  test('node is at bottom level, return true', () => {
+    const tree = {
+      root: {
+        children: {
+          node_a: true,
+          node_b: {
+            children: {
+              node_c: true,
+              node_d: {
+                children: {
+                  node_e: true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    expect(isNodeInTree('node_e', tree)).toEqual(true)
+  })
+
+  test('node is nested, return true', () => {
+    const tree = {
+      root: {
+        children: {
+          node_a: true,
+          node_b: {
+            children: {
+              node_c: true,
+              node_d: {
+                children: {
+                  node_e: true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    expect(isNodeInTree('node_c', tree)).toEqual(true)
+  })
+
+  test('node is not present, return false', () => {
+    const tree = {
+      root: {
+        children: {
+          node_a: true,
+          node_b: {
+            children: {
+              node_c: true,
+              node_d: {
+                children: {
+                  node_e: true
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    expect(isNodeInTree('node_x', tree)).toEqual(false)
   })
 })
