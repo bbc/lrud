@@ -27,3 +27,7 @@ export interface KeyEvent {
     keyCode: number;
     direction: string;
 }
+
+export interface InsertTreeOptions {
+    maintainIndex: boolean;
+}
