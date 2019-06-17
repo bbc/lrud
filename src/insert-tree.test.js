@@ -136,4 +136,69 @@ describe('insertTree()', () => {
     expect(instance.tree['root'].children['charlie'].index).toEqual(1)
     expect(instance.tree['root'].children['beta'].index).toEqual(2)
   })
+
+  test('insert a tree under the root node of the existing tree, as no parent given on the top node of the tree', () => {
+    const tree = {
+      charlie: {
+        orientation: 'horizontal',
+        children: {
+          node_a: {
+            isFocusable: true
+          },
+          node_b: {
+            isFocusable: true
+          }
+        }
+      }
+    }
+
+    const instance = new Lrud()
+
+    instance
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('alpha', { isFocusable: true })
+      .registerNode('beta', { isFocusable: true })
+
+    instance.insertTree(tree)
+
+    expect(instance.tree['root'].children['alpha']).toBeTruthy()
+    expect(instance.tree['root'].children['beta']).toBeTruthy()
+    expect(instance.tree['root'].children['charlie']).toBeTruthy()
+    expect(instance.tree['root'].children['charlie'].children).toBeTruthy()
+
+    expect(instance.tree['root'].children['alpha'].index).toEqual(0)
+    expect(instance.tree['root'].children['beta'].index).toEqual(1)
+    expect(instance.tree['root'].children['charlie'].index).toEqual(2)
+  })
+
+  test('insert a tree under a branch that ISNT the root node', () => {
+    const tree = {
+      charlie: {
+        parent: 'beta',
+        orientation: 'horizontal',
+        children: {
+          node_a: {
+            isFocusable: true
+          },
+          node_b: {
+            isFocusable: true
+          }
+        }
+      }
+    }
+
+    const instance = new Lrud()
+
+    instance
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('alpha', { isFocusable: true })
+      .registerNode('beta', { orientation: 'vertical' })
+
+    instance.insertTree(tree)
+
+    expect(instance.tree['root'].children['alpha']).toBeTruthy()
+    expect(instance.tree['root'].children['beta']).toBeTruthy()
+    expect(instance.tree['root'].children['beta'].children['charlie']).toBeTruthy()
+    expect(instance.tree['root'].children['beta'].children['charlie'].children).toBeTruthy()
+  })
 })

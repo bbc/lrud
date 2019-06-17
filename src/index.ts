@@ -129,7 +129,7 @@ export class Lrud {
    * @param {function} [node.onLeave] if a node has an `onLeave` function, it will be run when a move event leaves this node
    * @param {function} [node.onEnter] if a node has an `onEnter` function, it will be run when a move event enters this node
    */
-  registerNode(nodeId: string, node: Node) {
+  registerNode(nodeId: string, node: Node = {}) {
     if (!node.id) {
       node.id = nodeId
     }
@@ -191,7 +191,7 @@ export class Lrud {
   /**
    * maintained for legacy API reasons
    */
-  register(nodeId: string, node: Node) {
+  register(nodeId: string, node: Node = {}) {
     return this.registerNode(nodeId, node)
   }
 

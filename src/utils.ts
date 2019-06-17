@@ -179,11 +179,12 @@ export const getNodesFromTree = (tree: object): Node[] => {
 
     const _getNodesFromTree = (tree, parent) => {
         Object.keys(tree).forEach(treeProperty => {
+            let _parent = tree[treeProperty].parent || parent
             nodes.push({
                 ...tree[treeProperty],
                 id: treeProperty,
                 children: undefined,
-                parent
+                parent: _parent
             });
 
             if (tree[treeProperty].children) {

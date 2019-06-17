@@ -462,7 +462,7 @@ describe('_findChildWithIndex()', () => {
   })
 })
 
-describe.only('isNodeInTree()', () => {
+describe('isNodeInTree()', () => {
   test('node is in tree at top level, return true', () => {
     const tree = {
       root: {
