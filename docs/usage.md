@@ -210,6 +210,119 @@ navigation.overrides = {
   }
 }
 ```
+
+# Tree and Partial Tree Insertion & Registering
+
+LRUD supports the ability to register an entire tree at once.
+
+```js
+const instance = new Lrud();
+const tree = {
+  root: {
+    orientation: 'horizontal',
+    children: {
+      alpha: { isFocusable: true },
+      beta: { isFocusable: true },
+      charlie: { isFocusable: true },
+    }
+  }
+}
+
+instance.registerTree(tree);
+// `instance` now has the above tree registered, and has correctly setup active children, indexes, etc. 
+```
+
+## `insertTree()` and nested tree registration
+
+LRUD also supports the ability to register a tree/insert a tree into an already existing branch.
+
+If no parent is given on the top level node of the passed tree, the tree will be inserted under the root node, as per standard `registerNode()` behaviour.
+
+Otherwise, if a `parent` _is_ given, the tree will be inserted under that parent.
+
+### Inserting a tree under the root node
+```js
+const instance = new Lrud();
+instance
+  .registerNode('root', { orientation: 'horizontal' })
+  .registerNode('alpha', { isFocusable: true })
+  .registerNode('beta', { isFocusable: true })
+
+const tree = {
+  charlie: {
+    orientation: 'vertical',
+    children: {
+      charlie_1: { isFocusable: true },
+      charlie_2: { isFocusable: true },
+    }
+  }
+}
+instance.registerTree(tree);
+/*
+the full tree of `instance` now looks like:
+{
+  root: {
+    orientation: 'horizontal',
+    children: {
+      alpha: { isFocusable: true }
+      beta: { isFocusable: true }
+      charlie: {
+        orientation: 'vertical'
+        children: {
+          charlie_1: { isFocusable: true }
+          charlie_2: { isFocusable: true }
+        }
+      }
+    }
+  }
+}
+*/
+```
+
+### Inserting a tree under a specified branch
+
+```js
+const instance = new Lrud();
+instance
+  .registerNode('root', { orientation: 'horizontal' })
+  .registerNode('alpha', { isFocusable: true })
+  .registerNode('beta', { orientation: 'vertical' })
+
+const tree = {
+  charlie: {
+    orientation: 'vertical',
+    parent: 'beta',
+    children: {
+      charlie_1: { isFocusable: true },
+      charlie_2: { isFocusable: true },
+    }
+  }
+}
+instance.registerTree(tree);
+/*
+the full tree of `instance` now looks like:
+{
+  root: {
+    orientation: 'horizontal',
+    children: {
+      alpha: { isFocusable: true }
+      beta: {
+        orientation: 'vertical',
+        children: {
+          charlie: {
+            orientation: 'vertical'
+            children: {
+              charlie_1: { isFocusable: true }
+              charlie_2: { isFocusable: true }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+*/
+```
 # F.A.Q
 
 > Q: A node that should be focusabled is never receiving focus - whats happening?
