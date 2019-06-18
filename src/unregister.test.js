@@ -328,4 +328,48 @@ describe('unregisterNode()', () => {
     expect(nav.getNode('boxb').activeChild).toEqual('boxc')
     expect(nav.getNode('boxc').activeChild).toEqual(undefined)
   })
+
+  test('unregistering the root node and re-registering should give a clean tree', () => {
+    const nav = new Lrud()
+
+    nav.registerNode('root', {
+      orientation: 'horizontal'
+    })
+    nav.registerNode('node1', {
+      orientation: 'vertical',
+      parent: 'root'
+    })
+    nav.registerNode('container', {
+      orientation: 'vertical',
+      parent: 'node1'
+    })
+    nav.registerNode('item', {
+      selectAction: {},
+      parent: 'container'
+    })
+
+    nav.unregisterNode('root')
+
+    nav.registerNode('root', {
+      orientation: 'horizontal'
+    })
+    nav.registerNode('node2', {
+      orientation: 'vertical',
+      parent: 'root'
+    })
+    nav.registerNode('container', {
+      orientation: 'vertical',
+      parent: 'node2'
+    })
+    nav.registerNode('item', {
+      selectAction: {},
+      parent: 'container'
+    })
+
+    expect(nav.tree['root']).toBeTruthy()
+    expect(nav.tree['root'].children['node2']).toBeTruthy()
+    expect(nav.tree['root'].children['node2'].children['container']).toBeTruthy()
+    expect(nav.tree['root'].children['node2'].children['container'].children['item']).toBeTruthy()
+    expect(nav.tree['root'].children['node1']).toBeFalsy()
+  })
 })
