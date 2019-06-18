@@ -62,7 +62,7 @@ describe('unregisterNode()', () => {
     ])
   })
 
-  test('if unregistering the focused node, recalcualte focus', () => {
+  test('if unregistering the focused node, recalculate focus', () => {
     const navigation = new Lrud()
 
     navigation.registerNode('root', { orientation: 'horizontal' })

@@ -1,6 +1,6 @@
 import { Get } from './get'
 import { Set } from './set'
-import { Node, Override, KeyEvent } from './interfaces'
+import { Node, Override, KeyEvent, InsertTreeOptions } from './interfaces'
 
 import {
   isNodeFocusable,
@@ -9,7 +9,8 @@ import {
   isNodeInPaths,
   _findChildWithMatchingIndexRange,
   _findChildWithClosestIndex,
-  _findChildWithIndex
+  _findChildWithIndex,
+  getNodesFromTree
 } from './utils'
 
 import mitt from 'mitt'
@@ -50,6 +51,10 @@ export class Lrud {
    * @param {object} node
    */
   reindexChildrenOfNode(node: Node) {
+    if (!node) {
+      return;
+    }
+
     if (!node.children) {
       return
     }
@@ -124,7 +129,7 @@ export class Lrud {
    * @param {function} [node.onLeave] if a node has an `onLeave` function, it will be run when a move event leaves this node
    * @param {function} [node.onEnter] if a node has an `onEnter` function, it will be run when a move event enters this node
    */
-  registerNode(nodeId: string, node: Node = { id: null }) {
+  registerNode(nodeId: string, node: Node = {}) {
     if (!node.id) {
       node.id = nodeId
     }
@@ -186,7 +191,7 @@ export class Lrud {
   /**
    * maintained for legacy API reasons
    */
-  register(nodeId: string, node: Node = { id: null }) {
+  register(nodeId: string, node: Node = {}) {
     return this.registerNode(nodeId, node)
   }
 
@@ -752,32 +757,57 @@ export class Lrud {
    * @param {object} tree 
    */
 
-  getNodesFromTree(tree: object): Node[] {
-    const nodes: Node[] = []
-
-    const _getNodesFromTree = (tree) => {
-      Object.keys(tree).forEach(treeProperty => {
-        nodes.push({...tree[treeProperty], children: undefined });
-
-        if (tree[treeProperty].children) {
-          _getNodesFromTree(tree[treeProperty].children)
-        }
-      })
-    }
-
-    _getNodesFromTree(tree);
-
-    return nodes;
-  }
-
   /**
    * given a tree, register all of its nodes into this instance
    * 
    * @param {object} tree 
    */
   registerTree(tree: object) {
-      this.getNodesFromTree(tree).forEach(node => {
+      getNodesFromTree(tree).forEach(node => {
         this.registerNode(node.id, node)
       })
+  }
+
+  /**
+   * given a tree object, attempt to register that tree into the current lrud instance
+   * 
+   * if the given tree already exists as a branch in the instance tree, the new tree will replace that branch
+   * 
+   * if the new tree doesn't already exist as a branch in the instance tree, this function will register the new
+   * tree as a branch against the root node, as per standard registerNode() behaviour
+   * 
+   * @param {object} tree
+   * @param {object} options
+   * @param {object} options.maintainIndex if true, and new tree is replacing an existing branch of the tree, maintain the original branches relative index
+   */
+  insertTree(tree: object, options: InsertTreeOptions = { maintainIndex: true }) {
+    const replacementNode = tree[Object.keys(tree)[0]]
+
+    if (!replacementNode.id) {
+      replacementNode.id = Object.keys(tree)[0]
+    }
+
+    const originalNode = this.pickNode(replacementNode.id);
+    if (!replacementNode.parent && originalNode && originalNode.parent) {
+      replacementNode.parent = originalNode.parent
+    }
+
+    const parentNode = this.getNode(replacementNode.parent);
+
+    if (options.maintainIndex && originalNode && originalNode.index) {
+      replacementNode.index = originalNode.index
+      Object.keys(parentNode.children).forEach(childId => {
+        const child = parentNode.children[childId]
+        if (child.index >= originalNode.index) {
+          child.index += 1;
+        }
+      })
+    }
+
+    this.registerTree(tree);
+    
+    if (options.maintainIndex) {
+      this.reindexChildrenOfNode(parentNode);
+    }
   }
 }

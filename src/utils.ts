@@ -1,4 +1,5 @@
 import { KeyCodes } from './key-codes'
+import { Node } from './interfaces'
 
 /**
  * given an array of values and a goal, return the value from values which is closest to the goal
@@ -151,4 +152,47 @@ export const _findChildWithIndex = (node, index) => {
     }
 
     return null
+}
+
+export const isNodeInTree = (nodeId: string, tree: object) => {
+    let nodeInTree: boolean = false;
+
+    const _isNodeInTree = (tree) => {
+        Object.keys(tree).forEach(treeProperty => {
+            if (nodeId === treeProperty) {
+                nodeInTree = true;
+            }
+
+            if (tree[treeProperty].children) {
+                _isNodeInTree(tree[treeProperty].children)
+            }
+        })
+    }
+
+    _isNodeInTree(tree);
+
+    return nodeInTree;
+}
+
+export const getNodesFromTree = (tree: object): Node[] => {
+    const nodes: Node[] = []
+
+    const _getNodesFromTree = (tree, parent) => {
+        Object.keys(tree).forEach(treeProperty => {
+            let _parent = tree[treeProperty].parent || parent
+            nodes.push({
+                ...tree[treeProperty],
+                id: treeProperty,
+                children: undefined,
+                parent: _parent
+            });
+
+            if (tree[treeProperty].children) {
+                _getNodesFromTree(tree[treeProperty].children, treeProperty)
+            }
+        })
+    }
+
+    _getNodesFromTree(tree, undefined);
+    return nodes;
 }
