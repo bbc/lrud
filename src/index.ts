@@ -17,16 +17,16 @@ import mitt from 'mitt'
 
 export class Lrud {
   tree: any;
-  nodePathList: any;
-  focusableNodePathList: any;
-  rootNodeId: any;
+  nodePathList: string[];
+  focusableNodePathList: string[];
+  rootNodeId: string;
   currentFocusNode: any;
-  currentFocusNodeId: any;
-  currentFocusNodeIndex: any;
-  currentFocusNodeIndexRange: any;
-  currentFocusNodeIndexRangeLowerBound: any;
-  currentFocusNodeIndexRangeUpperBound: any;
-  isIndexAlignMode: any;
+  currentFocusNodeId: string;
+  currentFocusNodeIndex: number;
+  currentFocusNodeIndexRange: number[];
+  currentFocusNodeIndexRangeLowerBound: number;
+  currentFocusNodeIndexRangeUpperBound: number;
+  isIndexAlignMode: boolean;
   emitter: mitt.Emitter
   overrides: any;
 
@@ -213,7 +213,16 @@ export class Lrud {
   unregisterNode(nodeId: string) {
     if (nodeId === this.rootNodeId) {
       this.tree = {}
-      this.overrides = {};
+      this.nodePathList = []
+      this.focusableNodePathList = [];
+      this.rootNodeId = null
+      this.currentFocusNode = null
+      this.currentFocusNodeId = null
+      this.currentFocusNodeIndex = null
+      this.currentFocusNodeIndexRange = null
+      this.isIndexAlignMode = false
+      this.emitter = new mitt();
+      this.overrides = {}
       return;
     }
 
