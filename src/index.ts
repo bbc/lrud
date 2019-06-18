@@ -248,9 +248,7 @@ export class Lrud {
     // ...if we're unregistering the activeChild of our parent (could be a leaf OR branch)
     // we need to recalculate the focus...
     if (parentNode.activeChild && parentNode.activeChild === nodeId) {
-      if (this.isIndexAlignMode) {
-        this.isIndexAlignMode = false;
-      }
+      this.isIndexAlignMode = false;
       delete parentNode.activeChild
       const top = this.climbUp(parentNode, '*')
       if (top) {
