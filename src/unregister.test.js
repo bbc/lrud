@@ -329,7 +329,7 @@ describe('unregisterNode()', () => {
     expect(nav.getNode('boxc').activeChild).toEqual(undefined)
   })
 
-  test('unregistering the root node and re-registering should give a clean tree', () => {
+  test('unregistering the root node and re-registering should give a clean tree and internal state', () => {
     const nav = new Lrud()
 
     nav.registerNode('root', {
@@ -371,5 +371,76 @@ describe('unregisterNode()', () => {
     expect(nav.tree['root'].children['node2'].children['container']).toBeTruthy()
     expect(nav.tree['root'].children['node2'].children['container'].children['item']).toBeTruthy()
     expect(nav.tree['root'].children['node1']).toBeFalsy()
+  })
+
+  test('unregistering nodes that start with the same string', () => {
+    const navigation = new Lrud()
+
+    navigation
+      .registerNode('root')
+      .registerNode('brand')
+      .registerNode('brand-content')
+
+    navigation.unregisterNode('brand')
+
+    expect(navigation.nodePathList).toEqual([
+      'root',
+      'root.children.brand-content'
+    ])
+
+    expect(navigation.getNode('brand-content')).toBeTruthy()
+  })
+
+  test('unregistering a node should remove it and all its children from the tree and internal state', () => {
+    const navigation = new Lrud()
+
+    navigation
+      .registerNode('root')
+      .registerNode('x')
+      .registerNode('x-1', { parent: 'x', isFocusable: true })
+      .registerNode('x-2', { parent: 'x', isFocusable: true })
+      .registerNode('xx')
+      .registerNode('xx-1', { parent: 'xx', isFocusable: true })
+      .registerNode('xx-2', { parent: 'xx', isFocusable: true })
+
+    navigation.unregisterNode('x')
+
+    expect(navigation.nodePathList).toEqual([
+      'root',
+      'root.children.xx',
+      'root.children.xx.children.xx-1',
+      'root.children.xx.children.xx-2'
+    ])
+    expect(navigation.getNode('xx-2')).toBeTruthy()
+  })
+
+  test('unregistering a focusable node should remove it from both the path lists', () => {
+    const navigation = new Lrud()
+
+    navigation
+      .registerNode('root')
+      .registerNode('x')
+      .registerNode('x-1', { parent: 'x', isFocusable: true })
+      .registerNode('x-2', { parent: 'x', isFocusable: true })
+      .registerNode('xx')
+      .registerNode('xx-1', { parent: 'xx', isFocusable: true })
+      .registerNode('xx-2', { parent: 'xx', isFocusable: true })
+
+    navigation.unregisterNode('x-1')
+
+    expect(navigation.nodePathList).toEqual([
+      'root',
+      'root.children.x',
+      'root.children.x.children.x-2',
+      'root.children.xx',
+      'root.children.xx.children.xx-1',
+      'root.children.xx.children.xx-2'
+    ])
+
+    expect(navigation.focusableNodePathList).toEqual([
+      'root.children.x.children.x-2',
+      'root.children.xx.children.xx-1',
+      'root.children.xx.children.xx-2'
+    ])
   })
 })
