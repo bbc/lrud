@@ -34,6 +34,8 @@ navigation
     .registerNode('alpha', { isFocusable: true, parent: 'root' })
 ```
 
+Nodes must be registered with _unique_ IDs. If `registerNode()` is called with an ID that has already been registered against the navigation instance, an exception will be thrown.
+
 ## Registration options
 
 Most options affect behaviour for when Lrud is handling key events and assigning focus.

@@ -1,6 +1,6 @@
 {
   "name": "lrud",
-  "version": "3.4.1",
+  "version": "3.4.0",
   "description": "Left, Right, Up, Down. A spatial navigation library for devices with input via directional controls",
   "main": "dist/index.min.js",
   "types": "dist/index.d.ts",
