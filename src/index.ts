@@ -243,13 +243,18 @@ export class Lrud {
     // ...remove the relevant entry from the node id list
     this.nodePathList.splice(this.nodePathList.indexOf(path), 1)
 
-    // ...remove all its children from the node ID list
+    // ...remove all its children from both path lists
     this.nodePathList = this.nodePathList.filter(nodeIdPath => {
       return !nodeIdPath.includes(path + '.children.')
     })
+    this.focusableNodePathList = this.focusableNodePathList.filter(nodeIdPath => {
+      return !nodeIdPath.includes(path + '.children.')
+    })
 
-    // if the node we're unregistering was focusable, we need to remove it from
-    this.focusableNodePathList.splice(this.focusableNodePathList.indexOf(path), 1)
+    // if the node is focusable, remove it from the focusable node path list
+    if (isNodeFocusable(nodeClone)) {
+      this.focusableNodePathList.splice(this.focusableNodePathList.indexOf(path), 1)
+    }
 
     // ...if we're unregistering the activeChild of our parent (could be a leaf OR branch)
     // we need to recalculate the focus...

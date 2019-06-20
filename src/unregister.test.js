@@ -411,6 +411,10 @@ describe('unregisterNode()', () => {
       'root.children.xx.children.xx-1',
       'root.children.xx.children.xx-2'
     ])
+    expect(navigation.focusableNodePathList).toEqual([
+      'root.children.xx.children.xx-1',
+      'root.children.xx.children.xx-2'
+    ])
     expect(navigation.getNode('xx-2')).toBeTruthy()
   })
 
@@ -441,6 +445,52 @@ describe('unregisterNode()', () => {
       'root.children.x.children.x-2',
       'root.children.xx.children.xx-1',
       'root.children.xx.children.xx-2'
+    ])
+  })
+
+  test('unregistering a node that has children that are focusable should remove and its children from all relevant internal state', () => {
+    // the node from the nodePathList, and the children from the nodePathList & focusableNodePathList
+
+    const navigation = new Lrud()
+
+    navigation
+      .registerNode('root')
+      .registerNode('x')
+      .registerNode('x-1', { parent: 'x', isFocusable: true })
+      .registerNode('x-2', { parent: 'x', isFocusable: true })
+      .registerNode('xx')
+      .registerNode('xx-1', { parent: 'xx', isFocusable: true })
+      .registerNode('xx-2', { parent: 'xx', isFocusable: true })
+
+    // ensure state is correct after registration (for sanitys sake...)
+    expect(navigation.nodePathList).toEqual([
+      'root',
+      'root.children.x',
+      'root.children.x.children.x-1',
+      'root.children.x.children.x-2',
+      'root.children.xx',
+      'root.children.xx.children.xx-1',
+      'root.children.xx.children.xx-2'
+    ])
+    expect(navigation.focusableNodePathList).toEqual([
+      'root.children.x.children.x-1',
+      'root.children.x.children.x-2',
+      'root.children.xx.children.xx-1',
+      'root.children.xx.children.xx-2'
+    ])
+
+    // now we unregister the parent node, and ensure its children and it are gone from relevant paths
+    navigation.unregisterNode('xx')
+
+    expect(navigation.nodePathList).toEqual([
+      'root',
+      'root.children.x',
+      'root.children.x.children.x-1',
+      'root.children.x.children.x-2'
+    ])
+    expect(navigation.focusableNodePathList).toEqual([
+      'root.children.x.children.x-1',
+      'root.children.x.children.x-2'
     ])
   })
 })
