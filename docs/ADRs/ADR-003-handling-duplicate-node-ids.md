@@ -14,6 +14,8 @@ Questions have been raised around whether or not LRUD should support _duplicate_
 
 Yes. The actual "internal" ID of a node could be the combination of its own ID and all its parents. This means we could handle duplicate IDs as long as no 2 IDs were both duplicates _and_ siblings.
 
+OR, we could make it so all IDs that are registered are actually registered as the ID concatonated with a UUID, etc.
+
 So the question is, should we?
 
 **Pros**
