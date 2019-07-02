@@ -529,4 +529,39 @@ describe('unregisterNode()', () => {
 
     expect(nav.currentFocusNodeId).toEqual('item2')
   })
+
+  test('unregistering with forceRefocus false should not do a refocus - removing focused node', () => {
+    const nav = new Lrud()
+
+    nav.register('root')
+      .register('node1', { isFocusable: true })
+      .register('node2', { isFocusable: true })
+      .register('node3', { isFocusable: true })
+
+    nav.assignFocus('node2')
+
+    nav.unregisterNode('node2', { forceRefocus: false })
+
+    expect(nav.currentFocusNodeId).toEqual(undefined)
+    expect(nav.tree.root.activeChild).toEqual(undefined)
+  })
+
+  test('unregistering with forceRefocus false should not do a refocus - removing parent of focused node', () => {
+    const nav = new Lrud()
+
+    nav.register('root')
+      .register('box1')
+      .register('node1', { isFocusable: true, parent: 'box1' })
+      .register('node2', { isFocusable: true, parent: 'box1' })
+      .register('box2')
+      .register('node4', { isFocusable: true, parent: 'box2' })
+      .register('node5', { isFocusable: true, parent: 'box2' })
+
+    nav.assignFocus('node2')
+
+    nav.unregisterNode('box1', { forceRefocus: false })
+
+    expect(nav.currentFocusNodeId).toEqual(undefined)
+    expect(nav.tree.root.activeChild).toEqual(undefined)
+  })
 })
