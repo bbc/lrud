@@ -264,8 +264,10 @@ export class Lrud {
       const top = this.climbUp(parentNode, '*')
       if (top) {
         const prev = this.getPrevChild(top)
-        const child = this.digDown(prev)
-        this.assignFocus(child.id)
+        if (isNodeFocusable(prev) || (prev && prev.children && Object.keys(prev.children).length)) {
+          const child = this.digDown(prev)
+          this.assignFocus(child.id)
+        }
       }
     }
 

@@ -493,4 +493,40 @@ describe('unregisterNode()', () => {
       'root.children.x.children.x-2'
     ])
   })
+
+  test('unregistering a pibling of the focused node', () => {
+    const nav = new Lrud()
+
+    nav.register('root', {
+      orientation: 'horizontal'
+    })
+
+    nav.register('node1', {
+      orientation: 'vertical',
+      parent: 'root'
+    })
+
+    nav.register('item1', {
+      parent: 'node1',
+      selectAction: {}
+    })
+
+    nav.register('node2', {
+      orientation: 'vertical',
+      parent: 'root'
+    })
+
+    nav.register('item2', {
+      parent: 'node2',
+      selectAction: {}
+    })
+
+    nav.assignFocus('node2')
+
+    expect(nav.currentFocusNodeId).toEqual('item2')
+
+    nav.unregisterNode('item1')
+
+    expect(nav.currentFocusNodeId).toEqual('item2')
+  })
 })
