@@ -75,6 +75,12 @@ You can also run all the tests with verbose output. This is useful for listing o
 npm run test:verbose
 ```
 
+You can also run all the tests with coverage output
+
+```bash
+npm run test:coverage
+```
+
 Several of the tests have associated diagrams, in order to better explain what is being tested. These can be found in `./docs/test-diagrams`.
 
 We also have a specific test file (`src/build.test.js`) in order to ensure that we haven't broken the Typescript/rollup.js build.
