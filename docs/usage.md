@@ -148,6 +148,14 @@ If an unregister causes the current focused node to be removed, focus will be mo
 
 Unregistering the root node will cause the tree to become empty and also remove all overrides that have been set (see Overrides, below).
 
+### Unregistering Options
+
+A config object can be given to `unregisterNode(<nodeId>, <unregisterOptions>)` to force specific behaviour.
+
+- `forceRefocus:boolean` When `true`, the default behaviour of finding a new node to focus on if unregistering the current
+  focused node will continue to work as normal. This value also defaults to `true`. Pass as `false` to stop the auto-refocus
+  behaviour. Remember, if you are unregistering the current focused node, and passing `forceRefocus` as `false`, you need to manually call `assignFocus()` afterwards or the user will be left in limbo!
+
 ## Assigning Focus
 
 You can give focus to a particular node by calling `navigation.assignFocus()` with the node id
