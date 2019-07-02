@@ -4,6 +4,7 @@ const {
   Closest,
   isNodeFocusable,
   isDirectionAndOrientationMatching,
+  getDirectionForKeyCode,
   isNodeInPath,
   isNodeInPaths,
   _findChildWithMatchingIndexRange,
@@ -235,6 +236,16 @@ describe('_findChildWithMatchingIndexRange()', () => {
 
     expect(found).toEqual(undefined)
   })
+
+  it('does not have a child', () => {
+    const node = {
+      id: 'a'
+    }
+
+    const found = _findChildWithMatchingIndexRange(node, 6)
+
+    expect(found).toEqual(null)
+  })
 })
 
 describe('_findChildWithClosestIndex()', () => {
@@ -366,6 +377,16 @@ describe('_findChildWithClosestIndex()', () => {
 
     expect(found.id).toEqual('d')
   })
+
+  it('does not have any children', () => {
+    const node = {
+      id: 'root'
+    }
+
+    const found = _findChildWithClosestIndex(node, 1)
+
+    expect(found).toEqual(null)
+  })
 })
 
 describe('_findChildWithIndex()', () => {
@@ -460,6 +481,15 @@ describe('_findChildWithIndex()', () => {
     const found = _findChildWithIndex(node, 5)
     expect(found).toEqual(null)
   })
+
+  it('does not have any children', () => {
+    const node = {
+      id: 'root'
+    }
+
+    const found = _findChildWithIndex(node, 1)
+    expect(found).toEqual(null)
+  })
 })
 
 describe('isNodeInTree()', () => {
@@ -540,5 +570,16 @@ describe('isNodeInTree()', () => {
     }
 
     expect(isNodeInTree('node_x', tree)).toEqual(false)
+  })
+})
+
+describe('getDirectionForKeyCode()', () => {
+  it('get direction for known keycode', () => {
+    const direction = getDirectionForKeyCode(4)
+    expect(direction).toEqual('LEFT')
+  })
+  it('get direction for unknown keycode', () => {
+    const direction = getDirectionForKeyCode(999999999)
+    expect(direction).toEqual(null)
   })
 })
