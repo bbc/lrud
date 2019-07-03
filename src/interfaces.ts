@@ -31,3 +31,7 @@ export interface KeyEvent {
 export interface InsertTreeOptions {
     maintainIndex: boolean;
 }
+
+export interface UnregisterNodeOptions {
+    forceRefocus: boolean;
+}

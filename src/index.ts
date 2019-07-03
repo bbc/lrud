@@ -1,6 +1,6 @@
 import { Get } from './get'
 import { Set } from './set'
-import { Node, Override, KeyEvent, InsertTreeOptions } from './interfaces'
+import { Node, Override, KeyEvent, InsertTreeOptions, UnregisterNodeOptions} from './interfaces'
 
 import {
   isNodeFocusable,
@@ -201,16 +201,18 @@ export class Lrud {
    * 
    * @param {string} nodeId
    */
-  unregister(nodeId: string) {
-    this.unregisterNode(nodeId);
+  unregister(nodeId: string, unregisterOptions?: UnregisterNodeOptions) {
+    this.unregisterNode(nodeId, unregisterOptions);
   }
 
   /**
    * unregister a node from the navigation tree
    * 
    * @param {string} nodeId
+   * @param {object} unregisterOptions
+   * @param {boolean} unregisterOptions.forceRefocus if true, LRUD will attempt to re-focus on a new node if the currently focused node becomes unregistered due to the given node ID being unregistered
    */
-  unregisterNode(nodeId: string) {
+  unregisterNode(nodeId: string, unregisterOptions: UnregisterNodeOptions = { forceRefocus: true }) {
     if (nodeId === this.rootNodeId) {
       this.tree = {}
       this.nodePathList = []
@@ -261,11 +263,20 @@ export class Lrud {
     if (parentNode.activeChild && parentNode.activeChild === nodeId) {
       this.isIndexAlignMode = false;
       delete parentNode.activeChild
-      const top = this.climbUp(parentNode, '*')
-      if (top) {
-        const prev = this.getPrevChild(top)
-        const child = this.digDown(prev)
-        this.assignFocus(child.id)
+
+      if (unregisterOptions.forceRefocus) {
+        const top = this.climbUp(parentNode, '*')
+        if (top) {
+          const prev = this.getPrevChild(top)
+          if (isNodeFocusable(prev) || (prev && prev.children && Object.keys(prev.children).length)) {
+            const child = this.digDown(prev)
+            this.assignFocus(child.id)
+          }
+        }
+      } else {
+        this.currentFocusNode = undefined;
+        this.currentFocusNodeId = undefined;
+        this.currentFocusNodeIndex = undefined;
       }
     }
 
