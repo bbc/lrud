@@ -624,9 +624,11 @@ export class Lrud {
     const currentFocusNode = this.getNode(this.currentFocusNodeId)
 
     // if all we're doing is processing an enter, just run the `onSelect` function of the current node...
-    if (direction === 'ENTER' && currentFocusNode.onSelect) {
+    if (direction === 'ENTER') {
       this.emitter.emit('select', currentFocusNode);
-      currentFocusNode.onSelect(currentFocusNode)
+      if (currentFocusNode.onSelect) {
+        currentFocusNode.onSelect(currentFocusNode)
+      }
       return
     }
 
