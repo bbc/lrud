@@ -2,6 +2,8 @@
 
 Lrud handles the registering of new navigation nodes, the handling of key events, and the emitting of events based on internal state changes.
 
+These nodes represent 2D space in an "abstract" manner - there is no visual component to LRUD, but its data represents spatial grids, lists, and items.
+
 For some examples of common desired behaviour and how to achieve it, see our [common recipes](./recipes.md).
 
 ## Creating a new instance
@@ -44,7 +46,7 @@ Most options affect behaviour for when Lrud is handling key events and assigning
 
 `"vertical" | "horizontal"`
 
-Any node that has children should be registered with an orientation. A node of vertical orientation will handle up/down key events while horizontal will handle left/right key events.
+Any node that has children should be registered with an `orientation`. A node of vertical orientation will handle up/down key events while horizontal will handle left/right key events.
 
 ### `isWrapping`
 
@@ -72,13 +74,15 @@ navigation
     .registerNode('Z', { parent: 'root', index: 2 })
 ```
 
+`index` is used when calculating the "next" or "previous" node in a list.
+
 ### `isIndexAlign`
 
 `boolean`
 
 To be used in conjunction with orientation to give a node index alignment functionality.
 
-Index alignment ensures that when focus would move from one of this nodes descendants to another, Lrud will attempt to ensure that the focused node matches the index of the node that was left.
+Index alignment ensures that when focus would move from one of this nodes descendants to another, LRUD will attempt to ensure that the focused node matches the index of the node that was left, e.g to make 2 lists behave as a "grid".
 
 For further details, see the [docs on index alignment](./index-align.md).
 
@@ -94,7 +98,7 @@ For further details, see the [docs on index alignment](./index-align.md).
 
 ---
 
-Several functions can also be given as registration options to a node. These functions will be called at specific state change points for the node.
+Several functions can also be given as registration options to a node. These functions will be called at specific state change points for the node. See our [Process Lifecycles doc](./process-lifecycles.md) for further details on the "lifecycle" of a move event in LRUD.
 
 ### `onFocus`
 
@@ -164,7 +168,7 @@ You can give focus to a particular node by calling `navigation.assignFocus()` wi
 navigation.assignFocus('list')
 ```
 
-If the node that has been assigned focus is not focusable, LRUD will attempt to find the first active child of the node that _is_ focusable, and focus on that instead.
+If the node that has been assigned focus is **not** focusable, LRUD will attempt to find the first active child of the node that _is_ focusable, and focus on that instead.
 
 ## Handling Key Events
 
@@ -193,7 +197,7 @@ A special event of `move` is emitted after handling a key event.
 
 The `move` event callback is called with a move event in the following shape:
 
-```json
+```js
 {
     leave: <node>       // the node that was focused that we're now leaving
     enter: <node>       // the node that is now focused that we're entering
