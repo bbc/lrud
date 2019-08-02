@@ -13,6 +13,10 @@ export interface Node {
     isIndexAlign?: boolean;
     onLeave?: Function;
     onEnter?: Function;
+    shouldCancelLeave?: (leave: Node, enter: Node) => Boolean;
+    onLeaveCancelled?: Function;
+    shouldCancelEnter?: (leave: Node, enter: Node) => Boolean;
+    onEnterCancelled?: Function;
     activeChild?: string;
     children?: any;
 }
