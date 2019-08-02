@@ -142,6 +142,30 @@ If given, the `onLeave` function will be called when the node was focused and th
 
 If given, the `onEnter` function will be called when the node was not focused and the handling of a key event means the node is now focused.
 
+### `shouldCancelLeave`
+
+`function`
+
+If given, the `shouldCancelLeave` function will be called when a move is being processed, and the node is being _left_. If `shouldCancelLeave` returns `true`, the move will be cancelled.
+
+### `shouldCancelEnter`
+
+`function`
+
+If given, the `shouldCancelEnter` function will be called when a move is being processed, and the node is being _entered_. If `shouldCancelEnter` returns `true`, the move will be cancelled.
+
+### `onLeaveCancelled`
+
+`function`
+
+If given, the `onLeaveCancelled` function will be called if this node has a matching `shouldCancelLeave`, and when _that_ function returns `true`.
+
+### `onEnterCancelled`
+
+`function`
+
+If given, the `onEnterCancelled` function will be called if this node has a matching `shouldCancelEnter`, and when _that_ function returns `true`.
+
 ## Unregistering a node
 
 A node can be removed from the navigation tree by calling `navigation.unregisterNode()` with the id of the node
@@ -190,6 +214,7 @@ Lrud emits events in response to key events. See the [TAL docs](http://bbc.githu
 * `navigation.on('active', function)` - The node has become active.
 * `navigation.on('inactive', function)` - The node has become inactive.
 * `navigation.on('select', function)` - The current focused node was selected.
+* `navigation.on('cancelled', function)` - A movement has been cancelled.
 
 A special event of `move` is emitted after handling a key event.
 
