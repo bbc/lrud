@@ -349,4 +349,48 @@ describe('event scenarios', () => {
 
     expect(inactiveChild).toEqual('row-a')
   })
+
+  test('node onSelect', () => {
+    const navigation = new Lrud()
+    const onSelectMock = jest.fn()
+
+    navigation.registerNode('root')
+      .registerNode('a', { isFocusable: true, onSelect: onSelectMock })
+
+    navigation.assignFocus('a')
+
+    navigation.handleKeyEvent({ direction: 'ENTER' })
+
+    expect(onSelectMock.mock.calls.length).toEqual(1)
+  })
+
+  test('instance emit select', () => {
+    const navigation = new Lrud()
+    const onSelectMock = jest.fn()
+
+    navigation.registerNode('root')
+      .registerNode('a', { isFocusable: true })
+
+    navigation.assignFocus('a')
+    navigation.on('select', onSelectMock)
+
+    navigation.handleKeyEvent({ direction: 'ENTER' })
+
+    expect(onSelectMock.mock.calls.length).toEqual(1)
+  })
+
+  test('node onSelect & instance emit select', () => {
+    const navigation = new Lrud()
+    const onSelectMock = jest.fn()
+
+    navigation.registerNode('root')
+      .registerNode('a', { isFocusable: true, onSelect: onSelectMock })
+
+    navigation.assignFocus('a')
+    navigation.on('select', onSelectMock)
+
+    navigation.handleKeyEvent({ direction: 'ENTER' })
+
+    expect(onSelectMock.mock.calls.length).toEqual(2)
+  })
 })
