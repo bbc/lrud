@@ -11,8 +11,8 @@ export interface Node {
     isWrapping?: boolean;
     orientation?: string;
     isIndexAlign?: boolean;
-    onLeave?: Function;
-    onEnter?: Function;
+    onLeave?: (leave: Node) => void;
+    onEnter?: (ener: Node) => void;
     shouldCancelLeave?: (leave: Node, enter: Node) => Boolean;
     onLeaveCancelled?: Function;
     shouldCancelEnter?: (leave: Node, enter: Node) => Boolean;

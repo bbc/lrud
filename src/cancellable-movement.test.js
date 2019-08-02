@@ -68,4 +68,60 @@ describe('cancellable movement - functions on the node', () => {
     expect(onCancelledMock.mock.calls.length).toEqual(2)
     expect(onCancelledNavigationMock.mock.calls.length).toEqual(2)
   })
+
+  it('should not cancel when shouldCancelLeave returns false', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'horizontal' })
+      .registerNode('a', { isFocusable: true })
+      .registerNode('b', {
+        isFocusable: true,
+        shouldCancelLeave: (leave, enter) => {
+          if (leave.id === 'x') {
+            return true
+          }
+        }
+      })
+      .registerNode('c', { isFocusable: true })
+      .registerNode('d', { isFocusable: true })
+
+    navigation.assignFocus('a')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+    expect(navigation.currentFocusNodeId).toEqual('b')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+    expect(navigation.currentFocusNodeId).toEqual('c')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+    expect(navigation.currentFocusNodeId).toEqual('d')
+  })
+
+  it('should not cancel when shouldCancelEnter returns false', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'horizontal' })
+      .registerNode('a', { isFocusable: true })
+      .registerNode('b', {
+        isFocusable: true,
+        shouldCancelEnter: (leave, enter) => {
+          if (leave.id === 'x') {
+            return true
+          }
+        }
+      })
+      .registerNode('c', { isFocusable: true })
+      .registerNode('d', { isFocusable: true })
+
+    navigation.assignFocus('a')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+    expect(navigation.currentFocusNodeId).toEqual('b')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+    expect(navigation.currentFocusNodeId).toEqual('c')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+    expect(navigation.currentFocusNodeId).toEqual('d')
+  })
 })
