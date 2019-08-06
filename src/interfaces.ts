@@ -15,6 +15,7 @@ export interface Node {
     onEnter?: Function;
     activeChild?: string;
     children?: any;
+    onSelect?: Function
 }
 
 export interface Override {
