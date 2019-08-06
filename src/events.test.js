@@ -361,7 +361,7 @@ describe('event scenarios', () => {
 
     navigation.handleKeyEvent({ direction: 'ENTER' })
 
-    expect(onSelectMock.mock.calls.length).toEqual(1)
+    expect(onSelectMock).toBeCalledTimes(1)
   })
 
   test('instance emit select', () => {
@@ -376,7 +376,7 @@ describe('event scenarios', () => {
 
     navigation.handleKeyEvent({ direction: 'ENTER' })
 
-    expect(onSelectMock.mock.calls.length).toEqual(1)
+    expect(onSelectMock).toBeCalledTimes(1)
   })
 
   test('node onSelect & instance emit select', () => {
@@ -391,6 +391,6 @@ describe('event scenarios', () => {
 
     navigation.handleKeyEvent({ direction: 'ENTER' })
 
-    expect(onSelectMock.mock.calls.length).toEqual(2)
+    expect(onSelectMock).toBeCalledTimes(2)
   })
 })
