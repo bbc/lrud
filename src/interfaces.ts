@@ -11,8 +11,12 @@ export interface Node {
     isWrapping?: boolean;
     orientation?: string;
     isIndexAlign?: boolean;
-    onLeave?: Function;
-    onEnter?: Function;
+    onLeave?: (leave: Node) => void;
+    onEnter?: (enter: Node) => void;
+    shouldCancelLeave?: (leave: Node, enter: Node) => Boolean;
+    onLeaveCancelled?: Function;
+    shouldCancelEnter?: (leave: Node, enter: Node) => Boolean;
+    onEnterCancelled?: Function;
     activeChild?: string;
     children?: any;
     onSelect?: Function

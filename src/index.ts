@@ -649,6 +649,34 @@ export class Lrud {
     // ...and depending on if we're able to find a child, dig down from the child or from the original top...
     const focusableNode = (nextChild) ? this.digDown(nextChild, direction) : this.digDown(topNode, direction)
 
+    // ...give an opportunity for the move to be cancelled by the leaving node
+    if (currentFocusNode.shouldCancelLeave) {
+      if (currentFocusNode.shouldCancelLeave(currentFocusNode, focusableNode)) {
+        if (currentFocusNode.onLeaveCancelled) {
+          currentFocusNode.onLeaveCancelled(currentFocusNode, focusableNode);
+        }
+        this.emitter.emit('cancelled', {
+          leave: currentFocusNode,
+          enter: focusableNode
+        });
+        return currentFocusNode
+      }
+    }
+
+    // ...give an opportunity for the move to be cancelled by the entering node
+    if (focusableNode.shouldCancelEnter) {
+      if (focusableNode.shouldCancelEnter(currentFocusNode, focusableNode)) {
+        if (focusableNode.onEnterCancelled) {
+          focusableNode.onEnterCancelled(currentFocusNode, focusableNode);
+        }
+        this.emitter.emit('cancelled', {
+          leave: currentFocusNode,
+          enter: focusableNode
+        });
+        return currentFocusNode
+      }
+    }
+
     // ...and then assign focus
     this.assignFocus(focusableNode.id)
 
