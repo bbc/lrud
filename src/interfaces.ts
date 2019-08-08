@@ -12,7 +12,7 @@ export interface Node {
     orientation?: string;
     isIndexAlign?: boolean;
     onLeave?: (leave: Node) => void;
-    onEnter?: (ener: Node) => void;
+    onEnter?: (enter: Node) => void;
     shouldCancelLeave?: (leave: Node, enter: Node) => Boolean;
     onLeaveCancelled?: Function;
     shouldCancelEnter?: (leave: Node, enter: Node) => Boolean;
