@@ -104,4 +104,68 @@ describe('Focusing on empty nodes', () => {
       nav.assignFocus('root')
     }).toThrow()
   })
+
+  it('should handle a move to an empty branch', () => {
+    const nav = new Lrud()
+
+    nav.registerNode('root', {
+      orientation: 'vertical'
+    })
+
+    nav.registerNode('node1', {
+      orientation: 'horizontal',
+      parent: 'root'
+    })
+
+    nav.registerNode('node2', {
+      orientation: 'horizontal',
+      parent: 'root'
+    })
+
+    nav.register('item1', {
+      parent: 'node1',
+      selectAction: {}
+    })
+
+    nav.assignFocus('root')
+
+    nav.handleKeyEvent({ direction: 'down' })
+  })
+
+  it('should jump over empty branches when moving', () => {
+    const nav = new Lrud()
+
+    nav.registerNode('root', {
+      orientation: 'vertical'
+    })
+
+    nav.registerNode('node1', {
+      orientation: 'horizontal',
+      parent: 'root'
+    })
+
+    nav.registerNode('node2', {
+      orientation: 'horizontal',
+      parent: 'root'
+    })
+
+    nav.registerNode('node3', {
+      orientation: 'horizontal',
+      parent: 'root'
+    })
+
+    nav.register('item1', {
+      parent: 'node1',
+      isFocusable: true
+    })
+
+    nav.register('item3', {
+      parent: 'node3',
+      isFocusable: true
+    })
+
+    nav.assignFocus('root')
+
+    nav.handleKeyEvent({ direction: 'down' })
+  })
 })
