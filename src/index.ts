@@ -350,7 +350,7 @@ export class Lrud {
    *
    * @param {string} nodeId node id
    */
-  getNode(nodeId: string) {
+  getNode(nodeId: string): Node {
     return Get(this.tree, (this.getPathForNodeId(nodeId)))
   }
 
@@ -492,18 +492,21 @@ export class Lrud {
       return this.digDown(_findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
     }
 
+    if (!isNodeFocusable(node) && !this.doesNodeHaveFocusableChildren(node)) {
+      const parentNode = this.getNode(node.parent);
+      parentNode.activeChild = node.id
+      const nextSiblingFromNode = this.getNextChildInDirection(parentNode, direction);
+      return this.digDown(nextSiblingFromNode, direction)
+    }
+
     // if we dont have an active child, use the first child
     if (!node.activeChild) {
       node.activeChild = this.getNodeFirstChild(node).id
     }
 
-    const activeChild = node.children[node.activeChild]
+    let nextChild = node.children[node.activeChild]
 
-    if (isNodeFocusable(activeChild)) {
-      return activeChild
-    }
-
-    return this.digDown(activeChild, direction)
+    return (isNodeFocusable(nextChild)) ? nextChild : this.digDown(nextChild, direction)
   }
 
   /**
@@ -514,7 +517,11 @@ export class Lrud {
    * @param {object} node
    * @param {string} direction
    */
-  getNextChildInDirection(node: Node, direction: string) {
+  getNextChildInDirection(node: Node, direction: string = null) {
+    if (!direction) {
+      return this.getNextChild(node)
+    }
+
     direction = direction.toUpperCase()
 
     if (node.orientation === 'horizontal' && direction === 'RIGHT') {
@@ -761,6 +768,10 @@ export class Lrud {
   assignFocus(nodeId: string) {
     let node = this.getNode(nodeId)
 
+    if (!this.doesNodeHaveFocusableChildren(node)) {
+      throw new Error(`"${node.id}" does not have focusable children. Are you trying to assign focus to ${node.id}?`)
+    }
+
     if (!isNodeFocusable(node)) {
       node = this.digDown(node)
     }
@@ -862,5 +873,9 @@ export class Lrud {
     if (options.maintainIndex) {
       this.reindexChildrenOfNode(parentNode);
     }
+  }
+
+  doesNodeHaveFocusableChildren(node: Node) : boolean {
+    return this.focusableNodePathList.some(p => p.includes(`${node.id}.`))
   }
 }
