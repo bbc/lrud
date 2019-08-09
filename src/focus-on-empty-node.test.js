@@ -105,7 +105,7 @@ describe('Focusing on empty nodes', () => {
     }).toThrow()
   })
 
-  it('should handle a move to an empty branch', () => {
+  it('should handle a move to an empty branch - vertical - dont change the focus', () => {
     const nav = new Lrud()
 
     nav.registerNode('root', {
@@ -130,9 +130,42 @@ describe('Focusing on empty nodes', () => {
     nav.assignFocus('root')
 
     nav.handleKeyEvent({ direction: 'down' })
+
+    expect(nav.currentFocusNodeId).toEqual('item1')
   })
 
-  it('should jump over empty branches when moving', () => {
+  it('should handle a move to an empty branch - vertical - dont change the focus', () => {
+    const nav = new Lrud()
+
+    nav.registerNode('root', {
+      orientation: 'horizontal'
+    })
+
+    nav.registerNode('node1', {
+      orientation: 'horizontal',
+      parent: 'root'
+    })
+
+    nav.registerNode('node2', {
+      orientation: 'horizontal',
+      parent: 'root'
+    })
+
+    nav.register('item1', {
+      parent: 'node1',
+      selectAction: {}
+    })
+
+    nav.assignFocus('root')
+
+    expect(nav.currentFocusNodeId).toEqual('item1')
+
+    nav.handleKeyEvent({ direction: 'right' })
+
+    expect(nav.currentFocusNodeId).toEqual('item1')
+  })
+
+  it('should jump over empty branches when moving - vertical', () => {
     const nav = new Lrud()
 
     nav.registerNode('root', {
@@ -167,5 +200,53 @@ describe('Focusing on empty nodes', () => {
     nav.assignFocus('root')
 
     nav.handleKeyEvent({ direction: 'down' })
+  })
+
+  it('should jump over multiple empty branches - vertical', () => {
+    const nav = new Lrud()
+
+    nav.registerNode('root', { orientation: 'vertical' })
+
+    nav
+      .registerNode('branch1', { orientation: 'horizontal' })
+      .registerNode('item1', { parent: 'branch1', isFocusable: true })
+
+    nav.registerNode('branch2', { orientation: 'horizontal' })
+    nav.registerNode('branch3', { orientation: 'horizontal' })
+
+    nav
+      .registerNode('branch4', { orientation: 'horizontal' })
+      .registerNode('item4', { parent: 'branch4', isFocusable: true })
+
+    nav.assignFocus('root')
+    expect(nav.currentFocusNodeId).toEqual('item1')
+
+    nav.handleKeyEvent({ direction: 'down' })
+
+    expect(nav.currentFocusNodeId).toEqual('item4')
+  })
+
+  it('should jump over multiple empty branches - horizontal', () => {
+    const nav = new Lrud()
+
+    nav.registerNode('root', { orientation: 'horizontal' })
+
+    nav
+      .registerNode('branch1', { orientation: 'horizontal' })
+      .registerNode('item1', { parent: 'branch1', isFocusable: true })
+
+    nav.registerNode('branch2', { orientation: 'horizontal' })
+    nav.registerNode('branch3', { orientation: 'horizontal' })
+
+    nav
+      .registerNode('branch4', { orientation: 'horizontal' })
+      .registerNode('item4', { parent: 'branch4', isFocusable: true })
+
+    nav.assignFocus('root')
+    expect(nav.currentFocusNodeId).toEqual('item1')
+
+    nav.handleKeyEvent({ direction: 'right' })
+
+    expect(nav.currentFocusNodeId).toEqual('item4')
   })
 })
