@@ -496,6 +496,10 @@ export class Lrud {
       const parentNode = this.getNode(node.parent);
       parentNode.activeChild = node.id
       const nextSiblingFromNode = this.getNextChildInDirection(parentNode, direction);
+      // if the next sibling is ME, we're in an infinite loop - just return null
+      if (nextSiblingFromNode.id === node.id) {
+        return null
+      }
       return this.digDown(nextSiblingFromNode, direction)
     }
 
@@ -517,7 +521,7 @@ export class Lrud {
    * @param {object} node
    * @param {string} direction
    */
-  getNextChildInDirection(node: Node, direction: string = null) {
+  getNextChildInDirection(node: Node, direction: string = null): Node {
     if (!direction) {
       return this.getNextChild(node)
     }
@@ -656,6 +660,10 @@ export class Lrud {
     // ...and depending on if we're able to find a child, dig down from the child or from the original top...
     const focusableNode = (nextChild) ? this.digDown(nextChild, direction) : this.digDown(topNode, direction)
 
+    if (!focusableNode) {
+      return
+    }
+
     // ...give an opportunity for the move to be cancelled by the leaving node
     if (currentFocusNode.shouldCancelLeave) {
       if (currentFocusNode.shouldCancelLeave(currentFocusNode, focusableNode)) {
@@ -768,7 +776,7 @@ export class Lrud {
   assignFocus(nodeId: string) {
     let node = this.getNode(nodeId)
 
-    if (!this.doesNodeHaveFocusableChildren(node)) {
+    if (node.children && !this.doesNodeHaveFocusableChildren(node)) {
       throw new Error(`"${node.id}" does not have focusable children. Are you trying to assign focus to ${node.id}?`)
     }
 
