@@ -350,7 +350,7 @@ export class Lrud {
    *
    * @param {string} nodeId node id
    */
-  getNode(nodeId: string) {
+  getNode(nodeId: string): Node {
     return Get(this.tree, (this.getPathForNodeId(nodeId)))
   }
 
@@ -492,18 +492,25 @@ export class Lrud {
       return this.digDown(_findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
     }
 
+    if (!isNodeFocusable(node) && !this.doesNodeHaveFocusableChildren(node)) {
+      const parentNode = this.getNode(node.parent);
+      parentNode.activeChild = node.id
+      const nextSiblingFromNode = this.getNextChildInDirection(parentNode, direction);
+      // if the next sibling is ME, we're in an infinite loop - just return null
+      if (nextSiblingFromNode.id === node.id) {
+        return null
+      }
+      return this.digDown(nextSiblingFromNode, direction)
+    }
+
     // if we dont have an active child, use the first child
     if (!node.activeChild) {
       node.activeChild = this.getNodeFirstChild(node).id
     }
 
-    const activeChild = node.children[node.activeChild]
+    let nextChild = node.children[node.activeChild]
 
-    if (isNodeFocusable(activeChild)) {
-      return activeChild
-    }
-
-    return this.digDown(activeChild, direction)
+    return (isNodeFocusable(nextChild)) ? nextChild : this.digDown(nextChild, direction)
   }
 
   /**
@@ -514,7 +521,11 @@ export class Lrud {
    * @param {object} node
    * @param {string} direction
    */
-  getNextChildInDirection(node: Node, direction: string) {
+  getNextChildInDirection(node: Node, direction: string = null): Node {
+    if (!direction) {
+      return this.getNextChild(node)
+    }
+
     direction = direction.toUpperCase()
 
     if (node.orientation === 'horizontal' && direction === 'RIGHT') {
@@ -649,6 +660,10 @@ export class Lrud {
     // ...and depending on if we're able to find a child, dig down from the child or from the original top...
     const focusableNode = (nextChild) ? this.digDown(nextChild, direction) : this.digDown(topNode, direction)
 
+    if (!focusableNode) {
+      return
+    }
+
     // ...give an opportunity for the move to be cancelled by the leaving node
     if (currentFocusNode.shouldCancelLeave) {
       if (currentFocusNode.shouldCancelLeave(currentFocusNode, focusableNode)) {
@@ -761,6 +776,10 @@ export class Lrud {
   assignFocus(nodeId: string) {
     let node = this.getNode(nodeId)
 
+    if (node.children && !this.doesNodeHaveFocusableChildren(node)) {
+      throw new Error(`"${node.id}" does not have focusable children. Are you trying to assign focus to ${node.id}?`)
+    }
+
     if (!isNodeFocusable(node)) {
       node = this.digDown(node)
     }
@@ -862,5 +881,9 @@ export class Lrud {
     if (options.maintainIndex) {
       this.reindexChildrenOfNode(parentNode);
     }
+  }
+
+  doesNodeHaveFocusableChildren(node: Node) : boolean {
+    return this.focusableNodePathList.some(p => p.includes(`${node.id}.`))
   }
 }

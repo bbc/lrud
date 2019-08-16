@@ -19,7 +19,12 @@ export interface Node {
     onEnterCancelled?: Function;
     activeChild?: string;
     children?: any;
-    onSelect?: Function
+    onSelect?: Function;
+    onInactive?: Function;
+    onActive?: Function;
+    onActiveChildChange?: Function;
+    onBlur?: Function;
+    onFocus?: Function;
 }
 
 export interface Override {
