@@ -25,6 +25,7 @@ export interface Node {
     onActiveChildChange?: Function;
     onBlur?: Function;
     onFocus?: Function;
+    onMove?: Function;
 }
 
 export interface Override {

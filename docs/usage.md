@@ -1,6 +1,6 @@
 # Usage
 
-Lrud handles the registering of new navigation nodes, the handling of key events, and the emitting of events based on internal state changes.
+LRUD handles the registering of new navigation nodes, the handling of key events, and the emitting of events based on internal state changes.
 
 These nodes represent 2D space in an "abstract" manner - there is no visual component to LRUD, but its data represents spatial grids, lists, and items.
 
@@ -40,7 +40,7 @@ Nodes must be registered with _unique_ IDs. If `registerNode()` is called with a
 
 ## Registration options
 
-Most options affect behaviour for when Lrud is handling key events and assigning focus.
+Most options affect behaviour for when LRUD is handling key events and assigning focus.
 
 ### `orientation`
 
@@ -196,7 +196,11 @@ If the node that has been assigned focus is **not** focusable, LRUD will attempt
 
 ## Handling Key Events
 
-You can pass key events into Lrud using the `navigation.handleKeyEvent` function
+Once focus has been assigned against the LRUD instance, LRUD can begin handling key events.
+
+Every key event represents a user moving the "cursor"/"focus" in a given _direction_. The direction is based on the `event.keyCode` value - LRUD maintains an internal mapping of `keyCode` values to semantic directions.
+
+You can pass key events into LRUD using the `navigation.handleKeyEvent` function:
 
 ```js
 document.onkeydown = function (event) {
@@ -207,7 +211,7 @@ document.onkeydown = function (event) {
 
 ## Events
 
-Lrud emits events in response to key events. See the [TAL docs](http://bbc.github.io/tal/widgets/focus-management.html) for an explanation of 'focused' and 'active' nodes. Each of these callbacks is called with the node that changed state.
+LRUD emits events in response to key events. See the [TAL docs](http://bbc.github.io/tal/widgets/focus-management.html) for an explanation of 'focused' and 'active' nodes. Each of these callbacks is called with the node that changed state.
 
 * `navigation.on('focus', function)` - Focus was given to a node.
 * `navigation.on('blur', function)` - Focus was taken from a node.
@@ -228,6 +232,17 @@ The `move` event callback is called with a move event in the following shape:
     enter: <node>       // the node that is now focused that we're entering
     offset: -1 : 1      // 1 if direction was RIGHT or DOWN, -1 if direction was LEFT or UP
 }
+```
+
+Common usages for handling this move event include changing the style of a given DOM node to match a "focus" style, or to handle a DOM animation between the `leave` and `enter` nodes.
+
+```js
+
+navigation.on('move', moveEvent => {
+  const focusedDomNode = document.getElementById(moveEvent.enter.id);
+  focusedDomNode.classList.add('focused');
+})
+
 ```
 
 ## Overrides
@@ -273,7 +288,7 @@ instance.registerTree(tree);
 
 ## `insertTree()` and nested tree registration
 
-LRUD also supports the ability to register a tree/insert a tree into an already existing branch.
+LRUD also supports the ability to register a tree/insert a tree into an already existing node branch.
 
 If no parent is given on the top level node of the passed tree, the tree will be inserted under the root node, as per standard `registerNode()` behaviour.
 
