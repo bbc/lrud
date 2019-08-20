@@ -90,7 +90,7 @@ export class Lrud {
   /**
    * return the root node
    */
-  getRootNode() {
+  getRootNode(): Node {
     const node = this.getNode(this.rootNodeId)
 
     if (!node) {
@@ -105,7 +105,7 @@ export class Lrud {
    *
    * @param {string} nodeId
    */
-  getPathForNodeId(nodeId: string) {
+  getPathForNodeId(nodeId: string): string {
     if (nodeId === this.rootNodeId) {
       return this.rootNodeId
     }
@@ -359,7 +359,7 @@ export class Lrud {
    *
    * @param {string} nodeId node id
    */
-  pickNode(nodeId: string) {
+  pickNode(nodeId: string): Node {
     const node = this.getNode(nodeId)
 
     if (!node) {
@@ -379,7 +379,7 @@ export class Lrud {
    * @param {object} node
    * @param {string} direction
    */
-  climbUp(node: Node, direction: string) {
+  climbUp(node: Node, direction: string): Node {
     if (!node) {
       return null
     }
@@ -549,7 +549,7 @@ export class Lrud {
    *
    * @param {object} node
    */
-  getNextChild(node: Node) {
+  getNextChild(node: Node): Node {
     if (!node.activeChild) {
       node.activeChild = this.getNodeFirstChild(node).id
     }
@@ -571,9 +571,10 @@ export class Lrud {
 
   /**
    * get the semantic "previous" child for a node
+   * 
    * @param {object} node
    */
-  getPrevChild(node: Node) {
+  getPrevChild(node: Node): Node {
     if (!node.activeChild) {
       node.activeChild = this.getNodeFirstChild(node).id
     }
@@ -596,9 +597,10 @@ export class Lrud {
 
   /**
    * get the first child of a node, based on index
+   * 
    * @param {object} node
    */
-  getNodeFirstChild(node: Node) {
+  getNodeFirstChild(node: Node): Node {
     if (!node.children) {
       return undefined
     }
@@ -610,9 +612,10 @@ export class Lrud {
 
   /**
    * get the last child of a node, based on index
+   * 
    * @param {object} node
    */
-  getNodeLastChild(node: Node) {
+  getNodeLastChild(node: Node): Node {
     if (!node.children) {
       return undefined
     }
@@ -658,7 +661,7 @@ export class Lrud {
     const nextChild = this.getNextChildInDirection(topNode, direction)
 
     // ...and depending on if we're able to find a child, dig down from the child or from the original top...
-    const focusableNode = (nextChild) ? this.digDown(nextChild, direction) : this.digDown(topNode, direction)
+    const focusableNode: Node = (nextChild) ? this.digDown(nextChild, direction) : this.digDown(topNode, direction)
 
     if (!focusableNode) {
       return

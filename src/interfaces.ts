@@ -14,9 +14,9 @@ export interface Node {
     onLeave?: (leave: Node) => void;
     onEnter?: (enter: Node) => void;
     shouldCancelLeave?: (leave: Node, enter: Node) => Boolean;
-    onLeaveCancelled?: Function;
+    onLeaveCancelled?: (currentFocusNode: Node, focusableNode: Node) => void;
     shouldCancelEnter?: (leave: Node, enter: Node) => Boolean;
-    onEnterCancelled?: Function;
+    onEnterCancelled?: (currentFocusNode: Node, focusableNode: Node) => void;
     activeChild?: string;
     children?: any;
     onSelect?: Function;
