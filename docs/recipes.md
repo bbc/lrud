@@ -82,7 +82,7 @@ navigation
   .registerNode('grid-b-row-2-col-2', { parent: 'grid-b-row-2', isFocusable: true })
 ```
 
-### Recipe 4 - Cancelling moves due to external business logic
+## Recipe 4 - Cancelling moves due to external business logic
 
 Perhaps you have a system where you only want a user to be able to navigate to a specific section of a page/app if some external logic authorizes and allows that move.
 
