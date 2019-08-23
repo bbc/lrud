@@ -48,7 +48,6 @@ navigation
   .registerNode('row-2', { parent: 'root', orientation: 'horizontal', isWrapping: true })
   .registerNode('row-2-item-1', { parent: 'row-2', isFocusable: true })
   .registerNode('row-2-item-2', { parent: 'row-2', isFocusable: true })
-
 ```
 
 ## Recipe 3 - Moving between nested `isIndexAlign: true` nodes e.g nested grids
@@ -82,3 +81,31 @@ navigation
   .registerNode('grid-b-row-2-col-1', { parent: 'grid-b-row-2', isFocusable: true })
   .registerNode('grid-b-row-2-col-2', { parent: 'grid-b-row-2', isFocusable: true })
 ```
+
+### Recipe 4 - Cancelling moves due to external business logic
+
+Perhaps you have a system where you only want a user to be able to navigate to a specific section of a page/app if some external logic authorizes and allows that move.
+
+Thanks to `shouldCancel` functions, we can block that movement.
+
+```js
+const shouldCancelEnterItem = () => {
+  return !userPermissions.canSelectItem();
+}
+
+navigation.registerNode('root', { orientation: 'horizontal' })
+
+navigation
+  .registerNode('left-col', { orientation: 'vertical' })
+  .registerNode('item-1', { parent: 'left-col', isFocusable: true })
+  .registerNode('item-2', { parent: 'left-col', isFocusable: true })
+
+navigation
+  .registerNode('right-col', { orientation: 'vertical' })
+  .registerNode('item-a', { parent: 'right-col', shouldCancelEnter: shouldCancelEnterItem, isFocusable: true })
+  .registerNode('item-b', { parent: 'right-col', shouldCancelEnter: shouldCancelEnterItem, isFocusable: true })
+
+navigation.assignFocus('item-1')
+```
+
+With the setup above, if the user attempted to select `item-a`, or `item-b`, `shouldCancelEnterItem()` would be run. If this function returned `true`, that movement would be blocked, and focus would remain on `item-1`.
