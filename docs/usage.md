@@ -48,11 +48,31 @@ Most options affect behaviour for when LRUD is handling key events and assigning
 
 Any node that has children should be registered with an `orientation`. A node of vertical orientation will handle up/down key events while horizontal will handle left/right key events.
 
+```js
+navigation
+    .registerNode('row', { orientation: 'horizontal' })
+    .registerNode('item-1', { parent: 'row', isFocusable: true })
+    .registerNode('item-2', { parent: 'row', isFocusable: true })
+    .registerNode('item-3', { parent: 'row', isFocusable: true })
+```
+
+If focus was on `item-2`, a `left` keypress will put focus to `item-1`, and `right` keypress will put focus to `item-3`. This is because the `row` is set to `orientation: horizontal`. If the `row` was set to `orientation: vertical`, it would respond to key presses of `up` and `down`, respectively.
+
 ### `isWrapping`
 
 `boolean`
 
 Used in conjunction with orientation to make a list wrap at the top/bottom or left/right depending on orientation.
+
+```js
+navigation
+    .registerNode('row', { orientation: 'horizontal', isWrapping: true })
+    .registerNode('item-1', { parent: 'row', isFocusable: true })
+    .registerNode('item-2', { parent: 'row', isFocusable: true })
+    .registerNode('item-3', { parent: 'row', isFocusable: true })
+```
+
+In the above example, if the user was focused on `item-3`, and LRUD handled an event with a direction of `right`, usually focus would remain on `item-3`. However, because the `row` is set to `isWrapping: true`, focus will actually reset to `item-1`.
 
 ### `index`
 

@@ -32,7 +32,26 @@ navigation
   .registerNode('Delete', { parent: 'row-3', indexRange: [4, 6], isFocusable: true })   // these buttons are wider, so are given index ranges
 ```
 
-## Recipe 2 - Moving between nested `isIndexAlign: true` nodes e.g nested grids
+## Recipe 2 - A series of wrapping rows
+
+Representing multiple horizontal rows of content that a user could be browsing, where navigating past the end of a row should return the user focus to the start of that row. _But_, the rows are _not_ a grid, and going down from the middle of one row should put the user focus to the start of the next row.
+
+```js
+navigation.registerNode('root', { orientation: 'vertical' })
+
+navigation
+  .registerNode('row-1', { parent: 'root', orientation: 'horizontal', isWrapping: true })
+  .registerNode('row-1-item-1', { parent: 'row-1', isFocusable: true })
+  .registerNode('row-1-item-2', { parent: 'row-1', isFocusable: true })
+
+navigation
+  .registerNode('row-2', { parent: 'root', orientation: 'horizontal', isWrapping: true })
+  .registerNode('row-2-item-1', { parent: 'row-2', isFocusable: true })
+  .registerNode('row-2-item-2', { parent: 'row-2', isFocusable: true })
+
+```
+
+## Recipe 3 - Moving between nested `isIndexAlign: true` nodes e.g nested grids
 
 See `docs/test-diagrams/fig-2.png` for the diagram of how this looks rendered out.
 
