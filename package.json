@@ -2,8 +2,9 @@
   "name": "lrud",
   "version": "3.7.0",
   "description": "Left, Right, Up, Down. A spatial navigation library for devices with input via directional controls",
-  "main": "dist/index.min.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.min.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
   "homepage": "https://github.com/bbc/lrud",
   "license": "Apache-2.0",
   "files": [
@@ -34,15 +35,15 @@
     "eslint-plugin-standard": "^3.1.0",
     "jest": "^24.7.1",
     "rimraf": "^2.6.2",
-    "rollup": "^0.58.2",
+    "rollup": "^1.25.1",
     "rollup-plugin-commonjs": "^9.1.2",
-    "rollup-plugin-node-resolve": "^3.3.0",
+    "rollup-plugin-node-resolve": "^4.2.4",
     "rollup-plugin-typescript": "^1.0.1",
     "rollup-plugin-typescript2": "^0.21.0",
+    "rollup-plugin-uglify": "^6.0.3",
     "ts-jest": "^24.0.2",
     "tslib": "^1.9.3",
-    "typescript": "^3.4.5",
-    "uglify-js": "^3.5.10"
+    "typescript": "^3.4.5"
   },
   "dependencies": {
     "mitt": "^1.1.3"
@@ -55,10 +56,8 @@
     "test": "npm run build && jest",
     "test:verbose": "jest --verbose",
     "test:coverage": "jest --coverage",
-    "minify": "uglifyjs dist/index.js --compress --mangle -o dist/index.min.js",
     "prebuild": "npm run clean",
     "build": "rollup -c",
-    "postbuild": "npx tsc && npm run minify",
     "watch": "npm run build -- -w"
   }
 }

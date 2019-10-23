@@ -1,21 +1,41 @@
-import typescript from 'rollup-plugin-typescript2'
-import pkg from './package.json'
+import typescriptPlugin from 'rollup-plugin-typescript2'
 import nodeResolve from 'rollup-plugin-node-resolve'
-export default {
-  input: 'src/index.ts',
-  output: [
-    {
-      file: 'dist/index.js',
+import { uglify } from 'rollup-plugin-uglify'
+
+export default [
+  {
+    input: 'src/index.ts',
+    output: {
+      file: 'dist/cjs/index.js',
       format: 'cjs'
-    }
-  ],
-  external: [
-    ...Object.keys(pkg.peerDependencies || {})
-  ],
-  plugins: [
-    typescript({
-      typescript: require('typescript')
-    }),
-    nodeResolve()
-  ]
-}
+    },
+    plugins: [
+      typescriptPlugin({
+        useTsconfigDeclarationDir: true
+      }),
+      nodeResolve()
+    ]
+  },
+  {
+    input: 'dist/cjs/index.js',
+    output: {
+      file: 'dist/cjs/index.min.js',
+      format: 'cjs'
+    },
+    plugins: [
+      uglify()
+    ]
+  },
+  {
+    input: 'src/index.ts',
+    output: {
+      file: 'dist/esm/index.js',
+      format: 'esm'
+    },
+    plugins: [
+      typescriptPlugin({
+        useTsconfigDeclarationDir: true
+      })
+    ]
+  }
+]
