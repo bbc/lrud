@@ -6,7 +6,7 @@ We want to use Lrud as a `tap-static` module, which requires converting to `amd`
 
 ### Decision
 
-The distribution folder structure will change with two subfolders, `cjs` and `esm`. The type definitions will also be distributed in another subfolder, `types`. Rollup will still be used to create the CJS format, and TypeScript compiler will handle the ESM export.
+The distribution folder structure will change with two subfolders, `cjs` and `esm`. The type definitions will also be distributed in another subfolder, `types`. Rollup will still be used to create the CJS and ESM format.
 
 ### Status
 
