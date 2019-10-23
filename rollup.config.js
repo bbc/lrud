@@ -35,7 +35,8 @@ export default [
     plugins: [
       typescriptPlugin({
         useTsconfigDeclarationDir: true
-      })
+      }),
+      nodeResolve()
     ]
   }
 ]
