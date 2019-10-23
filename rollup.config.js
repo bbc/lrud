@@ -1,11 +1,11 @@
-import typescript from 'rollup-plugin-typescript2'
+import typescriptPlugin from 'rollup-plugin-typescript2'
 import pkg from './package.json'
 import nodeResolve from 'rollup-plugin-node-resolve'
 export default {
   input: 'src/index.ts',
   output: [
     {
-      file: 'dist/index.js',
+      file: 'dist/cjs/index.js',
       format: 'cjs'
     }
   ],
@@ -13,8 +13,8 @@ export default {
     ...Object.keys(pkg.peerDependencies || {})
   ],
   plugins: [
-    typescript({
-      typescript: require('typescript')
+    typescriptPlugin({
+      useTsconfigDeclarationDir: true
     }),
     nodeResolve()
   ]
