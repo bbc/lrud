@@ -405,7 +405,7 @@ A: Ensure that the parent nodes, etc. have the correct orientation in order to b
 
 > Q: All my parents have orientations, everything is setup in the navigation tree, and I STILL can't focus on the node I expect.
 
-A: Ensure the node has either `isFocusable: true` or a `selectAction` registered against it. A node needs either one of these in order to be considered "focusable"
+A: Ensure the node has either `isFocusable: true` or a `selectAction` registered against it. A node needs either one of these in order to be considered "focusable". `isFocusable` is prioritised over `selectAction` so a node with `isFocusable: false` will never be focusable.
 
 > Q: What is the different between `onBlur/onFocus` and `onLeave/onEnter`?
 
