@@ -285,6 +285,15 @@ navigation.overrides = {
 }
 ```
 
+## Tree Node Updates
+
+Nodes in a tree can have their properties updated in place using `navigation.updateNode`.
+
+```js
+navigation.registerNode('root', { isFocusable: true })
+navigation.updateNode('root', { isFocusable: false, isIndexAlign: true })
+```
+
 # Tree and Partial Tree Insertion & Registering
 
 LRUD supports the ability to register an entire tree at once.

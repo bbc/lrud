@@ -458,4 +458,96 @@ describe('lrud', () => {
       expect(navigation.getNode('d').index).toEqual(3)
     })
   })
+
+  describe('updateNode', () => {
+    test('updating a property should change the property on the node', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('a', { isFocusable: true })
+
+      navigation.updateNode('a', { isFocusable: false, isIndexAlign: true })
+
+      expect(navigation.getNode('a').isFocusable).toEqual(false)
+      expect(navigation.getNode('a').isIndexAlign).toEqual(true)
+    })
+
+    test('making a previously focusable node unfocusable should remove it from the list of focusable nodes', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('a', { isFocusable: true })
+
+      navigation.updateNode('a', { isFocusable: false })
+
+      expect(navigation.focusableNodePathList).not.toEqual(expect.arrayContaining(['root.children.a']))
+    })
+
+    test('current focus should not be updated when updating a node', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('a', { isFocusable: true })
+        .registerNode('b', { isFocusable: true })
+
+      navigation.assignFocus('b')
+      navigation.updateNode('a', { isFocusable: false })
+
+      expect(navigation.currentFocusNodeId).toEqual('b')
+    })
+
+    test('node indexes should not change unless specified', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('a', { isFocusable: true, orientation: 'horizontal' })
+        .registerNode('b', { isFocusable: true, parent: 'a' })
+        .registerNode('c', { isFocusable: true, parent: 'a' })
+
+      navigation.assignFocus('c')
+      navigation.updateNode('b', { isFocusable: false })
+
+      expect(navigation.getNode('c').index).toEqual(1)
+      expect(navigation.getNode('b').index).toEqual(0)
+    })
+
+    test('children of a node should remain unaltered if id is not changed', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('a', { isFocusable: true, orientation: 'horizontal' })
+        .registerNode('b', { isFocusable: true, parent: 'a' })
+        .registerNode('c', { isFocusable: true, parent: 'a' })
+
+      navigation.assignFocus('c')
+      navigation.updateNode('a', { isFocusable: false })
+
+      expect(navigation.getNode('c').index).toEqual(1)
+      expect(navigation.getNode('c').parent).toEqual('a')
+      expect(navigation.getNode('c').isFocusable).toEqual(true)
+      expect(navigation.currentFocusNodeId).toEqual('c')
+    })
+
+    test('should recalculate node focus if currentNode is set to be unfocusable', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root', { orientation: 'vertical' }) // Orientation must be set on root or the focus recalculation fails
+        .registerNode('a', { isFocusable: true, orientation: 'horizontal' })
+        .registerNode('b', { isFocusable: true, parent: 'a' })
+        .registerNode('c', { isFocusable: true, parent: 'a' })
+        .registerNode('d', { isFocusable: true, parent: 'root' })
+
+      navigation.assignFocus('c')
+
+      navigation.updateNode('c', { isFocusable: false })
+      expect(navigation.currentFocusNodeId).not.toBeUndefined()
+      expect(navigation.currentFocusNodeId).not.toEqual('c')
+    })
+  })
 })

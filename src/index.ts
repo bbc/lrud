@@ -162,7 +162,7 @@ export class Lrud {
     }
 
     // if no `index` set, calculate it
-    if (!node.index) {
+    if (!(node.index != null)) {
       const parentNode = this.getNode(node.parent)
       if (parentNode) {
         const parentsChildren = this.getNode(node.parent).children
@@ -888,5 +888,35 @@ export class Lrud {
 
   doesNodeHaveFocusableChildren(node: Node) : boolean {
     return this.focusableNodePathList.some(p => p.includes(`${node.id}.`))
+  }
+
+  /**
+   * Update the properties of a node in place
+   * @param {string} nodeId
+   * @param {object} update
+   */
+  updateNode(nodeId: string, update: Node) {
+    const node = this.getNode(nodeId)
+    if (!node) return
+
+    const parentNode = this.getNode(node.parent)
+    let subsequentChildren = []
+    const originalNodeIndex = node.index
+    if (parentNode) {
+      subsequentChildren = Object.keys(parentNode.children).map(x => parentNode.children[x]).filter(x => x.index > node.index)
+    }
+    this.unregisterNode(node.id, {forceRefocus: update.isFocusable === false})
+
+    for (let key in update) {
+      node[key] = update[key]
+    }
+
+    for (let child of subsequentChildren) {
+      const childNode = this.getNode(child.id)
+      childNode.index += 1
+    }
+
+    this.registerTree({ [node.id]: node })
+
   }
 }
