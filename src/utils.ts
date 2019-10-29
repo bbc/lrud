@@ -16,7 +16,7 @@ export const Closest = (values, goal) => values.reduce(function (prev, curr) {
  * 
  * @param {object} node
  */
-export const isNodeFocusable = (node) => !!(node.selectAction || node.isFocusable)
+export const isNodeFocusable = (node) => node.isFocusable != null ? node.isFocusable : !!node.selectAction
 
 /**
  * given a keyCode, lookup and return the direction from the keycodes mapping file
