@@ -458,4 +458,133 @@ describe('lrud', () => {
       expect(navigation.getNode('d').index).toEqual(3)
     })
   })
+
+  describe('recalculateFocus()', () => {
+    test('refocusing when node index is out of sync should find the nearest node', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root', { orientation: 'horizontal' })
+        .registerNode('b', { isFocusable: true })
+        .registerNode('c', { isFocusable: true })
+
+      navigation.assignFocus('b')
+      const node = navigation.getNode('b')
+      const parentNode = navigation.getNode('root')
+      delete parentNode.activeChild
+      node.isFocusable = false
+      navigation.recalculateFocus(node)
+      expect(navigation.currentFocusNodeId).toEqual('c')
+    })
+
+    test('if there are no focusable nodes should fall back to undefined', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root')
+        .registerNode('d')
+        .registerNode('b', { isFocusable: true, parent: 'd' })
+        .registerNode('c')
+
+      navigation.assignFocus('b')
+      const node = navigation.getNode('b')
+      const parentNode = navigation.getNode('d')
+      delete parentNode.activeChild
+      node.isFocusable = false
+      navigation.recalculateFocus(node)
+      expect(navigation.currentFocusNodeId).toEqual(undefined)
+    })
+  })
+
+  describe('setNodeFocusable()', () => {
+    test('calling with the same focusability should do nothing', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('a', { isFocusable: true })
+
+      navigation.setNodeFocusable('a', true)
+
+      expect(navigation.getNode('a').isFocusable).toEqual(true)
+    })
+
+    test('changing the node focusability should change the property', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('a', { isFocusable: true })
+
+      navigation.setNodeFocusable('a', false)
+
+      expect(navigation.getNode('a').isFocusable).toEqual(false)
+    })
+
+    test('making a previously focusable node unfocusable should remove it from the list of focusable nodes', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('a', { isFocusable: true })
+        .registerNode('b', { selectAction: true })
+
+      navigation.setNodeFocusable('a', false)
+      navigation.setNodeFocusable('b', false)
+
+      expect(navigation.focusableNodePathList).not.toEqual(expect.arrayContaining(['root.children.a']))
+      expect(navigation.focusableNodePathList).not.toEqual(expect.arrayContaining(['root.children.b']))
+    })
+
+    test('making a previously unfocusable node focusable should add it to the list of focusable nodes', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('a', { isFocusable: false })
+        .registerNode('b')
+
+      navigation.setNodeFocusable('a', true)
+      navigation.setNodeFocusable('b', true)
+
+      expect(navigation.focusableNodePathList).toEqual(expect.arrayContaining(['root.children.a']))
+      expect(navigation.focusableNodePathList).toEqual(expect.arrayContaining(['root.children.b']))
+    })
+
+    test('making child nodes unfocusable should prevent focus', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('a')
+        .registerNode('b', {parent: 'a', isFocusable: true})
+
+      expect(() => navigation.assignFocus('a')).not.toThrow()
+      navigation.setNodeFocusable('b', false)
+      expect(() => navigation.assignFocus('a')).toThrow()
+    })
+
+    test('should recalculate node focus if current node is set to be unfocusable', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('a')
+        .registerNode('b', {parent: 'a', isFocusable: true})
+
+      navigation.assignFocus('b')
+      navigation.setNodeFocusable('b', false)
+      expect(navigation.currentFocusNodeId).not.toEqual('b')
+    })
+
+    test('should ensure the activeChild is reset after unfocusing a node', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('a')
+        .registerNode('b', {parent: 'a', isFocusable: true})
+        .registerNode('c', {parent: 'a', isFocusable: true})
+
+      navigation.assignFocus('b')
+      navigation.setNodeFocusable('b', false)
+      expect(navigation.getNode('a').activeChild).toEqual('c')
+    })
+  })
 })

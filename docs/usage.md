@@ -285,6 +285,15 @@ navigation.overrides = {
 }
 ```
 
+## Modifying Node Focusability
+
+Ability of a node to be focused can be modified using  `navigation.setNodeFocusable`
+
+```js
+navigation.registerNode('root', { isFocusable: true })
+navigation.setNodeFocusable('root', false)
+```
+
 # Tree and Partial Tree Insertion & Registering
 
 LRUD supports the ability to register an entire tree at once.
