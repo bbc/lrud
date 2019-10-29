@@ -89,15 +89,6 @@ describe('isNodeFocusable()', () => {
 
     expect(isNodeFocusable(node)).toEqual(false)
   })
-
-  it('node should not be focusable, it has isFocusable false, and a selectAction', () => {
-    const node = {
-      isFocusable: false,
-      selectAction: true
-    }
-
-    expect(isNodeFocusable(node)).toEqual(false)
-  })
 })
 
 describe('isDirectionAndOrientationMatching()', () => {
