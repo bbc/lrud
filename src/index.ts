@@ -265,14 +265,7 @@ export class Lrud {
       delete parentNode.activeChild
 
       if (unregisterOptions.forceRefocus) {
-        const top = this.climbUp(parentNode, '*')
-        if (top) {
-          const prev = this.getPrevChild(top)
-          if (isNodeFocusable(prev) || (prev && prev.children && Object.keys(prev.children).length)) {
-            const child = this.digDown(prev)
-            this.assignFocus(child.id)
-          }
-        }
+        this.recalculateFocus(nodeClone)
       } else {
         this.currentFocusNode = undefined;
         this.currentFocusNodeId = undefined;
@@ -831,6 +824,28 @@ export class Lrud {
   }
 
   /**
+   * If the focus of the tree is out of sync, ie, the current focused node becomes unfocusable this can be used to fall back to another focus.
+   * @param {focusedNode}
+   */
+  recalculateFocus(node: Node) {
+    const parentNode = this.getNode(node.parent)
+    const top = this.climbUp(parentNode, '*')
+    if (top) {
+      const prev = this.getPrevChild(top)
+      if (isNodeFocusable(prev) || (prev && prev.children && Object.keys(prev.children).length)) {
+        const child = this.digDown(prev)
+        this.assignFocus(child.id)
+      } else {
+        this.assignFocus(top.id)
+      }
+    } else {
+        this.currentFocusNode = undefined;
+        this.currentFocusNodeId = undefined;
+        this.currentFocusNodeIndex = undefined;
+    }
+  }
+
+  /**
    * given a tree, return an array of Nodes in that tree
    * 
    * @param {object} tree 
@@ -892,5 +907,40 @@ export class Lrud {
 
   doesNodeHaveFocusableChildren(node: Node) : boolean {
     return this.focusableNodePathList.some(p => p.includes(`${node.id}.`))
+  }
+
+  /**
+   * Change the ability of a node to be focused in place
+   * @param {string} nodeId
+   * @param {boolean} isFocusable
+   */
+  setNodeFocusable(nodeId: string, isFocusable: boolean) {
+    const node = this.getNode(nodeId)
+    if (!node) return
+
+    const nodeIsFocusable = isNodeFocusable(node)
+    if (nodeIsFocusable === isFocusable) return
+
+    node.isFocusable = isFocusable
+    if (!isFocusable) {
+      const path = this.getPathForNodeId(nodeId)
+      this.focusableNodePathList.splice(this.focusableNodePathList.indexOf(path), 1)
+      const parent = this.getNode(node.parent)
+      if (parent && parent.activeChild && parent.activeChild === nodeId) {
+        delete parent.activeChild
+        // Reset activeChild
+        const nextChild = this.getNextChild(parent)
+        if (nextChild) {
+          this.setActiveChild(parent.id, nextChild.id)
+        }
+      }
+
+      if (this.currentFocusNodeId === nodeId) {
+        this.recalculateFocus(node)
+      }
+    } else {
+      const path = this.getPathForNodeId(nodeId)
+      this.focusableNodePathList.push(path)
+    }
   }
 }
