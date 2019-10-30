@@ -1,6 +1,6 @@
 import { Get } from './get'
 import { Set } from './set'
-import { Node, Override, KeyEvent, InsertTreeOptions, UnregisterNodeOptions} from './interfaces'
+import { Node, Override, KeyEvent, InsertTreeOptions, UnregisterNodeOptions, SetActiveChildOptions } from './interfaces'
 
 import {
   isNodeFocusable,
@@ -732,8 +732,10 @@ export class Lrud {
    *
    * @param {string} parentId
    * @param {string} childId
+   * @param {object} options
+   * @param {object} options.shallow if true does not recurse up the tree
    */
-  setActiveChild(parentId: string, childId: string) {
+  setActiveChild(parentId: string, childId: string, options: SetActiveChildOptions = { shallow: false }) {
     const child = this.getNode(childId)
     const parent = this.getNode(parentId)
     if (!child) {
@@ -761,8 +763,10 @@ export class Lrud {
       }
     }
 
+    const shallow = options && options.shallow
+
     // if the parent has a parent, bubble up
-    if (parent.parent) {
+    if (parent.parent && !shallow) {
       this.setActiveChild(parent.parent, parent.id)
     }
   }

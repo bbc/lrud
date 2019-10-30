@@ -46,3 +46,7 @@ export interface InsertTreeOptions {
 export interface UnregisterNodeOptions {
     forceRefocus: boolean;
 }
+
+export interface SetActiveChildOptions {
+    shallow: boolean
+}
