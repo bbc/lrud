@@ -1,6 +1,6 @@
 import { Get } from './get'
 import { Set } from './set'
-import { Node, Override, KeyEvent, InsertTreeOptions, UnregisterNodeOptions, SetActiveChildOptions } from './interfaces'
+import { Node, Override, KeyEvent, InsertTreeOptions, UnregisterNodeOptions } from './interfaces'
 
 import {
   isNodeFocusable,
@@ -720,15 +720,13 @@ export class Lrud {
   }
 
   /**
-   * recursively sets the activeChild of the parentId node to the value of the childId node
+   * Sets the activeChild of the parentId node to the value of the childId node
    * if the parent node has a parent itself, it digs up the tree and sets those activeChild values
    *
    * @param {string} parentId
    * @param {string} childId
-   * @param {object} options
-   * @param {object} options.shallow if true does not recurse up the tree
    */
-  setActiveChild(parentId: string, childId: string, options: SetActiveChildOptions = { shallow: false }) {
+  setActiveChild(parentId: string, childId: string) {
     const child = this.getNode(childId)
     const parent = this.getNode(parentId)
     if (!child) {
@@ -754,13 +752,6 @@ export class Lrud {
           enter: child
         })
       }
-    }
-
-    const shallow = options && options.shallow
-
-    // if the parent has a parent, bubble up
-    if (parent.parent && !shallow) {
-      this.setActiveChild(parent.parent, parent.id)
     }
   }
 
@@ -813,7 +804,13 @@ export class Lrud {
     }
 
     if (node.parent) {
-      this.setActiveChild(node.parent, node.id)
+      let currentNode = node
+      let parentNode = this.getNode(currentNode.parent)
+      while (currentNode.id !== this.rootNodeId && parentNode) {
+        this.setActiveChild(parentNode.id, currentNode.id)
+        currentNode = parentNode
+        parentNode = this.getNode(currentNode.parent)
+      }
     }
 
     if (node.onFocus) {
