@@ -587,20 +587,4 @@ describe('lrud', () => {
       expect(navigation.getNode('a').activeChild).toEqual('c')
     })
   })
-
-  describe('regression test', () => {
-    test('going down a row when matching index aligned node is unfocusable', () => {
-      const navigation = new Lrud()
-      navigation.registerNode('root', { orientation: 'vertical', isIndexAlign: true })
-      navigation.registerNode('a', { parent: 'root', orientation: 'horizontal' })
-      navigation.registerNode('a0', { parent: 'a', isFocusable: true })
-      navigation.registerNode('a1', { parent: 'a', isFocusable: true })
-      navigation.registerNode('b', { parent: 'root', orientation: 'horizontal' })
-      navigation.registerNode('b0', { parent: 'b', isFocusable: false })
-      navigation.registerNode('b1', { parent: 'b', isFocusable: true })
-
-      navigation.assignFocus('a0')
-      expect(() => navigation.handleKeyEvent({direction: 'DOWN'})).not.toThrow()
-    })
-  })
 })

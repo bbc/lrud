@@ -45,6 +45,22 @@ describe('handleKeyEvent() - simple index alignment behaviour', () => {
 
     expect(navigation.currentFocusNodeId).toEqual('e')
   })
+
+  test('moving between 2 rows when matching index aligned node is unfocusable', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'vertical', isIndexAlign: true })
+    navigation.registerNode('a', { parent: 'root', orientation: 'horizontal' })
+    navigation.registerNode('a0', { parent: 'a', isFocusable: true })
+    navigation.registerNode('a1', { parent: 'a', isFocusable: true })
+    navigation.registerNode('b', { parent: 'root', orientation: 'horizontal' })
+    navigation.registerNode('b0', { parent: 'b', isFocusable: false })
+    navigation.registerNode('b1', { parent: 'b', isFocusable: true })
+
+    navigation.assignFocus('a0')
+    navigation.handleKeyEvent({direction: 'down'})
+    expect(navigation.currentFocusNodeId).toEqual('b1')
+  })
 })
 
 describe('handleKeyEvent() - index ranges', () => {
