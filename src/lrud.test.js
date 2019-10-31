@@ -460,7 +460,7 @@ describe('lrud', () => {
   })
 
   describe('setActiveChild', () => {
-    it('does not set the parent\'s parent\'s activeChild property if `shallow` flag provided', () => {
+    it('does not set the parent\'s parent\'s activeChild property', () => {
       const navigation = new Lrud()
       navigation
         .registerNode('root')
@@ -470,7 +470,7 @@ describe('lrud', () => {
         .registerNode('b0', { isFocusable: true, parent: 'b' })
 
       navigation.assignFocus('b0')
-      navigation.setActiveChild('a', 'a0', { shallow: true })
+      navigation.setActiveChild('a', 'a0')
       expect(navigation.currentFocusNodeId).toEqual('b0')
       expect(navigation.getNode('root').activeChild).toEqual('b')
     })
