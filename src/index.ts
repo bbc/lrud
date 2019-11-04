@@ -487,8 +487,7 @@ export class Lrud {
 
     if (!isNodeFocusable(node) && !this.doesNodeHaveFocusableChildren(node)) {
       const parentNode = this.getNode(node.parent);
-      parentNode.activeChild = node.id
-      const nextSiblingFromNode = this.getNextChildInDirection(parentNode, direction);
+      const nextSiblingFromNode = this.getNextChildInDirection({ ...parentNode, activeChild: node.id }, direction);
       // if the next sibling is ME, we're in an infinite loop - just return null
       if (nextSiblingFromNode.id === node.id) {
         return null

@@ -264,15 +264,18 @@ describe('_findChildWithClosestIndex()', () => {
       children: {
         a: {
           id: 'a',
-          index: 0
+          index: 0,
+          isFocusable: true
         },
         b: {
           id: 'b',
-          index: 1
+          index: 1,
+          isFocusable: true
         },
         c: {
           id: 'c',
-          index: 2
+          index: 2,
+          isFocusable: true
         }
       }
     }
@@ -288,15 +291,18 @@ describe('_findChildWithClosestIndex()', () => {
       children: {
         a: {
           id: 'a',
-          index: 0
+          index: 0,
+          isFocusable: true
         },
         b: {
           id: 'b',
-          index: 1
+          index: 1,
+          isFocusable: true
         },
         c: {
           id: 'c',
-          index: 2
+          index: 2,
+          isFocusable: true
         }
       }
     }
@@ -312,15 +318,18 @@ describe('_findChildWithClosestIndex()', () => {
       children: {
         a: {
           id: 'a',
-          index: 0
+          index: 0,
+          isFocusable: true
         },
         b: {
           id: 'b',
-          index: 5
+          index: 5,
+          isFocusable: true
         },
         c: {
           id: 'c',
-          index: 10
+          index: 10,
+          isFocusable: true
         }
       }
     }
@@ -365,19 +374,23 @@ describe('_findChildWithClosestIndex()', () => {
       children: {
         a: {
           id: 'a',
-          index: 0
+          index: 0,
+          isFocusable: true
         },
         b: {
           id: 'b',
-          index: 1
+          index: 1,
+          isFocusable: true
         },
         c: {
           id: 'c',
-          index: 2
+          index: 2,
+          isFocusable: true
         },
         d: {
           id: 'd',
-          index: 5
+          index: 5,
+          isFocusable: true
         }
       }
     }
@@ -395,6 +408,67 @@ describe('_findChildWithClosestIndex()', () => {
     const found = _findChildWithClosestIndex(node, 1)
 
     expect(found).toEqual(null)
+  })
+
+  it('should return null if no focusable child', () => {
+    const node = {
+      id: 'root',
+      isFocusable: true,
+      activeChild: 'a',
+      children: {
+        a: {
+          id: 'a',
+          index: 0
+        },
+        b: {
+          id: 'b',
+          index: 1
+        },
+        c: {
+          id: 'c',
+          index: 2
+        },
+        d: {
+          id: 'd',
+          index: 5
+        }
+      }
+    }
+
+    const found = _findChildWithClosestIndex(node, 1)
+
+    expect(found).toEqual(null)
+  })
+
+  it('should return closest focusable child', () => {
+    const node = {
+      id: 'root',
+      isFocusable: true,
+      activeChild: 'a',
+      children: {
+        a: {
+          id: 'a',
+          index: 0
+        },
+        b: {
+          id: 'b',
+          index: 1
+        },
+        c: {
+          id: 'c',
+          index: 2
+        },
+        d: {
+          id: 'd',
+          index: 5,
+          isFocusable: true
+        }
+      }
+    }
+
+    const found = _findChildWithClosestIndex(node, 1)
+
+    expect(found).toEqual(node.children.d)
   })
 })
 

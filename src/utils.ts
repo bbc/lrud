@@ -127,7 +127,13 @@ export const _findChildWithClosestIndex = (node, index, indexRange = null) => {
         return activeChild
     }
 
-    const indexes = Object.keys(node.children).map(childId => node.children[childId].index)
+    const indexes = Object.keys(node.children)
+      .filter(childId => isNodeFocusable(node.children[childId]) || node.children[childId].children)
+      .map(childId => node.children[childId].index)
+
+    if (indexes.length <= 0) {
+      return null
+    }
     return _findChildWithIndex(node, Closest(indexes, index))
 }
 
