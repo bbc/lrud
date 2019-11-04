@@ -721,7 +721,6 @@ export class Lrud {
 
   /**
    * Sets the activeChild of the parentId node to the value of the childId node
-   * if the parent node has a parent itself, it digs up the tree and sets those activeChild values
    *
    * @param {string} parentId
    * @param {string} childId
@@ -755,6 +754,22 @@ export class Lrud {
     }
   }
 
+  /**
+   * Sets the activeChild of the parentId node to the value of the childId node
+   * if the parent node has a parent itself, it digs up the tree and sets those activeChild values
+   *
+   * @param {string} parentId
+   * @param {string} childId
+   */
+     setActiveChildRecursive(parentId: string, childId: string) {
+       this.setActiveChild(parentId, childId)
+       const parent = this.getNode(parentId)
+
+       // if the parent has a parent, bubble up
+       if (parent.parent) {
+         this.setActiveChildRecursive(parent.parent, parent.id)
+       }
+  }
   /**
    * set the current focus of the instance to the given node ID
    * if the given node ID points to a non-focusable node, we dig down from
@@ -804,13 +819,7 @@ export class Lrud {
     }
 
     if (node.parent) {
-      let currentNode = node
-      let parentNode = this.getNode(currentNode.parent)
-      while (currentNode.id !== this.rootNodeId && parentNode) {
-        this.setActiveChild(parentNode.id, currentNode.id)
-        currentNode = parentNode
-        parentNode = this.getNode(currentNode.parent)
-      }
+      this.setActiveChildRecursive(node.parent, node.id)
     }
 
     if (node.onFocus) {

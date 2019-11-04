@@ -476,6 +476,24 @@ describe('lrud', () => {
     })
   })
 
+  describe('setActiveChildRecursive', () => {
+    it('should recurse up the tree', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('b', { parent: 'root' })
+        .registerNode('a0', { isFocusable: true, parent: 'a' })
+        .registerNode('a1', { isFocusable: true, parent: 'a' })
+        .registerNode('b0', { isFocusable: true, parent: 'b' })
+
+      navigation.assignFocus('a1')
+      navigation.setActiveChildRecursive('a', 'a0')
+      expect(navigation.currentFocusNodeId).toEqual('a1')
+      expect(navigation.getNode('root').activeChild).toEqual('a')
+    })
+  })
+
   describe('recalculateFocus()', () => {
     test('refocusing when node index is out of sync should find the nearest node', () => {
       const navigation = new Lrud()
