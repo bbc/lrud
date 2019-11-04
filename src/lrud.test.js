@@ -459,6 +459,22 @@ describe('lrud', () => {
     })
   })
 
+  describe('digDown', () => {
+    it('does not set an activeChild to an unfocusable element', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('parent', { orientation: 'vertical' })
+        .registerNode('a', { parent: 'parent' })
+        .registerNode('b', { parent: 'parent', isFocusable: true })
+
+      navigation.assignFocus('b')
+      navigation.handleKeyEvent({ direction: 'UP' })
+      expect(navigation.currentFocusNodeId).toEqual('b')
+      expect(navigation.getNode('parent').activeChild).toEqual('b')
+    })
+  })
+
   describe('recalculateFocus()', () => {
     test('refocusing when node index is out of sync should find the nearest node', () => {
       const navigation = new Lrud()
