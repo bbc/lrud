@@ -1,6 +1,6 @@
 import { Get } from './get'
 import { Set } from './set'
-import { Node, Override, KeyEvent, InsertTreeOptions, UnregisterNodeOptions} from './interfaces'
+import { Node, Override, KeyEvent, InsertTreeOptions, UnregisterNodeOptions } from './interfaces'
 
 import {
   isNodeFocusable,
@@ -719,8 +719,7 @@ export class Lrud {
   }
 
   /**
-   * recursively sets the activeChild of the parentId node to the value of the childId node
-   * if the parent node has a parent itself, it digs up the tree and sets those activeChild values
+   * Sets the activeChild of the parentId node to the value of the childId node
    *
    * @param {string} parentId
    * @param {string} childId
@@ -752,13 +751,24 @@ export class Lrud {
         })
       }
     }
-
-    // if the parent has a parent, bubble up
-    if (parent.parent) {
-      this.setActiveChild(parent.parent, parent.id)
-    }
   }
 
+  /**
+   * Sets the activeChild of the parentId node to the value of the childId node
+   * if the parent node has a parent itself, it digs up the tree and sets those activeChild values
+   *
+   * @param {string} parentId
+   * @param {string} childId
+   */
+     setActiveChildRecursive(parentId: string, childId: string) {
+       this.setActiveChild(parentId, childId)
+       const parent = this.getNode(parentId)
+
+       // if the parent has a parent, bubble up
+       if (parent.parent) {
+         this.setActiveChildRecursive(parent.parent, parent.id)
+       }
+  }
   /**
    * set the current focus of the instance to the given node ID
    * if the given node ID points to a non-focusable node, we dig down from
@@ -808,7 +818,7 @@ export class Lrud {
     }
 
     if (node.parent) {
-      this.setActiveChild(node.parent, node.id)
+      this.setActiveChildRecursive(node.parent, node.id)
     }
 
     if (node.onFocus) {

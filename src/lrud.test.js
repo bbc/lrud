@@ -459,6 +459,41 @@ describe('lrud', () => {
     })
   })
 
+  describe('setActiveChild', () => {
+    it('does not set the parent\'s parent\'s activeChild property', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('b', { parent: 'root' })
+        .registerNode('a0', { isFocusable: true, parent: 'a' })
+        .registerNode('b0', { isFocusable: true, parent: 'b' })
+
+      navigation.assignFocus('b0')
+      navigation.setActiveChild('a', 'a0')
+      expect(navigation.currentFocusNodeId).toEqual('b0')
+      expect(navigation.getNode('root').activeChild).toEqual('b')
+    })
+  })
+
+  describe('setActiveChildRecursive', () => {
+    it('should recurse up the tree', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('b', { parent: 'root' })
+        .registerNode('a0', { isFocusable: true, parent: 'a' })
+        .registerNode('a1', { isFocusable: true, parent: 'a' })
+        .registerNode('b0', { isFocusable: true, parent: 'b' })
+
+      navigation.assignFocus('a1')
+      navigation.setActiveChildRecursive('a', 'a0')
+      expect(navigation.currentFocusNodeId).toEqual('a1')
+      expect(navigation.getNode('root').activeChild).toEqual('a')
+    })
+  })
+
   describe('digDown', () => {
     it('does not set an activeChild to an unfocusable element', () => {
       const navigation = new Lrud()
