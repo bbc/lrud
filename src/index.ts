@@ -61,9 +61,7 @@ export class Lrud {
 
     const children = Object.keys(node.children).map(childId => node.children[childId])
 
-    children.sort(function (a, b) {
-      return a.index - b.index
-    })
+    children.sort((a, b)  =>  a.index - b.index)
 
     node.children = {}
 
@@ -597,7 +595,7 @@ export class Lrud {
       return undefined
     }
 
-    const orderedIndexes = Object.keys(node.children).map(childId => node.children[childId].index).sort()
+    const orderedIndexes = Object.keys(node.children).map(childId => node.children[childId].index).sort((a, b)  =>  a - b)
 
     return _findChildWithIndex(node, orderedIndexes[0])
   }
@@ -612,7 +610,7 @@ export class Lrud {
       return undefined
     }
 
-    const orderedIndexes = Object.keys(node.children).map(childId => node.children[childId].index).sort()
+    const orderedIndexes = Object.keys(node.children).map(childId => node.children[childId].index).sort((a, b)  =>  a - b)
 
     return _findChildWithIndex(node, orderedIndexes[orderedIndexes.length - 1])
   }

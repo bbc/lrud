@@ -364,17 +364,47 @@ describe('lrud', () => {
   })
 
   describe('getNodeFirstChild()', () => {
+    test('should return undefined - node with no children', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('b')
+
+      const node = navigation.getNode('b')
+
+      expect(navigation.getNodeFirstChild(node)).toBeUndefined()
+    })
+
     test('should return child with index of 1 - added without indexes', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root')
-      navigation.registerNode('a')
       navigation.registerNode('b')
+      navigation.registerNode('a')
       navigation.registerNode('c')
 
       const root = navigation.getNode('root')
 
-      expect(navigation.getNodeFirstChild(root).id).toEqual('a')
+      expect(navigation.getNodeFirstChild(root).id).toEqual('b')
+    })
+
+    test('should return child with index of 1 - added without indexes, more than 9 nodes', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('b')
+      navigation.registerNode('a')
+      navigation.registerNode('h')
+      navigation.registerNode('g')
+      navigation.registerNode('f')
+      navigation.registerNode('i')
+      navigation.registerNode('d')
+      navigation.registerNode('j')
+      navigation.registerNode('k')
+
+      const root = navigation.getNode('root')
+
+      expect(navigation.getNodeFirstChild(root).id).toEqual('b')
     })
 
     test('should return child with index of 1 - added out of order, with indexes', () => {
@@ -388,6 +418,27 @@ describe('lrud', () => {
       const root = navigation.getNode('root')
 
       expect(navigation.getNodeFirstChild(root).id).toEqual('b')
+    })
+
+    test('should return child with index of 1 - added out of order, with indexes, more than 9 nodes', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('a', { index: 21 })
+      navigation.registerNode('b', { index: 10 })
+      navigation.registerNode('c', { index: 3 })
+      navigation.registerNode('d', { index: 5 })
+      navigation.registerNode('e', { index: 4 })
+      navigation.registerNode('f', { index: 7 })
+      navigation.registerNode('g', { index: 6 })
+      navigation.registerNode('h', { index: 9 })
+      navigation.registerNode('i', { index: 8 })
+      navigation.registerNode('j', { index: 15 })
+      navigation.registerNode('k', { index: 11 })
+
+      const root = navigation.getNode('root')
+
+      expect(navigation.getNodeFirstChild(root).id).toEqual('c')
     })
   })
 
@@ -405,6 +456,26 @@ describe('lrud', () => {
       expect(navigation.getNodeLastChild(root).id).toEqual('c')
     })
 
+    test('should return child with last index - more than 9 elements', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('1')
+      navigation.registerNode('2')
+      navigation.registerNode('3')
+      navigation.registerNode('4')
+      navigation.registerNode('5')
+      navigation.registerNode('6')
+      navigation.registerNode('7')
+      navigation.registerNode('8')
+      navigation.registerNode('9')
+      navigation.registerNode('10')
+
+      const root = navigation.getNode('root')
+
+      expect(navigation.getNodeLastChild(root).id).toEqual('10')
+    })
+
     test('should return child with last index - added with indexes, out of order', () => {
       const navigation = new Lrud()
 
@@ -416,6 +487,27 @@ describe('lrud', () => {
       const root = navigation.getNode('root')
 
       expect(navigation.getNodeLastChild(root).id).toEqual('a')
+    })
+
+    test('should return child with last index - added with indexes, out of order, more than 9', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('a', { index: 3 })
+      navigation.registerNode('b', { index: 1 })
+      navigation.registerNode('c', { index: 2 })
+      navigation.registerNode('d', { index: 5 })
+      navigation.registerNode('e', { index: 8 })
+      navigation.registerNode('f', { index: 7 })
+      navigation.registerNode('g', { index: 3 })
+      navigation.registerNode('h', { index: 6 })
+      navigation.registerNode('i', { index: 9 })
+      navigation.registerNode('j', { index: 10 })
+      navigation.registerNode('k', { index: 11 })
+
+      const root = navigation.getNode('root')
+
+      expect(navigation.getNodeLastChild(root).id).toEqual('k')
     })
   })
 
@@ -456,6 +548,33 @@ describe('lrud', () => {
       expect(navigation.getNode('b').index).toEqual(1)
       expect(navigation.getNode('c').index).toEqual(2)
       expect(navigation.getNode('d').index).toEqual(3)
+    })
+
+    test('test it through unregister, more than 9 nodes', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('c', { index: 9 })
+        .registerNode('a', { index: 4 })
+        .registerNode('e', { index: 16 })
+        .registerNode('d', { index: 13 })
+        .registerNode('b', { index: 6 })
+        .registerNode('f', { index: 10 })
+        .registerNode('g', { index: 20 })
+        .registerNode('h', { index: 17 })
+        .registerNode('i', { index: 15 })
+        .registerNode('j', { index: 3 })
+        .registerNode('k', { index: 1 })
+
+      navigation.unregisterNode('e')
+
+      expect(navigation.getNode('k').index).toEqual(0)
+      expect(navigation.getNode('j').index).toEqual(1)
+      expect(navigation.getNode('a').index).toEqual(2)
+      expect(navigation.getNode('b').index).toEqual(3)
+      expect(navigation.getNode('c').index).toEqual(4)
+      expect(navigation.getNode('f').index).toEqual(5)
     })
   })
 
