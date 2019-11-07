@@ -61,13 +61,14 @@ export const isDirectionAndOrientationMatching = (orientation, direction) => {
  * @param {*} node
  */
 export const isNodeInPath = (path, node) => {
-    if (path.startsWith(node.id + '.')) {
+    if (path.lastIndexOf(node.id + '.', 0) === 0) {
         return true
     }
-    if (path.endsWith('.' + node.id)) {
+    var suffix = '.' + node.id
+    if (path.indexOf(suffix, path.length - suffix.length) !== -1) {
         return true
     }
-    if (path.includes('.' + node.id + '.')) {
+    if (path.indexOf('.' + node.id + '.') !== -1) {
         return true
     }
 
