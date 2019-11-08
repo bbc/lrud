@@ -1,8 +1,8 @@
-var left = 'LEFT'
-var right = 'RIGHT'
-var up = 'UP'
-var down = 'DOWN'
-var enter = 'ENTER'
+const left = 'LEFT'
+const right = 'RIGHT'
+const up = 'UP'
+const down = 'DOWN'
+const enter = 'ENTER'
 
 export const KeyCodes = {
   map: {
