@@ -4,7 +4,16 @@ const up = 'UP'
 const down = 'DOWN'
 const enter = 'ENTER'
 
-export const KeyCodes = {
+interface CodeMap {
+  [id: number]: string;
+}
+
+export const KeyCodes: {
+  map: {
+    [id: string]: string;
+  };
+    codes: CodeMap;
+} = {
   map: {
     LEFT: left,
     RIGHT: right,

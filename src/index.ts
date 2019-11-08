@@ -16,17 +16,18 @@ import {
 import mitt from 'mitt'
 
 export class Lrud {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tree: any;
+  tree: {
+    [id: string]: Node;
+  };
   nodePathList: string[];
   focusableNodePathList: string[];
-  rootNodeId: string;
-  currentFocusNode?: Node;
-  currentFocusNodeId: string;
-  currentFocusNodeIndex: number;
-  currentFocusNodeIndexRange: number[];
-  currentFocusNodeIndexRangeLowerBound: number;
-  currentFocusNodeIndexRangeUpperBound: number;
+  rootNodeId: string | null;
+  currentFocusNode: Node | null;
+  currentFocusNodeId: string | null;
+  currentFocusNodeIndex: number | null;
+  currentFocusNodeIndexRange: number[] | null;
+  currentFocusNodeIndexRangeLowerBound: number | null;
+  currentFocusNodeIndexRangeUpperBound: number | null;
   isIndexAlignMode: boolean;
   emitter: mitt.Emitter
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,6 +42,8 @@ export class Lrud {
     this.currentFocusNodeId = null
     this.currentFocusNodeIndex = null
     this.currentFocusNodeIndexRange = null
+    this.currentFocusNodeIndexRangeLowerBound = null
+    this.currentFocusNodeIndexRangeUpperBound = null
     this.isIndexAlignMode = false
     this.emitter = mitt()
     this.overrides = {}
@@ -83,7 +86,7 @@ export class Lrud {
    * @param {string} eventName event to subscribe to
    * @param {function} callback function to call on event
    */
-  on (eventName, callback): void {
+  on (eventName: string, callback: mitt.Handler): void {
     this.emitter.on(eventName, callback)
   }
 
@@ -844,9 +847,9 @@ export class Lrud {
         this.assignFocus(top.id)
       }
     } else {
-      this.currentFocusNode = undefined
-      this.currentFocusNodeId = undefined
-      this.currentFocusNodeIndex = undefined
+      this.currentFocusNode = null
+      this.currentFocusNodeId = null
+      this.currentFocusNodeIndex = null
     }
   }
 

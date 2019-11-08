@@ -40,7 +40,7 @@ export const getDirectionForKeyCode = (keyCode: number): string | null => {
  * @param {string} orientation
  * @param {string} direction
  */
-export const isDirectionAndOrientationMatching = (orientation, direction): boolean => {
+export const isDirectionAndOrientationMatching = (orientation: string, direction: string): boolean => {
   if (!orientation || !direction) {
     return false
   }
@@ -60,7 +60,7 @@ export const isDirectionAndOrientationMatching = (orientation, direction): boole
  *
  * @param {*} node
  */
-export const isNodeInPath = (path, node): boolean => {
+export const isNodeInPath = (path: string, node: Node): boolean => {
   if (path.lastIndexOf(node.id + '.', 0) === 0) {
     return true
   }
@@ -80,7 +80,7 @@ export const isNodeInPath = (path, node): boolean => {
  *
  * @param {*} node
  */
-export const isNodeInPaths = (paths, node): boolean => {
+export const isNodeInPaths = (paths: [string], node: Node): boolean => {
   return paths.some(path => {
     return isNodeInPath(path, node)
   })
@@ -92,7 +92,7 @@ export const isNodeInPaths = (paths, node): boolean => {
  * @param {object} node
  * @param {number} index
  */
-export const _findChildWithMatchingIndexRange = (node, index): Node => {
+export const _findChildWithMatchingIndexRange = (node: Node, index: number): Node | null | undefined => {
   if (!node.children) {
     return null
   }
@@ -113,7 +113,7 @@ export const _findChildWithMatchingIndexRange = (node, index): Node => {
  * @param {object} node
  * @param {number} index
  */
-export const _findChildWithIndex = (node, index): Node => {
+export const _findChildWithIndex = (node: Node, index: number): Node | null => {
   if (!node.children) {
     return null
   }
@@ -139,7 +139,7 @@ export const _findChildWithIndex = (node, index): Node => {
  * @param {index} index
  * @param {number[]} indexRange
  */
-export const _findChildWithClosestIndex = (node, index, indexRange = null): Node => {
+export const _findChildWithClosestIndex = (node: Node, index: number, indexRange = null): Node => {
   if (!node.children) {
     return null
   }
@@ -161,10 +161,10 @@ export const _findChildWithClosestIndex = (node, index, indexRange = null): Node
   return _findChildWithIndex(node, Closest(indexes, index))
 }
 
-export const isNodeInTree = (nodeId: string, tree: object): boolean => {
+export const isNodeInTree = (nodeId: string, tree: Node): boolean => {
   let nodeInTree = false
 
-  const _isNodeInTree = (tree): void => {
+  const _isNodeInTree = (tree: Node): void => {
     Object.keys(tree).forEach(treeProperty => {
       if (nodeId === treeProperty) {
         nodeInTree = true
@@ -184,8 +184,8 @@ export const isNodeInTree = (nodeId: string, tree: object): boolean => {
 export const getNodesFromTree = (tree: object): Node[] => {
   const nodes: Node[] = []
 
-  const _getNodesFromTree = (tree, parent): void => {
-    Object.keys(tree).forEach(treeProperty => {
+  const _getNodesFromTree = (tree: Node, parent?: string): void => {
+    Object.keys(tree).forEach((treeProperty: string) => {
       const _parent = tree[treeProperty].parent || parent
       nodes.push({
         ...tree[treeProperty],
