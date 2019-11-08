@@ -1,5 +1,5 @@
 /* eslint-env jest */
-
+export{}
 const { Set } = require('../../src/set/index')
 
 describe('set.js', () => {

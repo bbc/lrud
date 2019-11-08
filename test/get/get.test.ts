@@ -1,5 +1,5 @@
 /* eslint-env jest */
-
+export {}
 const { Get } = require('../../src/get/index')
 
 describe('get.js', () => {
