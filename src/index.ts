@@ -13,7 +13,7 @@ import {
   getNodesFromTree
 } from './utils'
 
-import Mitt from 'mitt'
+import mitt from 'mitt'
 
 export class Lrud {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -28,7 +28,7 @@ export class Lrud {
   currentFocusNodeIndexRangeLowerBound: number;
   currentFocusNodeIndexRangeUpperBound: number;
   isIndexAlignMode: boolean;
-  emitter: Mitt.Emitter
+  emitter: mitt.Emitter
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   overrides: any;
 
@@ -42,7 +42,7 @@ export class Lrud {
     this.currentFocusNodeIndex = null
     this.currentFocusNodeIndexRange = null
     this.isIndexAlignMode = false
-    this.emitter = new Mitt()
+    this.emitter = mitt()
     this.overrides = {}
   }
 
@@ -223,7 +223,7 @@ export class Lrud {
       this.currentFocusNodeIndex = null
       this.currentFocusNodeIndexRange = null
       this.isIndexAlignMode = false
-      this.emitter = new Mitt()
+      this.emitter = mitt()
       this.overrides = {}
       return
     }
