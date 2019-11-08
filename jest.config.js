@@ -1,14 +1,23 @@
 module.exports = {
-  'roots': [
-    '<rootDir>/src'
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  roots: [
+    '<rootDir>/test'
   ],
-  'collectCoverageFrom': [
-    'src/**/*.{js,jsx,ts}',
+  transform: {
+    '^.+\\.tsx?$': 'ts-jest'
+  },
+  collectCoverage: true,
+  collectCoverageFrom: [
+    '<rootDir>/src/**/*.{ts,tsx}',
     '!<rootDir>/node_modules/',
-    '!<rootDir>/path/to/dir/',
     '!<rootDir>/dist/'
   ],
-  'transform': {
-    '^.+\\.tsx?$': 'ts-jest'
+  coverageThreshold: {
+    './src/**/*': {
+      branches: 90,
+      functions: 90,
+      statements: -10
+    }
   }
 }
