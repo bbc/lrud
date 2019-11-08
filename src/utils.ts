@@ -12,6 +12,11 @@ export const Closest = (values, goal) => values.reduce(function (prev, curr) {
 })
 
 /**
+ * String.endsWith helper
+ */
+export const endsWith = (str, suffix) => str.indexOf(suffix, str.length - suffix.length) !== -1
+
+/**
  * check if a given node is focusable
  * 
  * @param {object} node
@@ -64,8 +69,7 @@ export const isNodeInPath = (path, node) => {
     if (path.lastIndexOf(node.id + '.', 0) === 0) {
         return true
     }
-    var suffix = '.' + node.id
-    if (path.indexOf(suffix, path.length - suffix.length) !== -1) {
+    if (endsWith(path, '.' + node.id)) {
         return true
     }
     if (path.indexOf('.' + node.id + '.') !== -1) {

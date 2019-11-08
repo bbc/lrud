@@ -10,7 +10,8 @@ import {
   _findChildWithMatchingIndexRange,
   _findChildWithClosestIndex,
   _findChildWithIndex,
-  getNodesFromTree
+  getNodesFromTree,
+  endsWith
 } from './utils'
 
 import mitt from 'mitt'
@@ -107,7 +108,7 @@ export class Lrud {
     if (nodeId === this.rootNodeId) {
       return this.rootNodeId
     }
-    return this.nodePathList.find(path => path.endsWith('.' + nodeId))
+    return this.nodePathList.find(path => endsWith(path, '.' + nodeId))
   }
 
   /**
@@ -153,7 +154,7 @@ export class Lrud {
     // to it so that the parent always has an `activeChild` value
     // we can tell if its parent has any children by checking the nodePathList for
     // entries containing '<parent>.children'
-    const parentsChildPaths = this.nodePathList.find(path => path.includes(node.parent + '.children'))
+    const parentsChildPaths = this.nodePathList.find(path => path.indexOf(node.parent + '.children') > -1)
     if (parentsChildPaths == null) {
       const parentPath = this.getPathForNodeId(node.parent)
       Set(this.tree, parentPath + '.activeChild', nodeId)
@@ -174,7 +175,7 @@ export class Lrud {
 
     // add the node into the tree
     // path is the node's parent plus 'children' plus itself
-    let path = this.nodePathList.find(path => path.endsWith(node.parent)) + '.children.' + nodeId
+    let path = this.nodePathList.find(path => endsWith(path, node.parent)) + '.children.' + nodeId
     Set(this.tree, path, node)
     this.nodePathList.push(path)
 
@@ -245,10 +246,10 @@ export class Lrud {
 
     // ...remove all its children from both path lists
     this.nodePathList = this.nodePathList.filter(nodeIdPath => {
-      return !nodeIdPath.includes(path + '.children.')
+      return nodeIdPath.indexOf(path + '.children.') === -1
     })
     this.focusableNodePathList = this.focusableNodePathList.filter(nodeIdPath => {
-      return !nodeIdPath.includes(path + '.children.')
+      return nodeIdPath.indexOf(path + '.children.') === -1
     })
 
     // if the node is focusable, remove it from the focusable node path list
