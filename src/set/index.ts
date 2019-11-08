@@ -1,12 +1,12 @@
 /**
  * set a value into an object using dot notation
- * @param object 
- * @param path 
- * @param value 
+ * @param object
+ * @param path
+ * @param value
  */
-export const Set = (object, path, value) => {
+export function Set<A> (object: A, path, value): A | undefined {
   if (!path) {
-    return undefined;
+    return undefined
   }
   const pathParts = path.split('.')
 

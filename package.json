@@ -54,7 +54,7 @@
     "preversion": "npm test",
     "postversion": "git push && git push --tags",
     "clean": "rimraf dist",
-    "lint": "eslint src/index.ts",
+    "lint": "eslint src/*.ts src/**/*.ts",
     "test": "npm run build && jest",
     "test:verbose": "jest --verbose",
     "test:coverage": "jest --coverage",
