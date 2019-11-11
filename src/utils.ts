@@ -12,6 +12,26 @@ export const Closest = (values: [number], goal: number): number => values.reduce
 })
 
 /**
+ * String.endsWith helper
+ */
+export const endsWith = (str, suffix): boolean => str.indexOf(suffix, str.length - suffix.length) !== -1
+
+/**
+ * Array.prototype.find helper
+ */
+export const arrayFind = <A>(arr: A[], func): A | undefined => {
+  const len = arr.length
+  let i = 0
+  while (i < len) {
+    if (func(arr[i], i, arr)) {
+      return arr[i]
+    }
+    i++
+  }
+  return undefined
+}
+
+/**
  * check if a given node is focusable
  *
  * @param {object} node
@@ -64,8 +84,7 @@ export const isNodeInPath = (path, node): boolean => {
   if (path.lastIndexOf(node.id + '.', 0) === 0) {
     return true
   }
-  const suffix = '.' + node.id
-  if (path.indexOf(suffix, path.length - suffix.length) !== -1) {
+  if (endsWith(path, '.' + node.id)) {
     return true
   }
   if (path.indexOf('.' + node.id + '.') !== -1) {
@@ -97,7 +116,7 @@ export const _findChildWithMatchingIndexRange = (node, index): Node => {
     return null
   }
 
-  const childWithIndexRangeSpanningIndex = Object.keys(node.children).find(childId => {
+  const childWithIndexRangeSpanningIndex = arrayFind(Object.keys(node.children), childId => {
     const child = node.children[childId]
     return child.indexRange && (child.indexRange[0] <= index && child.indexRange[1] >= index)
   })
@@ -118,7 +137,7 @@ export const _findChildWithIndex = (node, index): Node => {
     return null
   }
 
-  const childIdWithMatchingIndex = Object.keys(node.children).find(childId => {
+  const childIdWithMatchingIndex = arrayFind(Object.keys(node.children), childId => {
     const childNode = node.children[childId]
     return childNode.index === index
   })
