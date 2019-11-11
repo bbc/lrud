@@ -3,12 +3,12 @@ import { Node } from './interfaces'
 
 /**
  * given an array of values and a goal, return the value from values which is closest to the goal
- * 
+ *
  * @param {number[]} values
  * @param {number} goal
  */
-export const Closest = (values, goal) => values.reduce(function (prev, curr) {
-    return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev)
+export const Closest = (values: [number], goal: number): number => values.reduce(function (prev, curr) {
+  return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev)
 })
 
 /**
@@ -33,22 +33,22 @@ export const arrayFind = (arr, func) => {
 
 /**
  * check if a given node is focusable
- * 
+ *
  * @param {object} node
  */
-export const isNodeFocusable = (node) => node.isFocusable != null ? node.isFocusable : !!node.selectAction
+export const isNodeFocusable = (node: Node): boolean => node.isFocusable != null ? node.isFocusable : !!node.selectAction
 
 /**
  * given a keyCode, lookup and return the direction from the keycodes mapping file
- * 
+ *
  * @param {number} keyCode
  */
-export const getDirectionForKeyCode = (keyCode) => {
-    const direction = KeyCodes.codes[keyCode]
-    if (direction) {
-        return direction.toUpperCase()
-    }
-    return null
+export const getDirectionForKeyCode = (keyCode: number): string | null => {
+  const direction = KeyCodes.codes[keyCode]
+  if (direction) {
+    return direction.toUpperCase()
+  }
+  return null
 }
 
 /**
@@ -60,19 +60,19 @@ export const getDirectionForKeyCode = (keyCode) => {
  * @param {string} orientation
  * @param {string} direction
  */
-export const isDirectionAndOrientationMatching = (orientation, direction) => {
-    if (!orientation || !direction) {
-        return false
-    }
+export const isDirectionAndOrientationMatching = (orientation, direction): boolean => {
+  if (!orientation || !direction) {
+    return false
+  }
 
-    orientation = orientation.toUpperCase()
-    direction = direction.toUpperCase()
+  orientation = orientation.toUpperCase()
+  direction = direction.toUpperCase()
 
-    return (
-        (direction === '*') ||
+  return (
+    (direction === '*') ||
         (orientation === 'VERTICAL' && (direction === 'UP' || direction === 'DOWN')) ||
         (orientation === 'HORIZONTAL' && (direction === 'LEFT' || direction === 'RIGHT'))
-    )
+  )
 }
 
 /**
@@ -80,7 +80,7 @@ export const isDirectionAndOrientationMatching = (orientation, direction) => {
  *
  * @param {*} node
  */
-export const isNodeInPath = (path, node) => {
+export const isNodeInPath = (path, node): boolean => {
     if (path.lastIndexOf(node.id + '.', 0) === 0) {
         return true
     }
@@ -99,10 +99,10 @@ export const isNodeInPath = (path, node) => {
  *
  * @param {*} node
  */
-export const isNodeInPaths = (paths, node) => {
-    return paths.some(path => {
-        return isNodeInPath(path, node)
-    })
+export const isNodeInPaths = (paths, node): boolean => {
+  return paths.some(path => {
+    return isNodeInPath(path, node)
+  })
 }
 
 /**
@@ -111,7 +111,7 @@ export const isNodeInPaths = (paths, node) => {
  * @param {object} node
  * @param {number} index
  */
-export const _findChildWithMatchingIndexRange = (node, index) => {
+export const _findChildWithMatchingIndexRange = (node, index): Node => {
     if (!node.children) {
         return null
     }
@@ -121,9 +121,32 @@ export const _findChildWithMatchingIndexRange = (node, index) => {
         return child.indexRange && (child.indexRange[0] <= index && child.indexRange[1] >= index)
     })
 
-    if (childWithIndexRangeSpanningIndex) {
-        return node.children[childWithIndexRangeSpanningIndex]
-    }
+  if (childWithIndexRangeSpanningIndex) {
+    return node.children[childWithIndexRangeSpanningIndex]
+  }
+}
+
+/**
+ * return a child from the given node whose index matches the given index
+ *
+ * @param {object} node
+ * @param {number} index
+ */
+export const _findChildWithIndex = (node, index): Node => {
+  if (!node.children) {
+    return null
+  }
+
+    const childIdWithMatchingIndex = arrayFind(Object.keys(node.children), childId => {
+        const childNode = node.children[childId]
+        return childNode.index === index
+    })
+
+  if (childIdWithMatchingIndex) {
+    return node.children[childIdWithMatchingIndex]
+  }
+
+  return null
 }
 
 /**
@@ -135,90 +158,67 @@ export const _findChildWithMatchingIndexRange = (node, index) => {
  * @param {index} index
  * @param {number[]} indexRange
  */
-export const _findChildWithClosestIndex = (node, index, indexRange = null) => {
-    if (!node.children) {
-        return null
-    }
-
-    // if we have an indexRange, and the nodes active child is inside that index range,
-    // just return the active child
-    const activeChild = node.children[node.activeChild]
-    if (indexRange && activeChild && activeChild.index >= indexRange[0] && activeChild.index <= indexRange[1] && isNodeFocusable(activeChild)) {
-        return activeChild
-    }
-
-    const indexes = Object.keys(node.children)
-      .filter(childId => isNodeFocusable(node.children[childId]) || node.children[childId].children)
-      .map(childId => node.children[childId].index)
-
-    if (indexes.length <= 0) {
-      return null
-    }
-    return _findChildWithIndex(node, Closest(indexes, index))
-}
-
-/**
- * return a child from the given node whose index matches the given index
- *
- * @param {object} node
- * @param {number} index
- */
-export const _findChildWithIndex = (node, index) => {
-    if (!node.children) {
-        return null
-    }
-
-    const childIdWithMatchingIndex = arrayFind(Object.keys(node.children), childId => {
-        const childNode = node.children[childId]
-        return childNode.index === index
-    })
-
-    if (childIdWithMatchingIndex) {
-        return node.children[childIdWithMatchingIndex]
-    }
-
+export const _findChildWithClosestIndex = (node, index, indexRange = null): Node => {
+  if (!node.children) {
     return null
+  }
+
+  // if we have an indexRange, and the nodes active child is inside that index range,
+  // just return the active child
+  const activeChild = node.children[node.activeChild]
+  if (indexRange && activeChild && activeChild.index >= indexRange[0] && activeChild.index <= indexRange[1] && isNodeFocusable(activeChild)) {
+    return activeChild
+  }
+
+  const indexes = Object.keys(node.children)
+    .filter(childId => isNodeFocusable(node.children[childId]) || node.children[childId].children)
+    .map(childId => node.children[childId].index) as [number]
+
+  if (indexes.length <= 0) {
+    return null
+  }
+  return _findChildWithIndex(node, Closest(indexes, index))
 }
 
-export const isNodeInTree = (nodeId: string, tree: object) => {
-    let nodeInTree: boolean = false;
+export const isNodeInTree = (nodeId: string, tree: object): boolean => {
+  let nodeInTree = false
 
-    const _isNodeInTree = (tree) => {
-        Object.keys(tree).forEach(treeProperty => {
-            if (nodeId === treeProperty) {
-                nodeInTree = true;
-            }
+  const _isNodeInTree = (tree): void => {
+    Object.keys(tree).forEach(treeProperty => {
+      if (nodeId === treeProperty) {
+        nodeInTree = true
+      }
 
-            if (tree[treeProperty].children) {
-                _isNodeInTree(tree[treeProperty].children)
-            }
-        })
-    }
+      if (tree[treeProperty].children) {
+        _isNodeInTree(tree[treeProperty].children)
+      }
+    })
+  }
 
-    _isNodeInTree(tree);
+  _isNodeInTree(tree)
 
-    return nodeInTree;
+  return nodeInTree
 }
 
 export const getNodesFromTree = (tree: object): Node[] => {
-    const nodes: Node[] = []
+  const nodes: Node[] = []
 
-    const _getNodesFromTree = (tree, parent) => {
-        Object.keys(tree).forEach(treeProperty => {
-            let _parent = tree[treeProperty].parent || parent
-            nodes.push({
-                ...tree[treeProperty],
-                id: treeProperty,
-                children: undefined,
-                parent: _parent
-            });
+  const _getNodesFromTree = (tree, parent): void => {
+    Object.keys(tree).forEach(treeProperty => {
+      const _parent = tree[treeProperty].parent || parent
+      nodes.push({
+        ...tree[treeProperty],
+        id: treeProperty,
+        children: undefined,
+        parent: _parent
+      })
 
-            if (tree[treeProperty].children) {
-                _getNodesFromTree(tree[treeProperty].children, treeProperty)
-            }
-        })
-    }
+      if (tree[treeProperty].children) {
+        _getNodesFromTree(tree[treeProperty].children, treeProperty)
+      }
+    })
+  }
 
-    _getNodesFromTree(tree, undefined);
-    return nodes;
+  _getNodesFromTree(tree, undefined)
+  return nodes
 }

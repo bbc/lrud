@@ -18,11 +18,12 @@ import {
 import mitt from 'mitt'
 
 export class Lrud {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tree: any;
   nodePathList: string[];
   focusableNodePathList: string[];
   rootNodeId: string;
-  currentFocusNode: any;
+  currentFocusNode?: Node;
   currentFocusNodeId: string;
   currentFocusNodeIndex: number;
   currentFocusNodeIndexRange: number[];
@@ -30,9 +31,10 @@ export class Lrud {
   currentFocusNodeIndexRangeUpperBound: number;
   isIndexAlignMode: boolean;
   emitter: mitt.Emitter
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   overrides: any;
 
-  constructor() {
+  constructor () {
     this.tree = {}
     this.nodePathList = []
     this.focusableNodePathList = []
@@ -42,7 +44,7 @@ export class Lrud {
     this.currentFocusNodeIndex = null
     this.currentFocusNodeIndexRange = null
     this.isIndexAlignMode = false
-    this.emitter = new mitt();
+    this.emitter = mitt()
     this.overrides = {}
   }
 
@@ -52,9 +54,9 @@ export class Lrud {
    *
    * @param {object} node
    */
-  reindexChildrenOfNode(node: Node) {
+  reindexChildrenOfNode (node: Node): Node | void {
     if (!node) {
-      return;
+      return
     }
 
     if (!node.children) {
@@ -63,7 +65,7 @@ export class Lrud {
 
     const children = Object.keys(node.children).map(childId => node.children[childId])
 
-    children.sort((a, b)  =>  a.index - b.index)
+    children.sort((a, b) => a.index - b.index)
 
     node.children = {}
 
@@ -83,14 +85,14 @@ export class Lrud {
    * @param {string} eventName event to subscribe to
    * @param {function} callback function to call on event
    */
-  on(eventName, callback) {
+  on (eventName, callback): void {
     this.emitter.on(eventName, callback)
   }
 
   /**
    * return the root node
    */
-  getRootNode(): Node {
+  getRootNode (): Node {
     const node = this.getNode(this.rootNodeId)
 
     if (!node) {
@@ -105,7 +107,7 @@ export class Lrud {
    *
    * @param {string} nodeId
    */
-  getPathForNodeId(nodeId: string): string {
+  getPathForNodeId (nodeId: string): string {
     if (nodeId === this.rootNodeId) {
       return this.rootNodeId
     }
@@ -129,13 +131,13 @@ export class Lrud {
    * @param {function} [node.onLeave] if a node has an `onLeave` function, it will be run when a move event leaves this node
    * @param {function} [node.onEnter] if a node has an `onEnter` function, it will be run when a move event enters this node
    */
-  registerNode(nodeId: string, node: Node = {}) {
+  registerNode (nodeId: string, node: Node = {}): Lrud {
     if (!node.id) {
       node.id = nodeId
     }
 
     if (this.getNode(nodeId)) {
-      throw Error(`Node with an ID of ${nodeId} has already been registered`);
+      throw Error(`Node with an ID of ${nodeId} has already been registered`)
     }
 
     // if this is the very first node, set it as root and return...
@@ -176,7 +178,7 @@ export class Lrud {
 
     // add the node into the tree
     // path is the node's parent plus 'children' plus itself
-    let path = arrayFind(this.nodePathList, path => endsWith(path, node.parent)) + '.children.' + nodeId
+    const path = arrayFind(this.nodePathList, path => endsWith(path, node.parent)) + '.children.' + nodeId
     Set(this.tree, path, node)
     this.nodePathList.push(path)
 
@@ -191,41 +193,41 @@ export class Lrud {
   /**
    * maintained for legacy API reasons
    */
-  register(nodeId: string, node: Node = {}) {
+  register (nodeId: string, node: Node = {}): Lrud {
     return this.registerNode(nodeId, node)
   }
 
   /**
    * unregister a node from the navigation tree
    * kept for backwards compatibility reasons
-   * 
+   *
    * @param {string} nodeId
    */
-  unregister(nodeId: string, unregisterOptions?: UnregisterNodeOptions) {
-    this.unregisterNode(nodeId, unregisterOptions);
+  unregister (nodeId: string, unregisterOptions?: UnregisterNodeOptions): void {
+    this.unregisterNode(nodeId, unregisterOptions)
   }
 
   /**
    * unregister a node from the navigation tree
-   * 
+   *
    * @param {string} nodeId
    * @param {object} unregisterOptions
    * @param {boolean} unregisterOptions.forceRefocus if true, LRUD will attempt to re-focus on a new node if the currently focused node becomes unregistered due to the given node ID being unregistered
    */
-  unregisterNode(nodeId: string, unregisterOptions: UnregisterNodeOptions = { forceRefocus: true }) {
+  unregisterNode (nodeId: string, unregisterOptions: UnregisterNodeOptions = { forceRefocus: true }): Lrud {
     if (nodeId === this.rootNodeId) {
       this.tree = {}
       this.nodePathList = []
-      this.focusableNodePathList = [];
+      this.focusableNodePathList = []
       this.rootNodeId = null
       this.currentFocusNode = null
       this.currentFocusNodeId = null
       this.currentFocusNodeIndex = null
       this.currentFocusNodeIndexRange = null
       this.isIndexAlignMode = false
-      this.emitter = new mitt();
+      this.emitter = mitt()
       this.overrides = {}
-      return;
+      return
     }
 
     const path = this.getPathForNodeId(nodeId)
@@ -261,15 +263,15 @@ export class Lrud {
     // ...if we're unregistering the activeChild of our parent (could be a leaf OR branch)
     // we need to recalculate the focus...
     if (parentNode.activeChild && parentNode.activeChild === nodeId) {
-      this.isIndexAlignMode = false;
+      this.isIndexAlignMode = false
       delete parentNode.activeChild
 
       if (unregisterOptions.forceRefocus) {
         this.recalculateFocus(nodeClone)
       } else {
-        this.currentFocusNode = undefined;
-        this.currentFocusNodeId = undefined;
-        this.currentFocusNodeIndex = undefined;
+        this.currentFocusNode = undefined
+        this.currentFocusNodeId = undefined
+        this.currentFocusNodeIndex = undefined
       }
     }
 
@@ -282,7 +284,7 @@ export class Lrud {
     // blur on the nodeClone
     this.emitter.emit('blur', nodeClone)
     if (nodeClone.onBlur) {
-      nodeClone.onBlur(nodeClone);
+      nodeClone.onBlur(nodeClone)
     }
 
     // if we have any overrides whose target or ID is the node we just unregistered, we should unregister
@@ -290,7 +292,7 @@ export class Lrud {
     Object.keys(this.overrides).forEach(overrideId => {
       const override = this.overrides[overrideId]
       if (override.target === nodeClone.id || override.id === nodeClone.id) {
-        this.unregisterOverride(overrideId);
+        this.unregisterOverride(overrideId)
       }
     })
 
@@ -306,7 +308,7 @@ export class Lrud {
    * @param {string} override.direction
    * @param {string} override.target
    */
-  registerOverride(overrideId: string, override: Override) {
+  registerOverride (overrideId: string, override: Override): Lrud {
     if (!overrideId) {
       throw new Error('need an ID to register an override')
     }
@@ -332,7 +334,7 @@ export class Lrud {
    *
    * @param {string} overrideId
    */
-  unregisterOverride(overrideId: string) {
+  unregisterOverride (overrideId: string): Lrud {
     delete this.overrides[overrideId]
 
     return this
@@ -343,7 +345,7 @@ export class Lrud {
    *
    * @param {string} nodeId node id
    */
-  getNode(nodeId: string): Node {
+  getNode (nodeId: string): Node {
     return Get(this.tree, (this.getPathForNodeId(nodeId)))
   }
 
@@ -352,7 +354,7 @@ export class Lrud {
    *
    * @param {string} nodeId node id
    */
-  pickNode(nodeId: string): Node {
+  pickNode (nodeId: string): Node {
     const node = this.getNode(nodeId)
 
     if (!node) {
@@ -372,7 +374,7 @@ export class Lrud {
    * @param {object} node
    * @param {string} direction
    */
-  climbUp(node: Node, direction: string): Node {
+  climbUp (node: Node, direction: string): Node {
     if (!node) {
       return null
     }
@@ -402,7 +404,7 @@ export class Lrud {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
-    let nextChildInDirection = this.getNextChildInDirection(node, direction)
+    const nextChildInDirection = this.getNextChildInDirection(node, direction)
 
     // if we dont have a next child, just return the node. this is primarily for use during unregistering
     if (!nextChildInDirection) {
@@ -430,7 +432,7 @@ export class Lrud {
    *
    * @param {object} node
    */
-  digDown(node: Node, direction: string = null) {
+  digDown (node: Node, direction: string = null): Node {
     // if the active child is focusable, return it
     if (isNodeFocusable(node)) {
       return node
@@ -438,7 +440,7 @@ export class Lrud {
 
     /*
     if we're in a nested grid
-      if we're going VERTICAL DOWN 
+      if we're going VERTICAL DOWN
         take the first child, and then match the index
       if we're going VERTICAL UP
         take the last child, and then match the index
@@ -455,24 +457,24 @@ export class Lrud {
     if (this.isIndexAlignMode) {
       if (node.isIndexAlign) {
         // we're in a nested grid, so need to take into account orientation and direction of travel
-        const nodeParent = this.getNode(node.parent);
+        const nodeParent = this.getNode(node.parent)
         if (nodeParent.orientation === 'vertical') {
           if (direction === 'UP') {
-            return this.digDown(_findChildWithClosestIndex(this.getNodeLastChild(node), this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
+            return this.digDown(_findChildWithClosestIndex(this.getNodeLastChild(node), this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction)
           }
           if (direction === 'DOWN') {
-            return this.digDown(_findChildWithClosestIndex(this.getNodeFirstChild(node), this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
+            return this.digDown(_findChildWithClosestIndex(this.getNodeFirstChild(node), this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction)
           }
         }
 
         if (nodeParent.orientation === 'horizontal') {
           if (direction === 'LEFT') {
-            const firstStep = _findChildWithClosestIndex(node, this.getNode(this.currentFocusNode.parent).index);
-            return this.digDown(this.getNodeLastChild(firstStep), direction);
+            const firstStep = _findChildWithClosestIndex(node, this.getNode(this.currentFocusNode.parent).index)
+            return this.digDown(this.getNodeLastChild(firstStep), direction)
           }
           if (direction === 'RIGHT') {
-            const firstStep = _findChildWithClosestIndex(node, this.getNode(this.currentFocusNode.parent).index);
-            return this.digDown(this.getNodeFirstChild(firstStep), direction);
+            const firstStep = _findChildWithClosestIndex(node, this.getNode(this.currentFocusNode.parent).index)
+            return this.digDown(this.getNodeFirstChild(firstStep), direction)
           }
         }
       }
@@ -480,14 +482,14 @@ export class Lrud {
       // we're not in a nested grid, so just look for matching index ranges or index
       const matchingViaIndexRange = _findChildWithMatchingIndexRange(node, this.currentFocusNodeIndex)
       if (matchingViaIndexRange) {
-        return this.digDown(matchingViaIndexRange, direction);
+        return this.digDown(matchingViaIndexRange, direction)
       }
-      return this.digDown(_findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction);
+      return this.digDown(_findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction)
     }
 
     if (!isNodeFocusable(node) && !this.doesNodeHaveFocusableChildren(node)) {
-      const parentNode = this.getNode(node.parent);
-      const nextSiblingFromNode = this.getNextChildInDirection({ ...parentNode, activeChild: node.id }, direction);
+      const parentNode = this.getNode(node.parent)
+      const nextSiblingFromNode = this.getNextChildInDirection({ ...parentNode, activeChild: node.id }, direction)
       // if the next sibling is ME, we're in an infinite loop - just return null
       if (nextSiblingFromNode.id === node.id) {
         return null
@@ -500,7 +502,7 @@ export class Lrud {
       node.activeChild = this.getNodeFirstChild(node).id
     }
 
-    let nextChild = node.children[node.activeChild]
+    const nextChild = node.children[node.activeChild]
 
     return (isNodeFocusable(nextChild)) ? nextChild : this.digDown(nextChild, direction)
   }
@@ -513,7 +515,7 @@ export class Lrud {
    * @param {object} node
    * @param {string} direction
    */
-  getNextChildInDirection(node: Node, direction: string = null): Node {
+  getNextChildInDirection (node: Node, direction: string = null): Node {
     if (!direction) {
       return this.getNextChild(node)
     }
@@ -541,7 +543,7 @@ export class Lrud {
    *
    * @param {object} node
    */
-  getNextChild(node: Node): Node {
+  getNextChild (node: Node): Node {
     if (!node.activeChild) {
       node.activeChild = this.getNodeFirstChild(node).id
     }
@@ -563,10 +565,10 @@ export class Lrud {
 
   /**
    * get the semantic "previous" child for a node
-   * 
+   *
    * @param {object} node
    */
-  getPrevChild(node: Node): Node {
+  getPrevChild (node: Node): Node {
     if (!node.activeChild) {
       node.activeChild = this.getNodeFirstChild(node).id
     }
@@ -589,30 +591,30 @@ export class Lrud {
 
   /**
    * get the first child of a node, based on index
-   * 
+   *
    * @param {object} node
    */
-  getNodeFirstChild(node: Node): Node {
+  getNodeFirstChild (node: Node): Node {
     if (!node.children) {
       return undefined
     }
 
-    const orderedIndexes = Object.keys(node.children).map(childId => node.children[childId].index).sort((a, b)  =>  a - b)
+    const orderedIndexes = Object.keys(node.children).map(childId => node.children[childId].index).sort((a, b) => a - b)
 
     return _findChildWithIndex(node, orderedIndexes[0])
   }
 
   /**
    * get the last child of a node, based on index
-   * 
+   *
    * @param {object} node
    */
-  getNodeLastChild(node: Node): Node {
+  getNodeLastChild (node: Node): Node {
     if (!node.children) {
       return undefined
     }
 
-    const orderedIndexes = Object.keys(node.children).map(childId => node.children[childId].index).sort((a, b)  =>  a - b)
+    const orderedIndexes = Object.keys(node.children).map(childId => node.children[childId].index).sort((a, b) => a - b)
 
     return _findChildWithIndex(node, orderedIndexes[orderedIndexes.length - 1])
   }
@@ -620,18 +622,18 @@ export class Lrud {
   /**
    * given an event, handle any state changes that may arise from the direction pressed.
    * state changes based on climbUp'ing and digDown'ing from the current focusedNode
-   * 
+   *
    * @param {object} event
    * @param {string} [event.keyCode]
    * @param {string} [event.direction]
    */
-  handleKeyEvent(event: KeyEvent) {
+  handleKeyEvent (event: KeyEvent): Node | void {
     const direction = (event.keyCode) ? getDirectionForKeyCode(event.keyCode) : event.direction.toUpperCase()
     const currentFocusNode = this.getNode(this.currentFocusNodeId)
 
     // if all we're doing is processing an enter, just run the `onSelect` function of the current node...
     if (direction === 'ENTER') {
-      this.emitter.emit('select', currentFocusNode);
+      this.emitter.emit('select', currentFocusNode)
       if (currentFocusNode.onSelect) {
         currentFocusNode.onSelect(currentFocusNode)
       }
@@ -663,12 +665,12 @@ export class Lrud {
     if (currentFocusNode.shouldCancelLeave) {
       if (currentFocusNode.shouldCancelLeave(currentFocusNode, focusableNode)) {
         if (currentFocusNode.onLeaveCancelled) {
-          currentFocusNode.onLeaveCancelled(currentFocusNode, focusableNode);
+          currentFocusNode.onLeaveCancelled(currentFocusNode, focusableNode)
         }
         this.emitter.emit('cancelled', {
           leave: currentFocusNode,
           enter: focusableNode
-        });
+        })
         return currentFocusNode
       }
     }
@@ -677,12 +679,12 @@ export class Lrud {
     if (focusableNode.shouldCancelEnter) {
       if (focusableNode.shouldCancelEnter(currentFocusNode, focusableNode)) {
         if (focusableNode.onEnterCancelled) {
-          focusableNode.onEnterCancelled(currentFocusNode, focusableNode);
+          focusableNode.onEnterCancelled(currentFocusNode, focusableNode)
         }
         this.emitter.emit('cancelled', {
           leave: currentFocusNode,
           enter: focusableNode
-        });
+        })
         return currentFocusNode
       }
     }
@@ -705,7 +707,7 @@ export class Lrud {
         enter: focusableNode,
         direction,
         offset: (direction === 'LEFT' || direction === 'UP') ? -1 : 1
-      });
+      })
     }
 
     if (currentFocusNode.onLeave) {
@@ -724,7 +726,7 @@ export class Lrud {
    * @param {string} parentId
    * @param {string} childId
    */
-  setActiveChild(parentId: string, childId: string) {
+  setActiveChild (parentId: string, childId: string): void {
     const child = this.getNode(childId)
     const parent = this.getNode(parentId)
     if (!child) {
@@ -760,14 +762,14 @@ export class Lrud {
    * @param {string} parentId
    * @param {string} childId
    */
-     setActiveChildRecursive(parentId: string, childId: string) {
-       this.setActiveChild(parentId, childId)
-       const parent = this.getNode(parentId)
+  setActiveChildRecursive (parentId: string, childId: string): void {
+    this.setActiveChild(parentId, childId)
+    const parent = this.getNode(parentId)
 
-       // if the parent has a parent, bubble up
-       if (parent.parent) {
-         this.setActiveChildRecursive(parent.parent, parent.id)
-       }
+    // if the parent has a parent, bubble up
+    if (parent.parent) {
+      this.setActiveChildRecursive(parent.parent, parent.id)
+    }
   }
   /**
    * set the current focus of the instance to the given node ID
@@ -778,7 +780,7 @@ export class Lrud {
    *
    * @param {string} nodeId
    */
-  assignFocus(nodeId: string) {
+  assignFocus (nodeId: string): void {
     let node = this.getNode(nodeId)
 
     if (node.children && !this.doesNodeHaveFocusableChildren(node)) {
@@ -794,11 +796,11 @@ export class Lrud {
     }
 
     if (this.currentFocusNodeId) {
-      let previouslyFocusedNode = this.getNode(this.currentFocusNodeId);
+      const previouslyFocusedNode = this.getNode(this.currentFocusNodeId)
       if (previouslyFocusedNode) {
         this.emitter.emit('blur', previouslyFocusedNode)
         if (previouslyFocusedNode.onBlur) {
-          previouslyFocusedNode.onBlur(previouslyFocusedNode);
+          previouslyFocusedNode.onBlur(previouslyFocusedNode)
         }
       }
     }
@@ -832,7 +834,7 @@ export class Lrud {
    * If the focus of the tree is out of sync, ie, the current focused node becomes unfocusable this can be used to fall back to another focus.
    * @param {focusedNode}
    */
-  recalculateFocus(node: Node) {
+  recalculateFocus (node: Node): void {
     const parentNode = this.getNode(node.parent)
     const top = this.climbUp(parentNode, '*')
     if (top) {
@@ -844,69 +846,69 @@ export class Lrud {
         this.assignFocus(top.id)
       }
     } else {
-        this.currentFocusNode = undefined;
-        this.currentFocusNodeId = undefined;
-        this.currentFocusNodeIndex = undefined;
+      this.currentFocusNode = undefined
+      this.currentFocusNodeId = undefined
+      this.currentFocusNodeIndex = undefined
     }
   }
 
   /**
    * given a tree, return an array of Nodes in that tree
-   * 
-   * @param {object} tree 
+   *
+   * @param {object} tree
    */
 
   /**
    * given a tree, register all of its nodes into this instance
-   * 
-   * @param {object} tree 
+   *
+   * @param {object} tree
    */
-  registerTree(tree: object) {
-      getNodesFromTree(tree).forEach(node => {
-        this.registerNode(node.id, node)
-      })
+  registerTree (tree: object): void {
+    getNodesFromTree(tree).forEach(node => {
+      this.registerNode(node.id, node)
+    })
   }
 
   /**
    * given a tree object, attempt to register that tree into the current lrud instance
-   * 
+   *
    * if the given tree already exists as a branch in the instance tree, the new tree will replace that branch
-   * 
+   *
    * if the new tree doesn't already exist as a branch in the instance tree, this function will register the new
    * tree as a branch against the root node, as per standard registerNode() behaviour
-   * 
+   *
    * @param {object} tree
    * @param {object} options
    * @param {object} options.maintainIndex if true, and new tree is replacing an existing branch of the tree, maintain the original branches relative index
    */
-  insertTree(tree: object, options: InsertTreeOptions = { maintainIndex: true }) {
+  insertTree (tree: object, options: InsertTreeOptions = { maintainIndex: true }): void {
     const replacementNode = tree[Object.keys(tree)[0]]
 
     if (!replacementNode.id) {
       replacementNode.id = Object.keys(tree)[0]
     }
 
-    const originalNode = this.pickNode(replacementNode.id);
+    const originalNode = this.pickNode(replacementNode.id)
     if (!replacementNode.parent && originalNode && originalNode.parent) {
       replacementNode.parent = originalNode.parent
     }
 
-    const parentNode = this.getNode(replacementNode.parent);
+    const parentNode = this.getNode(replacementNode.parent)
 
     if (options.maintainIndex && originalNode && originalNode.index) {
       replacementNode.index = originalNode.index
       Object.keys(parentNode.children).forEach(childId => {
         const child = parentNode.children[childId]
         if (child.index >= originalNode.index) {
-          child.index += 1;
+          child.index += 1
         }
       })
     }
 
-    this.registerTree(tree);
-    
+    this.registerTree(tree)
+
     if (options.maintainIndex) {
-      this.reindexChildrenOfNode(parentNode);
+      this.reindexChildrenOfNode(parentNode)
     }
   }
 
@@ -919,7 +921,7 @@ export class Lrud {
    * @param {string} nodeId
    * @param {boolean} isFocusable
    */
-  setNodeFocusable(nodeId: string, isFocusable: boolean) {
+  setNodeFocusable (nodeId: string, isFocusable: boolean): void {
     const node = this.getNode(nodeId)
     if (!node) return
 

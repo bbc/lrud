@@ -6,6 +6,7 @@ export interface Node {
     parent?: string;
     index?: number;
     indexRange?: number[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selectAction?: any;
     isFocusable?: boolean;
     isWrapping?: boolean;
@@ -13,12 +14,14 @@ export interface Node {
     isIndexAlign?: boolean;
     onLeave?: (leave: Node) => void;
     onEnter?: (enter: Node) => void;
-    shouldCancelLeave?: (leave: Node, enter: Node) => Boolean;
+    shouldCancelLeave?: (leave: Node, enter: Node) => boolean;
     onLeaveCancelled?: (currentFocusNode: Node, focusableNode: Node) => void;
-    shouldCancelEnter?: (leave: Node, enter: Node) => Boolean;
+    shouldCancelEnter?: (leave: Node, enter: Node) => boolean;
     onEnterCancelled?: (currentFocusNode: Node, focusableNode: Node) => void;
     activeChild?: string;
-    children?: any;
+    children?: {
+      [id: string]: Node;
+    };
     onSelect?: Function;
     onInactive?: Function;
     onActive?: Function;
