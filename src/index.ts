@@ -11,7 +11,8 @@ import {
   _findChildWithClosestIndex,
   _findChildWithIndex,
   getNodesFromTree,
-  endsWith
+  endsWith,
+  arrayFind
 } from './utils'
 
 import mitt from 'mitt'
@@ -108,7 +109,7 @@ export class Lrud {
     if (nodeId === this.rootNodeId) {
       return this.rootNodeId
     }
-    return this.nodePathList.find(path => endsWith(path, '.' + nodeId))
+    return arrayFind(this.nodePathList, path => endsWith(path, '.' + nodeId))
   }
 
   /**
@@ -154,7 +155,7 @@ export class Lrud {
     // to it so that the parent always has an `activeChild` value
     // we can tell if its parent has any children by checking the nodePathList for
     // entries containing '<parent>.children'
-    const parentsChildPaths = this.nodePathList.find(path => path.indexOf(node.parent + '.children') > -1)
+    const parentsChildPaths = arrayFind(this.nodePathList, path => path.indexOf(node.parent + '.children') > -1)
     if (parentsChildPaths == null) {
       const parentPath = this.getPathForNodeId(node.parent)
       Set(this.tree, parentPath + '.activeChild', nodeId)
@@ -175,7 +176,7 @@ export class Lrud {
 
     // add the node into the tree
     // path is the node's parent plus 'children' plus itself
-    let path = this.nodePathList.find(path => endsWith(path, node.parent)) + '.children.' + nodeId
+    let path = arrayFind(this.nodePathList, path => endsWith(path, node.parent)) + '.children.' + nodeId
     Set(this.tree, path, node)
     this.nodePathList.push(path)
 
@@ -377,7 +378,7 @@ export class Lrud {
     }
 
     // if we have a matching override at this point in the climb, return that target node
-    const matchingOverrideId = Object.keys(this.overrides).find(overrideId => {
+    const matchingOverrideId = arrayFind(Object.keys(this.overrides), overrideId => {
       const override = this.overrides[overrideId]
       return override.id === node.id && override.direction.toUpperCase() === direction.toUpperCase()
     })
@@ -910,7 +911,7 @@ export class Lrud {
   }
 
   doesNodeHaveFocusableChildren(node: Node) : boolean {
-    return this.focusableNodePathList.some(p => p.includes(`${node.id}.`))
+    return this.focusableNodePathList.some(p => p.indexOf(`${node.id}.`) > -1)
   }
 
   /**
