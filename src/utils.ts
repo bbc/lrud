@@ -14,15 +14,15 @@ export const Closest = (values: [number], goal: number): number => values.reduce
 /**
  * String.endsWith helper
  */
-export const endsWith = (str, suffix) => str.indexOf(suffix, str.length - suffix.length) !== -1
+export const endsWith = (str, suffix): boolean => str.indexOf(suffix, str.length - suffix.length) !== -1
 
 /**
  * Array.prototype.find helper
  */
-export const arrayFind = (arr, func) => {
+export const arrayFind = <A>(arr: A[], func): A | undefined => {
   const len = arr.length
   let i = 0
-  while(i < len) {
+  while (i < len) {
     if (func(arr[i], i, arr)) {
       return arr[i]
     }
@@ -81,17 +81,17 @@ export const isDirectionAndOrientationMatching = (orientation, direction): boole
  * @param {*} node
  */
 export const isNodeInPath = (path, node): boolean => {
-    if (path.lastIndexOf(node.id + '.', 0) === 0) {
-        return true
-    }
-    if (endsWith(path, '.' + node.id)) {
-        return true
-    }
-    if (path.indexOf('.' + node.id + '.') !== -1) {
-        return true
-    }
+  if (path.lastIndexOf(node.id + '.', 0) === 0) {
+    return true
+  }
+  if (endsWith(path, '.' + node.id)) {
+    return true
+  }
+  if (path.indexOf('.' + node.id + '.') !== -1) {
+    return true
+  }
 
-    return false
+  return false
 }
 
 /**
@@ -112,14 +112,14 @@ export const isNodeInPaths = (paths, node): boolean => {
  * @param {number} index
  */
 export const _findChildWithMatchingIndexRange = (node, index): Node => {
-    if (!node.children) {
-        return null
-    }
+  if (!node.children) {
+    return null
+  }
 
-    const childWithIndexRangeSpanningIndex = arrayFind(Object.keys(node.children), childId => {
-        const child = node.children[childId]
-        return child.indexRange && (child.indexRange[0] <= index && child.indexRange[1] >= index)
-    })
+  const childWithIndexRangeSpanningIndex = arrayFind(Object.keys(node.children), childId => {
+    const child = node.children[childId]
+    return child.indexRange && (child.indexRange[0] <= index && child.indexRange[1] >= index)
+  })
 
   if (childWithIndexRangeSpanningIndex) {
     return node.children[childWithIndexRangeSpanningIndex]
@@ -137,10 +137,10 @@ export const _findChildWithIndex = (node, index): Node => {
     return null
   }
 
-    const childIdWithMatchingIndex = arrayFind(Object.keys(node.children), childId => {
-        const childNode = node.children[childId]
-        return childNode.index === index
-    })
+  const childIdWithMatchingIndex = arrayFind(Object.keys(node.children), childId => {
+    const childNode = node.children[childId]
+    return childNode.index === index
+  })
 
   if (childIdWithMatchingIndex) {
     return node.children[childIdWithMatchingIndex]

@@ -912,7 +912,7 @@ export class Lrud {
     }
   }
 
-  doesNodeHaveFocusableChildren(node: Node) : boolean {
+  doesNodeHaveFocusableChildren (node: Node): boolean {
     return this.focusableNodePathList.some(p => p.indexOf(`${node.id}.`) > -1)
   }
 
