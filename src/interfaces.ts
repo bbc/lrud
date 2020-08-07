@@ -38,7 +38,7 @@ export interface Override {
 }
 
 export interface KeyEvent {
-    keyCode: number;
+    keyCode?: number;
     direction: string;
 }
 
