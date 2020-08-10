@@ -58,6 +58,7 @@
     "test": "npm run build && jest",
     "test:verbose": "jest --verbose",
     "test:coverage": "jest --coverage",
+    "prepare": "npm run build",
     "prebuild": "npm run clean",
     "build": "rollup -c",
     "watch": "npm run build -- -w"
