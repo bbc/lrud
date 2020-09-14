@@ -56,6 +56,38 @@ describe('event scenarios', () => {
 
     expect(activeSpy.mock.calls).toEqual([
       [expect.objectContaining({
+        parent: 'root',
+        id: 'left',
+        index: 0,
+        activeChild: 'a',
+        children: {
+          a: {
+            parent: 'left',
+            isFocusable: true,
+            id: 'a',
+            index: 0
+          },
+          b: {
+            parent: 'left',
+            isFocusable: true,
+            id: 'b',
+            index: 1
+          }
+        }
+      })],
+      [expect.objectContaining({
+        parent: 'left',
+        isFocusable: true,
+        id: 'a',
+        index: 0
+      })],
+      [expect.objectContaining({
+        parent: 'right',
+        isFocusable: true,
+        id: 'c',
+        index: 0
+      })],
+      [expect.objectContaining({
         parent: 'right',
         isFocusable: true,
         id: 'd',

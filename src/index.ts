@@ -161,6 +161,11 @@ export class Lrud {
     if (parentsChildPaths == null) {
       const parentPath = this.getPathForNodeId(node.parent)
       Set(this.tree, parentPath + '.activeChild', nodeId)
+      
+      this.emitter.emit('active', node)
+      if (node.onActive) {
+        node.onActive(node)
+      }
     }
 
     // if no `index` set, calculate it
