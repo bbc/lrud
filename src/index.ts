@@ -161,7 +161,7 @@ export class Lrud {
     if (parentsChildPaths == null) {
       const parentPath = this.getPathForNodeId(node.parent)
       Set(this.tree, parentPath + '.activeChild', nodeId)
-      
+
       this.emitter.emit('active', node)
       if (node.onActive) {
         node.onActive(node)
@@ -266,14 +266,19 @@ export class Lrud {
     }
 
     // ...if we're unregistering the activeChild of our parent (could be a leaf OR branch)
-    // we need to recalculate the focus...
+    // we might need to recalculate the focus...
     if (parentNode.activeChild && parentNode.activeChild === nodeId) {
       this.isIndexAlignMode = false
       delete parentNode.activeChild
 
-      if (unregisterOptions.forceRefocus) {
+      // check if the current focus node was removed
+      const isCurrentFocusNodeRemoved = !this.focusableNodePathList.some(nodeIdPath => {
+        return nodeIdPath.indexOf(this.currentFocusNodeId) > -1
+      })
+
+      if (unregisterOptions.forceRefocus && isCurrentFocusNodeRemoved) {
         this.recalculateFocus(nodeClone)
-      } else {
+      } else if (isCurrentFocusNodeRemoved) {
         this.currentFocusNode = undefined
         this.currentFocusNodeId = undefined
         this.currentFocusNodeIndex = undefined
