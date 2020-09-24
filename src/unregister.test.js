@@ -494,7 +494,46 @@ describe('unregisterNode()', () => {
     ])
   })
 
-  test('unregistering a pibling of the focused node', () => {
+  test('unregistering a pibling of the focused node should not recalculate focus', () => {
+    const nav = new Lrud()
+
+    nav.register('root', {
+      orientation: 'horizontal'
+    })
+
+    nav.register('node1', {
+      orientation: 'vertical',
+      parent: 'root'
+    })
+
+    nav.register('item1', {
+      parent: 'node1',
+      selectAction: {},
+    })
+
+    nav.register('node2', {
+      orientation: 'vertical',
+      parent: 'root'
+    })
+
+    const onBlur = jest.fn();
+    nav.register('item2', {
+      parent: 'node2',
+      selectAction: {},
+      onBlur
+    })
+
+    nav.assignFocus('node2')
+
+    expect(nav.currentFocusNodeId).toEqual('item2')
+
+    nav.unregisterNode('item1')
+
+    expect(nav.currentFocusNodeId).toEqual('item2')
+    expect(onBlur).not.toBeCalled();
+  })
+
+  test('unregistering a pibling of the focused node should not remove focus - forceRefocus false', () => {
     const nav = new Lrud()
 
     nav.register('root', {
@@ -525,7 +564,7 @@ describe('unregisterNode()', () => {
 
     expect(nav.currentFocusNodeId).toEqual('item2')
 
-    nav.unregisterNode('item1')
+    nav.unregisterNode('item1', { forceRefocus: false })
 
     expect(nav.currentFocusNodeId).toEqual('item2')
   })
