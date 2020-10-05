@@ -170,7 +170,7 @@ describe('event scenarios', () => {
 
     expect(navigation.currentFocusNodeId).toBe('c');
 
-    // only called once, as `left` is already the activeChild of `root`
+    // only called once, as `c` is already the activeChild of `right`
     expect(activeSpy).toHaveBeenCalledWith(expect.objectContaining({
       parent: 'root',
       id: 'right',
