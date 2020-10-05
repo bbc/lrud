@@ -504,7 +504,7 @@ export class Lrud {
 
     // if we dont have an active child, use the first child
     if (!node.activeChild) {
-      node.activeChild = this.getNodeFirstChild(node).id
+      this.setActiveChild(node.id, this.getNodeFirstChild(node).id)
     }
 
     const nextChild = node.children[node.activeChild]
@@ -550,7 +550,7 @@ export class Lrud {
    */
   getNextChild (node: Node): Node {
     if (!node.activeChild) {
-      node.activeChild = this.getNodeFirstChild(node).id
+      this.setActiveChild(node.id, this.getNodeFirstChild(node).id)
     }
 
     const currentActiveIndex = node.children[node.activeChild].index
@@ -575,7 +575,7 @@ export class Lrud {
    */
   getPrevChild (node: Node): Node {
     if (!node.activeChild) {
-      node.activeChild = this.getNodeFirstChild(node).id
+      this.setActiveChild(node.id, this.getNodeFirstChild(node).id)
     }
 
     const currentActiveIndex = node.children[node.activeChild].index
@@ -754,6 +754,19 @@ export class Lrud {
         parent.onActiveChildChange({
           node: parent,
           leave: currentActiveChild,
+          enter: child
+        })
+      }
+    } else if (!parent.activeChild) {
+      parent.activeChild = child.id
+      this.emitter.emit('active', child)
+      if (child.onActive) {
+        child.onActive(child)
+      }
+      if (parent.onActiveChildChange) {
+        parent.onActiveChildChange({
+          node: parent,
+          leave: null,
           enter: child
         })
       }
