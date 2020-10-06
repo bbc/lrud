@@ -145,6 +145,39 @@ describe('event scenarios', () => {
     ])
   })
 
+  test('active events should be fired when recalculating focus', () => {
+    const activeSpy = jest.fn()
+
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', {orientation: 'vertical'})
+
+    navigation
+      .registerNode('left')
+      .registerNode('a', { parent: 'left', isFocusable: true })
+      .registerNode('b', { parent: 'left', isFocusable: true })
+
+    navigation
+      .registerNode('right')
+      .registerNode('c', { parent: 'right', isFocusable: true })
+      .registerNode('d', { parent: 'right', isFocusable: true })
+
+    navigation.assignFocus('b')
+
+
+    navigation.on('active', activeSpy)
+    navigation.unregisterNode('left');
+
+    expect(navigation.currentFocusNodeId).toBe('c');
+
+    // only called once, as `c` is already the activeChild of `right`
+    expect(activeSpy).toHaveBeenCalledWith(expect.objectContaining({
+      parent: 'root',
+      id: 'right',
+      index: 0
+    }))
+  })
+
   test('`move` should be fired once per key handle - moving right', () => {
     const moveSpy = jest.fn()
 
