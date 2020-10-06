@@ -26,7 +26,6 @@
     "url": "git@github.com:bbc/lrud.git"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.12",
     "@typescript-eslint/eslint-plugin": "^2.6.1",
     "@typescript-eslint/parser": "^2.6.1",
     "eslint": "^6.6.0",
@@ -35,7 +34,6 @@
     "eslint-plugin-node": "^6.0.1",
     "eslint-plugin-promise": "^3.8.0",
     "eslint-plugin-standard": "^3.1.0",
-    "jest": "^24.7.1",
     "rimraf": "^2.6.2",
     "rollup": "^1.25.1",
     "rollup-plugin-commonjs": "^9.1.2",
@@ -43,12 +41,14 @@
     "rollup-plugin-typescript": "^1.0.1",
     "rollup-plugin-typescript2": "^0.21.0",
     "rollup-plugin-uglify": "^6.0.4",
-    "ts-jest": "^24.0.2",
-    "tslib": "^1.9.3",
-    "typescript": "^3.4.5"
+    "ts-jest": "^26.4.0",
+    "tslib": "^1.9.3"
   },
   "dependencies": {
-    "mitt": "^1.2.0"
+    "@types/jest": "^26.0.14",
+    "jest": "^26.4.2",
+    "mitt": "^1.2.0",
+    "typescript": "^4.0.3"
   },
   "scripts": {
     "preversion": "npm test",
