@@ -265,6 +265,12 @@ navigation.on('move', moveEvent => {
 
 ```
 
+To unregister an event callback, simply call the .off() method
+
+```js
+navigation.off('focus', function);
+```
+
 ## Overrides
 
 LRUD supports an override system, for times when correct product/UX behaviour requires focus to change in a way that is not strictly in accordance with the structure of the navigation tree.
