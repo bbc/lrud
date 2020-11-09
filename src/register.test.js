@@ -37,6 +37,17 @@ describe('registerNode()', () => {
     expect(navigation.tree.alpha.children.beta.children.charlie.parent).toEqual('beta')
   })
 
+  test('registering a node with a nested parent where the previous node have the same ending', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('alpha', { a: 1 })
+    navigation.registerNode('beta_beta', { c: 3})
+    navigation.registerNode('beta', { b: 2 })
+    navigation.registerNode('charlie', { d: 4, parent: 'beta' })
+
+    expect(navigation.tree.alpha.children.beta.children.charlie.parent).toEqual('beta')
+  })
+
   test('registering a node with a deeply nested parent', () => {
     const navigation = new Lrud()
 
