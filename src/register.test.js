@@ -43,9 +43,14 @@ describe('registerNode()', () => {
     navigation.registerNode('alpha', { a: 1 })
     navigation.registerNode('beta_beta', { c: 3})
     navigation.registerNode('beta', { b: 2 })
-    navigation.registerNode('charlie', { d: 4, parent: 'beta' })
 
-    expect(navigation.tree.alpha.children.beta.children.charlie.parent).toEqual('beta')
+    // add a child to beta_beta so that activeChild won't be null if beta is identified as beta_beta
+    // when the activeChild is set during registration
+    navigation.registerNode('charlie', { d: 4, parent: 'beta_beta' })
+    navigation.registerNode('delta', { d: 4, parent: 'beta' })
+
+    expect(navigation.tree.alpha.children.beta.children.delta).toBeTruthy();
+    expect(navigation.tree.alpha.children.beta.activeChild).toEqual('delta')
   })
 
   test('registering a node with a deeply nested parent', () => {
