@@ -458,4 +458,23 @@ describe('event scenarios', () => {
 
     expect(onSelectMock).toBeCalledTimes(2)
   })
+
+  test('select not fired on callback when removed', () => {
+    const navigation = new Lrud()
+    const onSelectMock = jest.fn()
+
+    navigation.registerNode('root')
+      .registerNode('a', { isFocusable: true })
+
+    navigation.assignFocus('a')
+    navigation.on('select', onSelectMock)
+
+    navigation.handleKeyEvent({ direction: 'ENTER' })
+
+    navigation.off('select', onSelectMock);
+
+    navigation.handleKeyEvent({ direction: 'ENTER' })
+
+    expect(onSelectMock).toBeCalledTimes(1)
+  })
 })

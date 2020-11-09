@@ -90,6 +90,16 @@ export class Lrud {
   }
 
   /**
+   * unregister a callback for an LRUD event
+   *
+   * @param {string} eventName event to unsubscribe from 
+   * @param {function} callback function that was added using .on() 
+   */
+  off(eventName, callback): void {
+    this.emitter.off(eventName, callback)
+  }
+
+  /**
    * return the root node
    */
   getRootNode (): Node {
