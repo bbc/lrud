@@ -92,10 +92,10 @@ export class Lrud {
   /**
    * unregister a callback for an LRUD event
    *
-   * @param {string} eventName event to unsubscribe from 
-   * @param {function} callback function that was added using .on() 
+   * @param {string} eventName event to unsubscribe from
+   * @param {function} callback function that was added using .on()
    */
-  off(eventName, callback): void {
+  off (eventName, callback): void {
     this.emitter.off(eventName, callback)
   }
 
@@ -163,11 +163,15 @@ export class Lrud {
       node.parent = this.rootNodeId
     }
 
+    // the parentPathId is period(.) plus the node's parent
+    // the only expection being if the parent is the rootNode, then there is no initial period(.)
+    const parentPathId = node.parent === this.rootNodeId ? node.parent : '.' + node.parent
+
     // if this node is the first child of its parent, we need to set its parent's `activeChild`
     // to it so that the parent always has an `activeChild` value
     // we can tell if its parent has any children by checking the nodePathList for
-    // entries containing '<parent>.children'
-    const parentsChildPaths = arrayFind(this.nodePathList, path => path.indexOf(node.parent + '.children') > -1)
+    // entries containing '<parentPathId>.children'
+    const parentsChildPaths = arrayFind(this.nodePathList, path => path.indexOf(parentPathId + '.children') > -1)
     if (parentsChildPaths == null) {
       const parentPath = this.getPathForNodeId(node.parent)
       Set(this.tree, parentPath + '.activeChild', nodeId)
@@ -192,8 +196,7 @@ export class Lrud {
     }
 
     // add the node into the tree
-    // path is the node's parent plus 'children' plus itself
-    const path = arrayFind(this.nodePathList, path => endsWith(path, node.parent)) + '.children.' + nodeId
+    const path = arrayFind(this.nodePathList, path => endsWith(path, parentPathId)) + '.children.' + nodeId
     Set(this.tree, path, node)
     this.nodePathList.push(path)
 
