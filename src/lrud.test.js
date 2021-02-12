@@ -146,6 +146,19 @@ describe('lrud', () => {
       // and the next thing that was horizontal was the page
       expect(nextActionableNode.id).toEqual('page')
     })
+
+    test('should avoid infinite scan when root node reached', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root', {orientation: 'horizontal'})
+      navigation.registerNode('undefined', {parent: 'root', isFocusable: true})
+
+      navigation.assignFocus('undefined')
+
+      expect(
+        () => navigation.climbUp(navigation.getNode('undefined'), 'right')
+      ).not.toThrow({name: 'RangeError', message: 'Maximum call stack size exceeded'})
+    })
   })
 
   describe('getNextChildInDirection()', () => {
@@ -755,6 +768,22 @@ describe('lrud', () => {
       navigation.assignFocus('b')
       navigation.setNodeFocusable('b', false)
       expect(navigation.getNode('a').activeChild).toEqual('c')
+    })
+  })
+
+  describe('getPathForNodeId()', () => {
+    test('should return undefined - nodeId is not defined', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+      navigation.registerNode('undefined', { })
+      navigation.registerNode('null', { })
+
+      expect(navigation.getPathForNodeId('undefined')).toEqual('root.children.undefined')
+      expect(navigation.getPathForNodeId(undefined)).toBeUndefined()
+
+      expect(navigation.getPathForNodeId('null')).toEqual('root.children.null')
+      expect(navigation.getPathForNodeId(null)).toBeUndefined()
     })
   })
 })
