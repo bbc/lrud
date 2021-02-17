@@ -118,6 +118,9 @@ export class Lrud {
    * @param {string} nodeId
    */
   getPathForNodeId (nodeId: string): string {
+    if (!nodeId) {
+      return undefined
+    }
     if (nodeId === this.rootNodeId) {
       return this.rootNodeId
     }
