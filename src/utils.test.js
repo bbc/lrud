@@ -5,8 +5,10 @@ const {
   isNodeFocusable,
   isDirectionAndOrientationMatching,
   getDirectionForKeyCode,
-  isNodeInPath,
-  isNodeInPaths,
+  isNodeIdTheLeafOfPath,
+  isNodeIdInTheMiddleOfPath,
+  isNodeIdTheRootOfPath,
+  isNodeIdInPath,
   _findChildWithMatchingIndexRange,
   _findChildWithClosestIndex,
   _findChildWithIndex,
@@ -107,11 +109,17 @@ describe('isDirectionAndOrientationMatching()', () => {
   test('vertical and down is true', () => {
     expect(isDirectionAndOrientationMatching('vertical', 'down')).toEqual(true)
   })
+  test('vertical and * is true', () => {
+    expect(isDirectionAndOrientationMatching('vertical', '*')).toEqual(true)
+  })
   test('horizontal and left is true', () => {
     expect(isDirectionAndOrientationMatching('horizontal', 'left')).toEqual(true)
   })
   test('horizontal and right is true', () => {
     expect(isDirectionAndOrientationMatching('horizontal', 'right')).toEqual(true)
+  })
+  test('horizontal and * is true', () => {
+    expect(isDirectionAndOrientationMatching('horizontal', '*')).toEqual(true)
   })
   test('vertical and left is false', () => {
     expect(isDirectionAndOrientationMatching('vertical', 'left')).toEqual(false)
@@ -125,63 +133,86 @@ describe('isDirectionAndOrientationMatching()', () => {
   test('horizontal and down is false', () => {
     expect(isDirectionAndOrientationMatching('horizontal', 'down')).toEqual(false)
   })
+  test('undefined orientation and any valid direction is false', () => {
+    expect(isDirectionAndOrientationMatching(undefined, '*')).toEqual(false)
+  })
+  test('any valid orientation and undefined direction is false', () => {
+    expect(isDirectionAndOrientationMatching('horizontal', undefined)).toEqual(false)
+  })
 })
 
-describe('isNodeInPath()', () => {
-  it('node id is halfway through path', () => {
-    const node = {
-      id: 'y'
-    }
-    const path = 'x.y.z'
+describe('isNodeIdTheRootOfPath()', () => {
+  test('node id is root of path', () => {
+    expect(isNodeIdTheRootOfPath('x.y.z', 'x')).toEqual(true)
+  })
 
-    expect(isNodeInPath(path, node)).toEqual(true)
+  test('node id is not root of path', () => {
+    expect(isNodeIdTheRootOfPath('x.y.z', 'y')).toEqual(false)
+    expect(isNodeIdTheRootOfPath('x.y.z', 'z')).toEqual(false)
+  })
+
+  test('undefined node id is not root of path', () => {
+    expect(isNodeIdTheRootOfPath('x.y.z', undefined)).toEqual(false)
+  })
+
+  test('undefined path is false', () => {
+    expect(isNodeIdTheRootOfPath(undefined, 'x')).toEqual(false)
+  })
+})
+
+describe('isNodeIdInTheMiddleOfPath()', () => {
+  test('node id in the middle of path', () => {
+    expect(isNodeIdInTheMiddleOfPath('x.y.z', 'y')).toEqual(true)
+  })
+
+  test('node id is not in the middle of path', () => {
+    expect(isNodeIdInTheMiddleOfPath('x.y.z', 'x')).toEqual(false)
+    expect(isNodeIdInTheMiddleOfPath('x.y.z', 'z')).toEqual(false)
+  })
+
+  test('undefined node id is not in the middle of path', () => {
+    expect(isNodeIdInTheMiddleOfPath('x.y.z', null)).toEqual(false)
+  })
+
+  test('undefined path is false', () => {
+    expect(isNodeIdInTheMiddleOfPath(undefined, 'x')).toEqual(false)
+  })
+})
+
+describe('isNodeIdTheLeafOfPath()', () => {
+  test('node id is leaf of path', () => {
+    expect(isNodeIdTheLeafOfPath('x.y.z', 'z')).toEqual(true)
+  })
+
+  test('node id is not leaf of path', () => {
+    expect(isNodeIdTheLeafOfPath('x.y.z', 'x')).toEqual(false)
+    expect(isNodeIdTheLeafOfPath('x.y.z', 'y')).toEqual(false)
+  })
+
+  test('undefined node id is not leaf of path', () => {
+    expect(isNodeIdTheLeafOfPath('x.y.z', undefined)).toEqual(false)
+  })
+
+  test('undefined path is false', () => {
+    expect(isNodeIdTheLeafOfPath(undefined, 'x')).toEqual(false)
+  })
+})
+
+describe('isNodeIdInPath()', () => {
+  it('node id is halfway through path', () => {
+    expect(isNodeIdInPath('x.y.z', 'y')).toEqual(true)
   })
 
   it('node id is at start of path', () => {
-    const node = {
-      id: 'x'
-    }
-    const path = 'x.y.z'
-
-    expect(isNodeInPath(path, node)).toEqual(true)
+    expect(isNodeIdInPath('x.y.z', 'x')).toEqual(true)
   })
 
   it('node id is at end of path', () => {
-    const node = {
-      id: 'z'
-    }
-    const path = 'x.y.z'
-
-    expect(isNodeInPath(path, node)).toEqual(true)
+    expect(isNodeIdInPath('x.y.z', 'z')).toEqual(true)
   })
 
   it('node id is not in path', () => {
-    const node = {
-      id: 'z'
-    }
-    const path = '1.2.3'
-
-    expect(isNodeInPath(path, node)).toEqual(false)
-  })
-})
-
-describe('isNodeInPaths()', () => {
-  it('node id is in one of paths', () => {
-    const node = {
-      id: 'y'
-    }
-    const paths = ['x.y.z', 'a.b.c']
-
-    expect(isNodeInPaths(paths, node)).toEqual(true)
-  })
-
-  it('node id is not in one of paths', () => {
-    const node = {
-      id: 'y'
-    }
-    const paths = ['1.2.3', 'a.b.c']
-
-    expect(isNodeInPaths(paths, node)).toEqual(false)
+    expect(isNodeIdInPath('1.2.3', 'z')).toEqual(false)
   })
 })
 

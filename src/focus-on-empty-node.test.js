@@ -249,4 +249,81 @@ describe('Focusing on empty nodes', () => {
 
     expect(nav.currentFocusNodeId).toEqual('item4')
   })
+
+  /**
+   * @see https://github.com/bbc/lrud/issues/81
+   */
+  test('should jump to first focusable node in other branch', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'vertical' })
+    navigation.registerNode('a', { parent: 'root', orientation: 'vertical' })
+    navigation.registerNode('aa', { parent: 'a', isFocusable: true })
+    navigation.registerNode('ab', { parent: 'a' })
+    navigation.registerNode('b', { parent: 'root', orientation: 'vertical' })
+    navigation.registerNode('ba', { parent: 'b', isFocusable: true })
+    navigation.registerNode('bb', { parent: 'b', isFocusable: true })
+
+    navigation.assignFocus('aa')
+
+    navigation.handleKeyEvent({ direction: 'down' })
+
+    expect(navigation.currentFocusNodeId).toEqual('ba')
+  })
+
+  /**
+   * @see https://github.com/bbc/lrud/issues/82
+   */
+  test('should focus node with only non focusable children', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'vertical' })
+    navigation.registerNode('a', { parent: 'root', isFocusable: true })
+    navigation.registerNode('aa', { parent: 'a' })
+
+    navigation.assignFocus('a')
+
+    expect(navigation.currentFocusNodeId).toEqual('a')
+  })
+
+  /**
+   * @see https://github.com/bbc/lrud/issues/76
+   */
+  test('should jump over wrong orientation to first focusable node in other branch - vertical', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'vertical' })
+    navigation.registerNode('a', { parent: 'root', orientation: 'horizontal' })
+    navigation.registerNode('aa', { parent: 'a' })
+    navigation.registerNode('ab', { parent: 'a', isFocusable: true })
+    navigation.registerNode('ac', { parent: 'a' })
+    navigation.registerNode('b', { parent: 'root', isFocusable: true })
+
+    navigation.assignFocus('b')
+
+    navigation.handleKeyEvent({ direction: 'up' })
+
+    expect(navigation.currentFocusNodeId).toEqual('ab')
+  })
+
+  /**
+   * @see https://github.com/bbc/lrud/issues/56
+   */
+  test('should jump over wrong orientation to first focusable node in other branch - horizontal', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'horizontal' })
+    navigation.registerNode('a', { parent: 'root', orientation: 'vertical' })
+    navigation.registerNode('aa', { parent: 'a', isFocusable: true })
+    navigation.registerNode('b', { parent: 'root', orientation: 'vertical' })
+    navigation.registerNode('ba', { parent: 'b', orientation: 'horizontal' })
+    navigation.registerNode('bb', { parent: 'b', orientation: 'horizontal' })
+    navigation.registerNode('bba', { parent: 'bb', isFocusable: true })
+
+    navigation.assignFocus('aa')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+
+    expect(navigation.currentFocusNodeId).toEqual('bba')
+  })
 })

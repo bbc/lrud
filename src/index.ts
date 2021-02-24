@@ -6,12 +6,14 @@ import {
   isNodeFocusable,
   getDirectionForKeyCode,
   isDirectionAndOrientationMatching,
-  isNodeInPaths,
+  isNodeIdTheRootOfPath,
+  isNodeIdInTheMiddleOfPath,
+  isNodeIdTheLeafOfPath,
+  isNodeIdInPath,
   _findChildWithMatchingIndexRange,
   _findChildWithClosestIndex,
   _findChildWithIndex,
   getNodesFromTree,
-  endsWith,
   arrayFind,
   isNodeInTree
 } from './utils'
@@ -25,6 +27,7 @@ export class Lrud {
   focusableNodePathList: string[];
   rootNodeId: string;
   currentFocusNode?: Node;
+  currentFocusNodePath: string;
   currentFocusNodeId: string;
   currentFocusNodeIndex: number;
   currentFocusNodeIndexRange: number[];
@@ -41,6 +44,7 @@ export class Lrud {
     this.focusableNodePathList = []
     this.rootNodeId = null
     this.currentFocusNode = null
+    this.currentFocusNodePath = null
     this.currentFocusNodeId = null
     this.currentFocusNodeIndex = null
     this.currentFocusNodeIndexRange = null
@@ -125,7 +129,7 @@ export class Lrud {
     if (nodeId === this.rootNodeId) {
       return this.rootNodeId
     }
-    return arrayFind(this.nodePathList, path => endsWith(path, '.' + nodeId))
+    return arrayFind(this.nodePathList, path => isNodeIdTheLeafOfPath(path, nodeId))
   }
 
   /**
@@ -167,25 +171,6 @@ export class Lrud {
       node.parent = this.rootNodeId
     }
 
-    // the parentPathId is period(.) plus the node's parent
-    // the only expection being if the parent is the rootNode, then there is no initial period(.)
-    const parentPathId = node.parent === this.rootNodeId ? node.parent : '.' + node.parent
-
-    // if this node is the first child of its parent, we need to set its parent's `activeChild`
-    // to it so that the parent always has an `activeChild` value
-    // we can tell if its parent has any children by checking the nodePathList for
-    // entries containing '<parentPathId>.children'
-    const parentsChildPaths = arrayFind(this.nodePathList, path => path.indexOf(parentPathId + '.children') > -1)
-    if (parentsChildPaths == null) {
-      const parentPath = this.getPathForNodeId(node.parent)
-      Set(this.tree, parentPath + '.activeChild', nodeId)
-
-      this.emitter.emit('active', node)
-      if (node.onActive) {
-        node.onActive(node)
-      }
-    }
-
     const parentNode = this.getNode(node.parent)
     if (parentNode) {
       const parentsChildrenIds = Object.keys(parentNode.children || {})
@@ -203,7 +188,8 @@ export class Lrud {
     }
 
     // add the node into the tree
-    const path = arrayFind(this.nodePathList, path => endsWith(path, parentPathId)) + '.children.' + nodeId
+    const parentPathId = node.parent === this.rootNodeId ? node.parent : arrayFind(this.nodePathList, path => isNodeIdTheLeafOfPath(path, node.parent))
+    const path = parentPathId + '.children.' + nodeId
     Set(this.tree, path, node)
     this.nodePathList.push(path)
 
@@ -250,6 +236,7 @@ export class Lrud {
       this.focusableNodePathList = []
       this.rootNodeId = null
       this.currentFocusNode = null
+      this.currentFocusNodePath = null
       this.currentFocusNodeId = null
       this.currentFocusNodeIndex = null
       this.currentFocusNodeIndexRange = null
@@ -293,20 +280,19 @@ export class Lrud {
     // we might need to recalculate the focus...
     if (parentNode.activeChild && parentNode.activeChild === nodeId) {
       this.isIndexAlignMode = false
-      delete parentNode.activeChild
 
-      // check if the current focus node was removed
-      const isCurrentFocusNodeRemoved = !this.focusableNodePathList.some(nodeIdPath => {
-        return nodeIdPath.indexOf(this.currentFocusNodeId) > -1
-      })
-
+      // check if the current focus node was removed, if so focus needs to be recalculated
+      const isCurrentFocusNodeRemoved = isNodeIdInPath(this.currentFocusNodePath, nodeId)
       if (unregisterOptions.forceRefocus && isCurrentFocusNodeRemoved) {
-        this.recalculateFocus(nodeClone)
+        this.recalculateFocus(parentNode)
       } else if (isCurrentFocusNodeRemoved) {
         this.currentFocusNode = undefined
+        this.currentFocusNodePath = undefined
         this.currentFocusNodeId = undefined
         this.currentFocusNodeIndex = undefined
       }
+
+      this.unsetActiveChild(parentNode.id, nodeId)
     }
 
     // ...we need to recalculate the indexes of all the parents children
@@ -424,13 +410,8 @@ export class Lrud {
       return this.getNode(this.overrides[matchingOverrideId].target)
     }
 
-    // if we're on a leaf, climb up
-    if (isNodeFocusable(node)) {
-      return this.climbUp(this.getNode(node.parent), direction)
-    }
-
-    // if the node we're on contains no focusable children, climb up
-    if (!isNodeInPaths(this.focusableNodePathList, node)) {
+    // if we're on a currently focused node, climb up, definitely we are looking for some other node
+    if (node.id === this.currentFocusNodeId) {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
@@ -439,19 +420,9 @@ export class Lrud {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
-    const nextChildInDirection = this.getNextChildInDirection(node, direction)
-
-    // if we dont have a next child, just return the node. this is primarily for use during unregistering
-    if (!nextChildInDirection) {
-      return node
-    }
-
-    // if the next child in the direction is both the same as this node's activeChild
-    // AND a leaf, bubble up too - handles nested wrappers, like docs/test-diagrams/fig-3.png
-    const isNextChildCurrentActiveChild = (nextChildInDirection && nextChildInDirection.id === node.activeChild)
-    const isNextChildFocusable = isNodeFocusable(this.getNode(node.activeChild))
-    const isNodeInFocusablePath = isNodeInPaths(this.focusableNodePathList, node)
-    if (isNextChildCurrentActiveChild && (isNextChildFocusable || isNodeInFocusablePath)) {
+    // if we couldn't find any focusable candidate within children or we get currently
+    // activeChild, we have to look for other focusable candidate, climb up
+    if (!this.getNextFocusableChildInDirection(node, direction)) {
       return this.climbUp(this.getNode(node.parent), direction)
     }
 
@@ -463,13 +434,18 @@ export class Lrud {
    * leaf, and return it. dig "direction" priority:
    * - index align mode
    * - active child
-   * - first child
+   * - first focusable child
    *
    * @param {object} node
+   * @param {string} direction
    */
-  digDown (node: Node, direction: string = null): Node {
-    // if the active child is focusable, return it
-    if (isNodeFocusable(node)) {
+  digDown (node: Node, direction: string): Node {
+    if (!node) return
+
+    // If the node is focusable, then return it, but only when it doesn't contain focusable children.
+    // Otherwise, digging down to "the deepest" focusable node.
+    // Focusable "leaf" has a higher priority than focusable "container".
+    if (isNodeFocusable(node) && (node.isStopPropagate || !this.doesNodeHaveFocusableChildren(node))) {
       return node
     }
 
@@ -522,106 +498,105 @@ export class Lrud {
       return this.digDown(_findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction)
     }
 
-    if (!isNodeFocusable(node) && !this.doesNodeHaveFocusableChildren(node)) {
-      const parentNode = this.getNode(node.parent)
-      const nextSiblingFromNode = this.getNextChildInDirection({ ...parentNode, activeChild: node.id }, direction)
-      // if the next sibling is ME, we're in an infinite loop - just return null
-      if (nextSiblingFromNode.id === node.id) {
-        return null
-      }
-      return this.digDown(nextSiblingFromNode, direction)
+    // if possible, picking a branch that had focus in the past, one of its children was focused
+    if (node.activeChild) {
+      return this.digDown(node.children[node.activeChild], direction)
     }
 
-    // if we dont have an active child, use the first child
-    if (!node.activeChild) {
-      this.setActiveChild(node.id, this.getNodeFirstChild(node).id)
-    }
-
-    const nextChild = node.children[node.activeChild]
-
-    return (isNodeFocusable(nextChild)) ? nextChild : this.digDown(nextChild, direction)
+    // otherwise simply digging deeper, picking branch with first focusable candidate
+    return this.digDown(this.getNextFocusableChildInDirection(node, '*'), direction)
   }
 
   /**
-   * gets the semantic next child for a given direction
-   * if the direction is left or up, return the semantic previous child of the node
-   * if the direction is right or down, return the semantic next child of the node
+   * gets the semantic next focusable child for a given direction
+   * if the direction is left or up, return the semantic previous focusable child of the node
+   * if the direction is right or down, return the semantic next focusable child of the node
+   * if the direction is *, return the semantic next (or previous, if next not found) focusable child of the node
    *
    * @param {object} node
    * @param {string} direction
    */
-  getNextChildInDirection (node: Node, direction: string = null): Node {
-    if (!direction) {
-      return this.getNextChild(node)
-    }
+  getNextFocusableChildInDirection (node: Node, direction: string): Node {
+    if (!node) return
 
     direction = direction.toUpperCase()
 
-    if (node.orientation === 'horizontal' && direction === 'RIGHT') {
-      return this.getNextChild(node)
-    }
-    if (node.orientation === 'horizontal' && direction === 'LEFT') {
-      return this.getPrevChild(node)
-    }
-    if (node.orientation === 'vertical' && direction === 'DOWN') {
-      return this.getNextChild(node)
-    }
-    if (node.orientation === 'vertical' && direction === 'UP') {
-      return this.getPrevChild(node)
+    let nextChildInDirection
+
+    const traverseForward = (direction === '*') ||
+      (node.orientation === 'horizontal' && direction === 'RIGHT') ||
+      (node.orientation === 'vertical' && direction === 'DOWN')
+
+    if (traverseForward) {
+      nextChildInDirection = this.getNextFocusableChild(node)
     }
 
-    return null
+    const traverseBackward = (direction === '*') ||
+      (node.orientation === 'horizontal' && direction === 'LEFT') ||
+      (node.orientation === 'vertical' && direction === 'UP')
+
+    if (!nextChildInDirection && traverseBackward) {
+      nextChildInDirection = this.getPrevFocusableChild(node)
+    }
+
+    return nextChildInDirection
   }
 
   /**
-   * get the semantic "next" child for a node
+   * get the semantic "next" child for a node that might be focused or bypass focus to its children
    *
    * @param {object} node
    */
-  getNextChild (node: Node): Node {
-    if (!node.activeChild) {
-      this.setActiveChild(node.id, this.getNodeFirstChild(node).id)
+  getNextFocusableChild (node: Node): Node {
+    if (!node.children) {
+      return
     }
+    // there's no child that is (or was) focused, so we can quickly pick first focusable child
+    const activeChild = this.getNode(node.activeChild)
+    if (!activeChild) return this.getNodeFirstFocusableChild(node)
 
-    const currentActiveIndex = node.children[node.activeChild].index
+    let nextChild = activeChild
 
-    let nextChild = _findChildWithIndex(node, currentActiveIndex + 1)
-
-    if (!nextChild) {
-      if (node.isWrapping) {
-        nextChild = this.getNodeFirstChild(node)
-      } else {
-        nextChild = node.children[node.activeChild]
+    do {
+      nextChild = _findChildWithIndex(node, nextChild.index + 1)
+      if (!nextChild && node.isWrapping) {
+        nextChild = this.getNodeFirstFocusableChild(node)
       }
-    }
+      if (!nextChild) {
+        nextChild = activeChild
+      }
+    } while (!this.isNodeFocusableCandidate(nextChild) && nextChild.id !== activeChild.id)
 
-    return nextChild
+    return nextChild.id !== activeChild.id ? nextChild : undefined
   }
 
   /**
-   * get the semantic "previous" child for a node
+   * get the semantic "previous" child for a node that might be focused or bypass focus to its children
    *
    * @param {object} node
    */
-  getPrevChild (node: Node): Node {
-    if (!node.activeChild) {
-      this.setActiveChild(node.id, this.getNodeFirstChild(node).id)
+  getPrevFocusableChild (node: Node): Node {
+    if (!node.children) {
+      return
     }
+    // there's no child that is (or was) focused, so we can quickly pick last focusable child
+    const activeChild = this.getNode(node.activeChild)
+    if (!activeChild) return this.getNodeLastFocusableChild(node)
 
-    const currentActiveIndex = node.children[node.activeChild].index
+    // starting from child that is (or was) focused
+    let prevChild = activeChild
 
-    let prevChild = _findChildWithIndex(node, currentActiveIndex - 1)
-
-    if (!prevChild) {
-      // cant find a prev child, so the prev child is the current child
-      if (node.isWrapping) {
-        prevChild = this.getNodeLastChild(node)
-      } else {
-        prevChild = node.children[node.activeChild]
+    do {
+      prevChild = _findChildWithIndex(node, prevChild.index - 1)
+      if (!prevChild && node.isWrapping) {
+        prevChild = this.getNodeLastFocusableChild(node)
       }
-    }
+      if (!prevChild) {
+        prevChild = activeChild
+      }
+    } while (!this.isNodeFocusableCandidate(prevChild) && prevChild.id !== activeChild.id)
 
-    return prevChild
+    return prevChild.id !== activeChild.id ? prevChild : undefined
   }
 
   /**
@@ -655,6 +630,52 @@ export class Lrud {
   }
 
   /**
+   * get the first focusable (or containing focusable nodes) child of a node, based on index
+   *
+   * @param {object} node
+   */
+  getNodeFirstFocusableChild (node: Node): Node {
+    if (!node.children) {
+      return undefined
+    }
+
+    const orderedIndexes = Object.keys(node.children)
+      .map(childId => node.children[childId].index)
+      .sort((a, b) => a - b)
+
+    for (let i = 0; i < orderedIndexes.length; i++) {
+      const child = _findChildWithIndex(node, orderedIndexes[i])
+      if (this.isNodeFocusableCandidate(child)) {
+        return child
+      }
+    }
+    return undefined
+  }
+
+  /**
+   * get the last focusable (or containing focusable nodes) child of a node, based on index
+   *
+   * @param {object} node
+   */
+  getNodeLastFocusableChild (node: Node): Node {
+    if (!node.children) {
+      return undefined
+    }
+
+    const inverselyOrderedIndexes = Object.keys(node.children)
+      .map(childId => node.children[childId].index)
+      .sort((a, b) => b - a)
+
+    for (let i = 0; i < inverselyOrderedIndexes.length; i++) {
+      const child = _findChildWithIndex(node, inverselyOrderedIndexes[i])
+      if (this.isNodeFocusableCandidate(child)) {
+        return child
+      }
+    }
+    return undefined
+  }
+
+  /**
    * given an event, handle any state changes that may arise from the direction pressed.
    * state changes based on climbUp'ing and digDown'ing from the current focusedNode
    *
@@ -670,9 +691,11 @@ export class Lrud {
 
     // if all we're doing is processing an enter, just run the `onSelect` function of the current node...
     if (direction === 'ENTER') {
-      this.emitter.emit('select', currentFocusNode)
-      if (currentFocusNode.onSelect) {
-        currentFocusNode.onSelect(currentFocusNode)
+      if (currentFocusNode) {
+        this.emitter.emit('select', currentFocusNode)
+        if (currentFocusNode.onSelect) {
+          currentFocusNode.onSelect(currentFocusNode)
+        }
       }
       return
     }
@@ -683,7 +706,7 @@ export class Lrud {
     if (!currentFocusNode && options.forceFocus) {
       // No node is focused, focusing first focusable node
       topNode = this.getRootNode()
-      focusableNode = this.digDown(topNode)
+      focusableNode = this.getNextFocusableChildInDirection(topNode, '*')
     } else {
       // climb up from where we are...
       topNode = this.climbUp(currentFocusNode, direction)
@@ -697,7 +720,7 @@ export class Lrud {
       this.isIndexAlignMode = topNode.isIndexAlign === true
 
       // ...get the top's next child in the direction we're going...
-      const nextChild = this.getNextChildInDirection(topNode, direction)
+      const nextChild = this.getNextFocusableChildInDirection(topNode, direction)
 
       // ...and depending on if we're able to find a child, dig down from the child or from the original top...
       focusableNode = (nextChild) ? this.digDown(nextChild, direction) : this.digDown(topNode, direction)
@@ -783,9 +806,11 @@ export class Lrud {
     if (parent.activeChild && parent.activeChild !== child.id) {
       const currentActiveChild = this.getNode(parent.activeChild)
       parent.activeChild = child.id
-      this.emitter.emit('inactive', currentActiveChild)
-      if (currentActiveChild.onInactive) {
-        currentActiveChild.onInactive(currentActiveChild)
+      if (currentActiveChild) {
+        this.emitter.emit('inactive', currentActiveChild)
+        if (currentActiveChild.onInactive) {
+          currentActiveChild.onInactive(currentActiveChild)
+        }
       }
       this.emitter.emit('active', child)
       if (child.onActive) {
@@ -830,6 +855,35 @@ export class Lrud {
       this.setActiveChildRecursive(parent.parent, parent.id)
     }
   }
+
+  /**
+   * Unsets the activeChild of the parent nodes branch ensuring that activeChild is on the unsetting childId path
+   * and not on the currentFocusNode's path, unless childId is a currentFocusNode.
+   *
+   * @param {string} parentId
+   * @param {string} activeChildId
+   */
+  unsetActiveChild (parentId: string, activeChildId: string): void {
+    let parent = this.getNode(parentId)
+    if (!parent.activeChild) return
+    if (parent.activeChild !== activeChildId) return
+
+    // activeChildId may be already deleted, creating its path manually
+    const activeChildPath = this.getPathForNodeId(parentId) + '.children.' + activeChildId
+    const unsettingCurrentFocusNodePath = isNodeIdInPath(this.currentFocusNodePath, activeChildId)
+
+    while (parent && parent.activeChild) {
+      const isOnActiveChildPath = isNodeIdInPath(activeChildPath, parent.activeChild)
+      const isOnCurrentFocusedNodePath = isNodeIdInPath(this.currentFocusNodePath, parent.activeChild)
+
+      if (unsettingCurrentFocusNodePath || (isOnActiveChildPath && !isOnCurrentFocusedNodePath)) {
+        delete parent.activeChild
+      }
+
+      parent = this.getNode(parent.parent)
+    }
+  }
+
   /**
    * set the current focus of the instance to the given node ID
    * if the given node ID points to a non-focusable node, we dig down from
@@ -842,12 +896,10 @@ export class Lrud {
   assignFocus (nodeId: string): void {
     let node = this.getNode(nodeId)
 
-    if (node.children && !this.doesNodeHaveFocusableChildren(node)) {
-      throw new Error(`"${node.id}" does not have focusable children. Are you trying to assign focus to ${node.id}?`)
-    }
-
-    if (!isNodeFocusable(node)) {
-      node = this.digDown(node)
+    // Focus might be assigned to node that is not focusable itself, but
+    // contains focusable children, looking for such child
+    if (node && !isNodeFocusable(node)) {
+      node = this.digDown(node, '*')
     }
 
     if (!node) {
@@ -866,6 +918,7 @@ export class Lrud {
 
     this.currentFocusNodeId = node.id
     this.currentFocusNode = node
+    this.currentFocusNodePath = this.getPathForNodeId(node.id)
 
     if (node.indexRange) {
       this.currentFocusNodeIndex = node.indexRange[0]
@@ -891,21 +944,17 @@ export class Lrud {
 
   /**
    * If the focus of the tree is out of sync, ie, the current focused node becomes unfocusable this can be used to fall back to another focus.
-   * @param {focusedNode}
+   * @param {object} node
    */
   recalculateFocus (node: Node): void {
-    const parentNode = this.getNode(node.parent)
-    const top = this.climbUp(parentNode, '*')
-    if (top) {
-      const prev = this.getPrevChild(top)
-      if (isNodeFocusable(prev) || (prev && prev.children && Object.keys(prev.children).length)) {
-        const child = this.digDown(prev)
-        this.assignFocus(child.id)
-      } else {
-        this.assignFocus(top.id)
-      }
+    const topNode = this.climbUp(node, '*') || this.getRootNode()
+    const nextChild = this.getNextFocusableChildInDirection(topNode, '*')
+    const focusableNode = (nextChild) ? this.digDown(nextChild, '*') : this.digDown(topNode, '*')
+    if (focusableNode) {
+      this.assignFocus(focusableNode.id)
     } else {
       this.currentFocusNode = undefined
+      this.currentFocusNodePath = undefined
       this.currentFocusNodeId = undefined
       this.currentFocusNodeIndex = undefined
     }
@@ -960,7 +1009,17 @@ export class Lrud {
   }
 
   doesNodeHaveFocusableChildren (node: Node): boolean {
-    return this.focusableNodePathList.some(p => p.indexOf(`${node.id}.`) > -1)
+    return this.focusableNodePathList.some(path => isNodeIdTheRootOfPath(path, node.id) || isNodeIdInTheMiddleOfPath(path, node.id))
+  }
+
+  /**
+   * Checks if node is focusable or contains focusable children.
+   *
+   * @param {*} node
+   */
+  isNodeFocusableCandidate (node: Node): boolean {
+    if (!node) return false
+    return isNodeFocusable(node) || this.doesNodeHaveFocusableChildren(node)
   }
 
   /**
@@ -979,18 +1038,13 @@ export class Lrud {
     if (!isFocusable) {
       const path = this.getPathForNodeId(nodeId)
       this.focusableNodePathList.splice(this.focusableNodePathList.indexOf(path), 1)
-      const parent = this.getNode(node.parent)
-      if (parent && parent.activeChild && parent.activeChild === nodeId) {
-        delete parent.activeChild
-        // Reset activeChild
-        const nextChild = this.getNextChild(parent)
-        if (nextChild) {
-          this.setActiveChild(parent.id, nextChild.id)
-        }
-      }
 
       if (this.currentFocusNodeId === nodeId) {
         this.recalculateFocus(node)
+      }
+
+      if (node.parent) {
+        this.unsetActiveChild(node.parent, nodeId)
       }
     } else {
       const path = this.getPathForNodeId(nodeId)

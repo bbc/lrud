@@ -44,13 +44,9 @@ describe('registerNode()', () => {
     navigation.registerNode('beta_beta', { c: 3})
     navigation.registerNode('beta', { b: 2 })
 
-    // add a child to beta_beta so that activeChild won't be null if beta is identified as beta_beta
-    // when the activeChild is set during registration
-    navigation.registerNode('charlie', { d: 4, parent: 'beta_beta' })
-    navigation.registerNode('delta', { d: 4, parent: 'beta' })
+    navigation.registerNode('charlie', { d: 4, parent: 'beta' })
 
-    expect(navigation.tree.alpha.children.beta.children.delta).toBeTruthy();
-    expect(navigation.tree.alpha.children.beta.activeChild).toEqual('delta')
+    expect(navigation.tree.alpha.children.beta.children.charlie).toBeTruthy()
   })
 
   test('registering a node with a deeply nested parent', () => {
@@ -69,7 +65,7 @@ describe('registerNode()', () => {
   })
 
   // reword this
-  test('registering a new node with a parent that has no children sets its parent.activeChild to itself', () => {
+  test('registering a new node with a parent that has no children should not set parent.activeChild to itself', () => {
     const navigation = new Lrud()
 
     navigation.registerNode('root')
@@ -79,13 +75,9 @@ describe('registerNode()', () => {
     navigation.registerNode('delta', { parent: 'charlie' })
     navigation.registerNode('echo', { parent: 'root' })
 
-    // 'root' should have 3 children and its activeChild should be 'alpha'
-    // 'alpha' should have 1 children and its activeChild should be 'charlie'
-    // 'charlie' should have 1 children and its activeChild should be 'delta'
-
-    expect(navigation.getNode('root').activeChild).toEqual('alpha')
-    expect(navigation.getNode('alpha').activeChild).toEqual('charlie')
-    expect(navigation.getNode('charlie').activeChild).toEqual('delta')
+    expect(navigation.getNode('root').activeChild).toBeUndefined()
+    expect(navigation.getNode('alpha').activeChild).toBeUndefined()
+    expect(navigation.getNode('charlie').activeChild).toBeUndefined()
   })
 
   test('registering a node should add the index to the node', () => {

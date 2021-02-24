@@ -50,14 +50,27 @@ describe('onActiveChildChange() tests', () => {
     navigation.handleKeyEvent({ direction: 'down' })
     navigation.handleKeyEvent({ direction: 'right' })
 
-    // 1st is by going from a to b
+    // 1st assigning focus to 'a'
     expect(spy.mock.calls[0][0].node.id).toEqual('left-col')
-    expect(spy.mock.calls[0][0].leave.id).toEqual('a')
-    expect(spy.mock.calls[0][0].enter.id).toEqual('b')
-
-    // 2nd is by going right to the 2nd column
+    expect(spy.mock.calls[0][0].leave).toBeFalsy()
+    expect(spy.mock.calls[0][0].enter.id).toEqual('a')
+    // ...bubbling
     expect(spy.mock.calls[1][0].node.id).toEqual('root')
-    expect(spy.mock.calls[1][0].leave.id).toEqual('left-col')
-    expect(spy.mock.calls[1][0].enter.id).toEqual('right-col')
+    expect(spy.mock.calls[1][0].leave).toBeFalsy()
+    expect(spy.mock.calls[1][0].enter.id).toEqual('left-col')
+
+    // 2nd is by going down to 'b'
+    expect(spy.mock.calls[2][0].node.id).toEqual('left-col')
+    expect(spy.mock.calls[2][0].leave.id).toEqual('a')
+    expect(spy.mock.calls[2][0].enter.id).toEqual('b')
+
+    // 3nd is by going right to 'd'
+    expect(spy.mock.calls[3][0].node.id).toEqual('right-col')
+    expect(spy.mock.calls[3][0].leave).toBeFalsy()
+    expect(spy.mock.calls[3][0].enter.id).toEqual('d')
+    // ...bubbling
+    expect(spy.mock.calls[4][0].node.id).toEqual('root')
+    expect(spy.mock.calls[4][0].leave.id).toEqual('left-col')
+    expect(spy.mock.calls[4][0].enter.id).toEqual('right-col')
   })
 })
