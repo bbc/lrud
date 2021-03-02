@@ -12,7 +12,8 @@ import {
   _findChildWithIndex,
   getNodesFromTree,
   endsWith,
-  arrayFind
+  arrayFind,
+  isNodeInTree
 } from './utils'
 
 import mitt from 'mitt'
@@ -313,11 +314,12 @@ export class Lrud {
       nodeClone.onBlur(nodeClone)
     }
 
-    // if we have any overrides whose target or ID is the node we just unregistered, we should unregister
+    // if we have any overrides whose target or ID is the node (or one of its children) we just unregistered, we should unregister
     // those overrides (thus keeping state clean)
+    const unregisteredSubTree = { [nodeClone.id]: nodeClone }
     Object.keys(this.overrides).forEach(overrideId => {
       const override = this.overrides[overrideId]
-      if (override.target === nodeClone.id || override.id === nodeClone.id) {
+      if (isNodeInTree(override.target, unregisteredSubTree) || isNodeInTree(override.id, unregisteredSubTree)) {
         this.unregisterOverride(overrideId)
       }
     })
