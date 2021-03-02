@@ -186,7 +186,7 @@ export class Lrud {
     }
 
     // if no `index` set, calculate it
-    if (!node.index) {
+    if (typeof node.index !== 'number') {
       const parentNode = this.getNode(node.parent)
       if (parentNode) {
         const parentsChildren = this.getNode(node.parent).children
@@ -934,7 +934,7 @@ export class Lrud {
 
     const parentNode = this.getNode(replacementNode.parent)
 
-    if (options.maintainIndex && originalNode && originalNode.index) {
+    if (options.maintainIndex && originalNode && typeof originalNode.index === 'number') {
       replacementNode.index = originalNode.index
       Object.keys(parentNode.children).forEach(childId => {
         const child = parentNode.children[childId]

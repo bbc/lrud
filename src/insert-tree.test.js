@@ -201,4 +201,24 @@ describe('insertTree()', () => {
     expect(instance.tree['root'].children['beta'].children['charlie']).toBeTruthy()
     expect(instance.tree['root'].children['beta'].children['charlie'].children).toBeTruthy()
   })
+
+  /**
+   * @see https://github.com/bbc/lrud/issues/84
+   */
+  test('should correctly maintain index when replacing first child', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root')
+    navigation.registerNode('a', { parent: 'root' })
+    navigation.registerNode('b', { parent: 'root' })
+    navigation.registerNode('c', { parent: 'root' })
+
+    navigation.insertTree({ a: { parent: 'root', isFocusable: true } })
+
+    // expect top node was replaced with inserted tree
+    expect(navigation.getNode('a').isFocusable).toEqual(true)
+
+    // expect index of the top node parent is maintained
+    expect(navigation.getNode('a').index).toEqual(0)
+  })
 })
