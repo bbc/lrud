@@ -228,6 +228,28 @@ describe('unregisterNode()', () => {
     })
   })
 
+  /**
+   * @see https://github.com/bbc/lrud/issues/86
+   */
+  test('unregistering a node should unregister the overrides of its children', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root')
+    navigation.registerNode('a', { parent: 'root' })
+    navigation.registerNode('ab', { parent: 'a' })
+    navigation.registerNode('b', { parent: 'root' })
+
+    navigation.registerOverride('override_a', {
+      id: 'ab',
+      direction: 'right',
+      target: 'b'
+    })
+
+    navigation.unregister('a')
+
+    expect(navigation.overrides).toEqual({})
+  })
+
   test('unregistering a node that is the id of an override should unregister the override', () => {
     const navigation = new Lrud()
 
