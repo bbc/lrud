@@ -100,7 +100,7 @@ navigation
 
 `boolean`
 
-Keeps index of the children coherent and compact. The child will be inserted at a given index position. All other children indices that are greater or equal to index of just registering node are shifted up by one. If index of the registering child is greater that current size of children list, than child is appended and its is set accordingly as last.   
+Keeps index of the children coherent and compact. The child is inserted at a given index position and all other children indices, that are greater or equal to index of just registering child, are shifted up by one. If index of the registering child is greater that current size of children list, than it is appended and its index is set accordingly as last.   
 
 ```js
 navigation
