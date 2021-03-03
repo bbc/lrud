@@ -96,6 +96,29 @@ navigation
 
 `index` is used when calculating the "next" or "previous" node in a list.
 
+### `isIndexCoherent`
+
+`boolean`
+
+Keeps index of the children coherent and compact. The child will be inserted at a given index position. All other children indices that are greater or equal to index of just registering node are shifted up by one. If index of the registering child is greater that current size of children list, than child is appended and its is set accordingly as last.   
+
+```js
+navigation
+    .registerNode('root', { isIndexCoherent: true })
+    .registerNode('A', { parent: 'root' })
+    .registerNode('B', { parent: 'root' })
+    .registerNode('C', { parent: 'root', index: 1 })
+    .registerNode('D', { parent: 'root', index: 4 })
+
+// ...is the same as
+
+navigation
+    .registerNode('A', { parent: 'root', index: 0 })
+    .registerNode('C', { parent: 'root', index: 1 })
+    .registerNode('B', { parent: 'root', index: 2 })
+    .registerNode('D', { parent: 'root', index: 3 })
+```
+
 ### `isIndexAlign`
 
 `boolean`
