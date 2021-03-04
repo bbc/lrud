@@ -191,7 +191,7 @@ export class Lrud {
       // if no `index` set, calculate it
       if (typeof node.index !== 'number') {
         node.index = parentsChildrenIds.length
-      } else if (parentNode.isIndexCoherent) {
+      } else {
         parentsChildrenIds.forEach(childId => {
           const child = parentNode.children[childId]
           if (child.index >= node.index) {
@@ -206,7 +206,7 @@ export class Lrud {
     Set(this.tree, path, node)
     this.nodePathList.push(path)
 
-    if (parentNode && parentNode.isIndexCoherent) {
+    if (parentNode) {
       this.reindexChildrenOfNode(parentNode)
     }
 
@@ -939,23 +939,11 @@ export class Lrud {
       replacementNode.parent = originalNode.parent
     }
 
-    const parentNode = this.getNode(replacementNode.parent)
-
     if (options.maintainIndex && originalNode && typeof originalNode.index === 'number') {
       replacementNode.index = originalNode.index
-      Object.keys(parentNode.children).forEach(childId => {
-        const child = parentNode.children[childId]
-        if (child.index >= originalNode.index) {
-          child.index += 1
-        }
-      })
     }
 
     this.registerTree(tree)
-
-    if (options.maintainIndex) {
-      this.reindexChildrenOfNode(parentNode)
-    }
   }
 
   doesNodeHaveFocusableChildren (node: Node): boolean {

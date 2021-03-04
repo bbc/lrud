@@ -209,11 +209,15 @@ describe('insertTree()', () => {
     const navigation = new Lrud()
 
     navigation.registerNode('root')
-    navigation.registerNode('a', { parent: 'root' })
-    navigation.registerNode('b', { parent: 'root' })
-    navigation.registerNode('c', { parent: 'root' })
+    navigation.registerNode('a')
+    navigation.registerNode('b')
+    navigation.registerNode('c')
 
-    navigation.insertTree({ a: { parent: 'root', isFocusable: true } })
+    navigation.insertTree({
+      a: {
+        isFocusable: true
+      }
+    })
 
     // expect top node was replaced with inserted tree
     expect(navigation.getNode('a').isFocusable).toEqual(true)
@@ -225,15 +229,14 @@ describe('insertTree()', () => {
   test('coherent index, keep parent\'s children indices coherent if index is not maintained', () => {
     const navigation = new Lrud()
 
-    navigation.registerNode('root', { isIndexCoherent: true })
-    navigation.registerNode('a', { parent: 'root' })
-    navigation.registerNode('b', { parent: 'root' })
-    navigation.registerNode('c', { parent: 'root' })
-    navigation.registerNode('d', { parent: 'root' })
+    navigation.registerNode('root')
+    navigation.registerNode('a')
+    navigation.registerNode('b')
+    navigation.registerNode('c')
+    navigation.registerNode('d')
 
     navigation.insertTree({
       c: {
-        parent: 'root',
         index: 1,
         isFocusable: true
       }
@@ -250,19 +253,19 @@ describe('insertTree()', () => {
     expect(navigation.getNode('d').index).toEqual(3)
   })
 
-  test('coherent index, should maintain original child index', () => {
+  test('coherent index, should maintain original child index overriding provided index', () => {
     const navigation = new Lrud()
 
-    navigation.registerNode('root', { isIndexCoherent: true })
-    navigation.registerNode('a', { parent: 'root' })
-    navigation.registerNode('b', { parent: 'root' })
+    navigation.registerNode('root')
+    navigation.registerNode('a')
+    navigation.registerNode('b')
 
     navigation.insertTree({
       a: {
         index: 5,
         isFocusable: true
       }
-    }, { maintainIndex: true })
+    })
 
     // expect top node was replaced with inserted tree
     expect(navigation.getNode('a').isFocusable).toEqual(true)

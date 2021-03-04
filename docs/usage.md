@@ -78,46 +78,26 @@ In the above example, if the user was focused on `item-3`, and LRUD handled an e
 
 `number`
 
-The zero-based index of the node, relative to its siblings. If no idex is given, it will be set as the _next_ index under its parent.
-
-```js
-navigation
-    .registerNode('X', { parent: 'root' })
-    .registerNode('Y', { parent: 'root' })
-    .registerNode('Z', { parent: 'root' })
-
-// ...is the same as
-
-navigation
-    .registerNode('X', { parent: 'root', index: 0 })
-    .registerNode('Y', { parent: 'root', index: 1 })
-    .registerNode('Z', { parent: 'root', index: 2 })
-```
-
-`index` is used when calculating the "next" or "previous" node in a list.
-
-### `isIndexCoherent`
-
-`boolean`
-
-Keeps index of the children coherent and compact. The child is inserted at a given index position and all other children indices, that are greater or equal to index of just registering child, are shifted up by one. If index of the registering child is greater that current size of children list, than it is appended and its index is set accordingly as last.   
+The zero-based index of the node, relative to its siblings. Index is kept coherent and compact. If `index` value is provided, then the child is inserted at that position and all other children indices, that are greater or equal to provided index, are shifted up by one. If `index` of the registering child is greater that current size of children list or is not given at all, it will be set as the _next_ index under its parent.
 
 ```js
 navigation
     .registerNode('root', { isIndexCoherent: true })
-    .registerNode('A', { parent: 'root' })
-    .registerNode('B', { parent: 'root' })
-    .registerNode('C', { parent: 'root', index: 1 })
-    .registerNode('D', { parent: 'root', index: 4 })
+    .registerNode('A', { parent: 'root' }) // order: |A|
+    .registerNode('B', { parent: 'root' }) // order: A, |B|
+    .registerNode('C', { parent: 'root' }) // order: A, B, |C|
+    .registerNode('D', { parent: 'root' }) // order: A, B, C, |D|
 
-// ...is the same as
+// ...gives the same result as
 
 navigation
-    .registerNode('A', { parent: 'root', index: 0 })
-    .registerNode('C', { parent: 'root', index: 1 })
-    .registerNode('B', { parent: 'root', index: 2 })
-    .registerNode('D', { parent: 'root', index: 3 })
+    .registerNode('A', { parent: 'root', index: 0 }) // order: |A|
+    .registerNode('C', { parent: 'root', index: 1 }) // order: A, |C|
+    .registerNode('B', { parent: 'root', index: 1 }) // order: A, |B|, C
+    .registerNode('D', { parent: 'root', index: 9 }) // order: A, B, C, |D|
 ```
+
+`index` is used when calculating the "next" or "previous" node in a list.
 
 ### `isIndexAlign`
 

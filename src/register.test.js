@@ -137,33 +137,33 @@ describe('registerNode()', () => {
 
   test('coherent index, should assign last index value if no index value provided', () => {
     const navigation = new Lrud()
-    navigation.registerNode('root', { isIndexCoherent: true })
-    navigation.registerNode('a', { parent: 'root' })
-    navigation.registerNode('b', { parent: 'root' })
+    navigation.registerNode('root')
+    navigation.registerNode('a')
+    navigation.registerNode('b')
 
-    navigation.registerNode('c', { parent: 'root' })
+    navigation.registerNode('c')
 
     expect(navigation.getNode('c').index).toEqual(2)
   })
 
   test('coherent index, should assign last index value even if given index is greater than children size', () => {
     const navigation = new Lrud()
-    navigation.registerNode('root', { isIndexCoherent: true })
-    navigation.registerNode('a', { parent: 'root' })
-    navigation.registerNode('b', { parent: 'root' })
+    navigation.registerNode('root')
+    navigation.registerNode('a')
+    navigation.registerNode('b')
 
-    navigation.registerNode('c', { parent: 'root', index: 3 })
+    navigation.registerNode('c', { index: 3 })
 
     expect(navigation.getNode('c').index).toEqual(2)
   })
 
   test('coherent index, should insert node at a given position', () => {
     const navigation = new Lrud()
-    navigation.registerNode('root', { isIndexCoherent: true })
-    navigation.registerNode('a', { parent: 'root' })
-    navigation.registerNode('b', { parent: 'root' })
+    navigation.registerNode('root')
+    navigation.registerNode('a')
+    navigation.registerNode('b')
 
-    navigation.registerNode('c', { parent: 'root', index: 1 })
+    navigation.registerNode('c', { index: 1 })
 
     expect(navigation.getNode('c').index).toEqual(1)
     expect(navigation.getNode('b').index).toEqual(2)
