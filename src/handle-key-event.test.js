@@ -191,4 +191,35 @@ describe('handleKeyEvent()', () => {
     navigation.handleKeyEvent({ direction: 'down' })
     expect(navigation.currentFocusNodeId).toEqual('list-b-box-2')
   })
+
+  test('no focused node, should not fail and do nothing', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root')
+    navigation.registerNode('a', { orientation: 'vertical' })
+    navigation.registerNode('aa', { parent: 'a' })
+    navigation.registerNode('ab', { parent: 'a', isFocusable: true })
+    navigation.registerNode('ac', { parent: 'a' })
+
+    expect(() => {
+      navigation.handleKeyEvent({ direction: 'down' })
+    }).not.toThrow()
+    expect(navigation.currentFocusNodeId).toEqual(null)
+  })
+
+  test('no focused node, should not fail and force focusing first focusable node', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root')
+    navigation.registerNode('a', { orientation: 'vertical' })
+    navigation.registerNode('aa', { parent: 'a' })
+    navigation.registerNode('ab', { parent: 'a', isFocusable: true })
+    navigation.registerNode('ac', { parent: 'a' })
+    navigation.registerNode('b', { isFocusable: true })
+
+    expect(() => {
+      navigation.handleKeyEvent({ direction: 'down' }, { forceFocus: true })
+    }).not.toThrow()
+    expect(navigation.currentFocusNodeId).toEqual('ab')
+  })
 })
