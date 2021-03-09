@@ -674,7 +674,7 @@ export class Lrud {
     let focusableNode: Node
 
     if (!currentFocusNode && options.forceFocus) {
-      // No node is focused,fFocusing first focusable node
+      // No node is focused, focusing first focusable node
       topNode = this.getRootNode()
       focusableNode = this.digDown(topNode)
     } else {
