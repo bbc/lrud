@@ -1,6 +1,6 @@
 import { Get } from './get'
 import { Set } from './set'
-import { Node, Override, KeyEvent, InsertTreeOptions, UnregisterNodeOptions } from './interfaces'
+import { Node, Override, KeyEvent, HandleKeyEventOptions, InsertTreeOptions, UnregisterNodeOptions } from './interfaces'
 
 import {
   isNodeFocusable,
@@ -654,8 +654,10 @@ export class Lrud {
    * @param {object} event
    * @param {string} [event.keyCode]
    * @param {string} [event.direction]
+   * @param {HandleKeyEventOptions} [options]
+   * @param {boolean} [options.forceFocus] - if <code>true</code> and there's no currently focused node, LRUD will try to focus first focusable node
    */
-  handleKeyEvent (event: KeyEvent): Node | void {
+  handleKeyEvent (event: KeyEvent, options: HandleKeyEventOptions = { forceFocus: false }): Node | void {
     const direction = (event.keyCode) ? getDirectionForKeyCode(event.keyCode) : event.direction.toUpperCase()
     const currentFocusNode = this.getNode(this.currentFocusNodeId)
 
@@ -668,29 +670,38 @@ export class Lrud {
       return
     }
 
-    // climb up from where we are...
-    const topNode = this.climbUp(currentFocusNode, direction)
+    let topNode: Node
+    let focusableNode: Node
 
-    // ... if we cant find a top node, its an invalid move - just return
-    if (!topNode) {
-      return
+    if (!currentFocusNode && options.forceFocus) {
+      // No node is focused, focusing first focusable node
+      topNode = this.getRootNode()
+      focusableNode = this.digDown(topNode)
+    } else {
+      // climb up from where we are...
+      topNode = this.climbUp(currentFocusNode, direction)
+
+      // ... if we cant find a top node, its an invalid move - just return
+      if (!topNode) {
+        return
+      }
+
+      // ...if we need to align indexes, turn the flag on now...
+      this.isIndexAlignMode = topNode.isIndexAlign === true
+
+      // ...get the top's next child in the direction we're going...
+      const nextChild = this.getNextChildInDirection(topNode, direction)
+
+      // ...and depending on if we're able to find a child, dig down from the child or from the original top...
+      focusableNode = (nextChild) ? this.digDown(nextChild, direction) : this.digDown(topNode, direction)
     }
-
-    // ...if we need to align indexes, turn the flag on now...
-    this.isIndexAlignMode = topNode.isIndexAlign === true
-
-    // ...get the top's next child in the direction we're going...
-    const nextChild = this.getNextChildInDirection(topNode, direction)
-
-    // ...and depending on if we're able to find a child, dig down from the child or from the original top...
-    const focusableNode: Node = (nextChild) ? this.digDown(nextChild, direction) : this.digDown(topNode, direction)
 
     if (!focusableNode) {
       return
     }
 
     // ...give an opportunity for the move to be cancelled by the leaving node
-    if (currentFocusNode.shouldCancelLeave) {
+    if (currentFocusNode && currentFocusNode.shouldCancelLeave) {
       if (currentFocusNode.shouldCancelLeave(currentFocusNode, focusableNode)) {
         if (currentFocusNode.onLeaveCancelled) {
           currentFocusNode.onLeaveCancelled(currentFocusNode, focusableNode)
@@ -738,7 +749,7 @@ export class Lrud {
       })
     }
 
-    if (currentFocusNode.onLeave) {
+    if (currentFocusNode && currentFocusNode.onLeave) {
       currentFocusNode.onLeave(currentFocusNode)
     }
     if (focusableNode.onEnter) {

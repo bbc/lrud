@@ -42,6 +42,10 @@ export interface KeyEvent {
     direction: string;
 }
 
+export interface HandleKeyEventOptions {
+    forceFocus: boolean;
+}
+
 export interface InsertTreeOptions {
     maintainIndex: boolean;
 }
