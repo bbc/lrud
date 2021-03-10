@@ -232,6 +232,12 @@ document.onkeydown = function (event) {
 }
 ```
 
+### Handling Key Events Options
+
+A config object can be given to `handleKeyEvent(<event>, <handleKeyEventOptions>)` to force specific behaviour.
+
+- `forceFocus:boolean` When `true`, if there's no focused node, then LRUD will attempt to find a first focusable candidate (the node that is focusable or contains at least one child that is a focusable candidate). Such node, when found, will be automatically focused and focus state of navigation tree is auto-initialized. The default value is `false`.
+
 ## Events
 
 LRUD emits events in response to key events. See the [TAL docs](http://bbc.github.io/tal/widgets/focus-management.html) for an explanation of 'focused' and 'active' nodes. Each of these callbacks is called with the node that changed state.
