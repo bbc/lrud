@@ -119,6 +119,25 @@ Used in conjuction with `isIndexAlign` behaviour, allows a node to replicate the
 
 For further details, see the [docs on index alignment](./index-align.md).
 
+### `isStopPropagate`
+
+`boolean`
+
+Allows dealing with a situation when focusable parent contains focusable children.
+
+By default, the leaf is picked to be focused, "the deepest" focusable candidate. In such case parent node is simply not a hindrance. Setting `isStopPropagate` to `true` inverts this behaviour. Parent node grabs focus instead of passing it to the children.
+
+```js
+navigation
+    .registerNode('row-1', { orientation: 'horizontal', isFocusable: true })
+    .registerNode('row-2', { orientation: 'horizontal', isFocusable: true })
+    .registerNode('row-2-item-1', { parent: 'row-2', isFocusable: true })
+    .registerNode('row-3', { orientation: 'horizontal', isFocusable: true, isStopPropagate: true })
+    .registerNode('row-3-item-2', { parent: 'row-3', isFocusable: true })
+```
+
+In the above example, if the user was focused on `row-1`, and LRUD handled an event with a direction of `down`, than `row-2-item-1` will be focused, because by default `row-2` passes focus to the children. Next event with a direction of `down` will move focus to `row-3`. This is because, `row-3` has `isStopPropagate` set to `true` which allowed him to grab the focus instead of passing it to the `row-3-item-2`, even if it's a focusable leaf.
+
 ---
 
 Several functions can also be given as registration options to a node. These functions will be called at specific state change points for the node. See our [Process Lifecycles doc](./process-lifecycles.md) for further details on the "lifecycle" of a move event in LRUD.
@@ -227,8 +246,7 @@ You can pass key events into LRUD using the `navigation.handleKeyEvent` function
 
 ```js
 document.onkeydown = function (event) {
-    navigation.handleKeyEvent(event)
-  }
+  navigation.handleKeyEvent(event)
 }
 ```
 

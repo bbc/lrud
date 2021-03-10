@@ -10,6 +10,7 @@ export interface Node {
     selectAction?: any;
     isFocusable?: boolean;
     isWrapping?: boolean;
+    isStopPropagate?: boolean;
     orientation?: string;
     isIndexAlign?: boolean;
     onLeave?: (leave: Node) => void;

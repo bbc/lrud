@@ -76,34 +76,37 @@ export const isDirectionAndOrientationMatching = (orientation, direction): boole
 }
 
 /**
- * is the given node in the path, return true
+ * Checks if the given node is a root of the path.
  *
- * @param {*} node
+ * @param {string} path
+ * @param {string} nodeId
  */
-export const isNodeInPath = (path, node): boolean => {
-  if (path.lastIndexOf(node.id + '.', 0) === 0) {
-    return true
-  }
-  if (endsWith(path, '.' + node.id)) {
-    return true
-  }
-  if (path.indexOf('.' + node.id + '.') !== -1) {
-    return true
-  }
-
-  return false
-}
+export const isNodeIdTheRootOfPath = (path: string, nodeId: string): boolean => !!path && !!nodeId && path.lastIndexOf(nodeId + '.', 0) === 0
 
 /**
- * given an array of paths, return true if the node is in any of the paths
+ * Checks if the given node is a child in the middle of the path.
  *
- * @param {*} node
+ * @param {string} path
+ * @param {string} nodeId
  */
-export const isNodeInPaths = (paths, node): boolean => {
-  return paths.some(path => {
-    return isNodeInPath(path, node)
-  })
-}
+export const isNodeIdInTheMiddleOfPath = (path: string, nodeId: string): boolean => !!path && !!nodeId && path.indexOf('.' + nodeId + '.') !== -1
+
+/**
+ * Checks if the given node is a leaf in the path.
+ *
+ * @param {string} path
+ * @param {string} nodeId
+ */
+export const isNodeIdTheLeafOfPath = (path: string, nodeId: string): boolean => !!path && !!nodeId && endsWith(path, '.' + nodeId)
+
+/**
+ * is the given node in the path, return true
+ *
+ * @param {string} path
+ * @param {string} nodeId
+ */
+export const isNodeIdInPath = (path: string, nodeId: string): boolean => isNodeIdTheRootOfPath(path, nodeId) || isNodeIdInTheMiddleOfPath(path, nodeId) || isNodeIdTheLeafOfPath(path, nodeId)
+
 
 /**
  * return a child from the given node whose indexRange encompases the given index

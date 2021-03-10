@@ -118,7 +118,6 @@ describe('unregisterNode()', () => {
       parent: 'root',
       id: 'BOX_B',
       index: 1,
-      activeChild: 'NODE_4',
       children: {
         NODE_4: {
           id: 'NODE_4',
@@ -320,13 +319,15 @@ describe('unregisterNode()', () => {
     nav.registerNode('row1', { orientation: 'horizontal', parent: 'root' })
     nav.registerNode('item1', { isFocusable: true, parent: 'row1' })
 
+    nav.assignFocus('item1')
+
     // nothing else to focus on, but we shouldn't throw an exception
     expect(() => {
       nav.unregisterNode('item1')
     }).not.toThrow()
 
-    // root should still have an activeChild of row 1
-    expect(nav.getNode('root').activeChild).toEqual('row1')
+    // activeChild should be cleaned along whole path
+    expect(nav.getNode('root').activeChild).toEqual(undefined)
     expect(nav.getNode('row1').activeChild).toEqual(undefined)
   })
 
@@ -339,16 +340,46 @@ describe('unregisterNode()', () => {
     nav.registerNode('boxc', { orientation: 'horizontal', parent: 'boxb' })
     nav.registerNode('item1', { isFocusable: true, parent: 'boxc' })
 
+    nav.assignFocus('item1')
+
     // nothing else to focus on, but we shouldn't throw an exception
     expect(() => {
       nav.unregisterNode('item1')
     }).not.toThrow()
 
-    // root should still have an activeChild of row 1
-    expect(nav.getNode('root').activeChild).toEqual('boxa')
-    expect(nav.getNode('boxa').activeChild).toEqual('boxb')
-    expect(nav.getNode('boxb').activeChild).toEqual('boxc')
+    // activeChild should be cleaned along whole path
+    expect(nav.getNode('root').activeChild).toEqual(undefined)
+    expect(nav.getNode('boxa').activeChild).toEqual(undefined)
+    expect(nav.getNode('boxb').activeChild).toEqual(undefined)
     expect(nav.getNode('boxc').activeChild).toEqual(undefined)
+  })
+
+  test('unregistering the focused node when there is other node to focus', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'vertical' })
+    navigation.registerNode('a', { parent: 'root', orientation: 'horizontal' })
+    navigation.registerNode('aa', { parent: 'a', orientation: 'horizontal' })
+    navigation.registerNode('aaa', { parent: 'aa' })
+    navigation.registerNode('aab', { parent: 'aa', isFocusable: true })
+    navigation.registerNode('b', { parent: 'root' })
+    navigation.registerNode('c', { parent: 'root', isFocusable: true })
+
+    navigation.assignFocus('aab')
+
+    // there's `c` that might be focused
+    expect(() => {
+      navigation.unregisterNode('aab')
+    }).not.toThrow()
+
+    // expect `c` to be focused
+    expect(navigation.currentFocusNodeId).toEqual('c')
+
+    // invalid activeChild on the branch pointing to the unregistered node should be cleared,
+    // where invalid activeChild is a node that doesn't lay on currentFocusNode path
+    expect(navigation.getNode('root').activeChild).toEqual('c')
+    expect(navigation.getNode('a').activeChild).toEqual(undefined)
+    expect(navigation.getNode('aa').activeChild).toEqual(undefined)
   })
 
   test('unregistering the root node and re-registering should give a clean tree and internal state', () => {

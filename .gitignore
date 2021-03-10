@@ -1,6 +1,7 @@
 .vscode
 .rpt2_cache
 dist
+.idea
 
 # Created by https://www.gitignore.io/api/node,macos
 

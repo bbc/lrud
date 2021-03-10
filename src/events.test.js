@@ -52,12 +52,21 @@ describe('event scenarios', () => {
       .registerNode('c', { parent: 'right', isFocusable: true })
       .registerNode('d', { parent: 'right', isFocusable: true })
 
+    navigation.assignFocus('a')
     navigation.assignFocus('d')
 
     expect(activeSpy.mock.calls).toEqual([
-      [expect.objectContaining({
-        parent: 'root',
+      // 'a' is focused, 'a' became active
+      [{
+        parent: 'left',
+        isFocusable: true,
+        id: 'a',
+        index: 0
+      }],
+      // bubbling to parent of 'a', 'left' became active
+      [{
         id: 'left',
+        parent: 'root',
         index: 0,
         activeChild: 'a',
         children: {
@@ -74,26 +83,16 @@ describe('event scenarios', () => {
             index: 1
           }
         }
-      })],
-      [expect.objectContaining({
-        parent: 'left',
-        isFocusable: true,
-        id: 'a',
-        index: 0
-      })],
-      [expect.objectContaining({
-        parent: 'right',
-        isFocusable: true,
-        id: 'c',
-        index: 0
-      })],
-      [expect.objectContaining({
+      }],
+      // changing focus from 'a' to 'd', 'd' became active
+      [{
         parent: 'right',
         isFocusable: true,
         id: 'd',
         index: 1
-      })],
-      [expect.objectContaining({
+      }],
+      // bubbling to parent of 'd', 'right' became active
+      [{
         id: 'right',
         parent: 'root',
         index: 1,
@@ -112,17 +111,12 @@ describe('event scenarios', () => {
             index: 1
           }
         }
-      })]
+      }]
     ])
 
     expect(inactiveSpy.mock.calls).toEqual([
-      [expect.objectContaining({
-        parent: 'right',
-        isFocusable: true,
-        id: 'c',
-        index: 0
-      })],
-      [expect.objectContaining({
+      // changing focus from 'a' to 'd', 'left' (parent of 'a') became inactive, because 'right' (parent of 'd') is active now
+      [{
         id: 'left',
         parent: 'root',
         index: 0,
@@ -141,7 +135,7 @@ describe('event scenarios', () => {
             index: 1
           }
         }
-      })]
+      }]
     ])
   })
 
