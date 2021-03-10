@@ -297,10 +297,10 @@ describe('lrud', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root')
-      navigation.registerNode('a', { index: 2, isFocusable: true })
-      navigation.registerNode('b', { index: 4, isFocusable: true })
-      navigation.registerNode('c', { index: 3, isFocusable: true })
-      navigation.registerNode('d', { index: 1, isFocusable: true })
+      navigation.registerNode('a', { index: 0, isFocusable: true }) // order: |a|
+      navigation.registerNode('b', { index: 1, isFocusable: true }) // order: a, |b|
+      navigation.registerNode('c', { index: 1, isFocusable: true }) // order: a, |c|, b
+      navigation.registerNode('d', { index: 0, isFocusable: true }) // order: |d|, a, c, b
 
       navigation.assignFocus('d')
 
@@ -313,10 +313,10 @@ describe('lrud', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root')
-      navigation.registerNode('a', { index: 2, isFocusable: true })
-      navigation.registerNode('b', { index: 4, isFocusable: true })
-      navigation.registerNode('c', { index: 3, isFocusable: true })
-      navigation.registerNode('d', { index: 1, isFocusable: true })
+      navigation.registerNode('a', { index: 0, isFocusable: true }) // order: |a|
+      navigation.registerNode('b', { index: 1, isFocusable: true }) // order: a, |b|
+      navigation.registerNode('c', { index: 1, isFocusable: true }) // order: a, |c|, b
+      navigation.registerNode('d', { index: 0, isFocusable: true }) // order: |d|, a, c, b
 
       navigation.assignFocus('b')
 
@@ -347,10 +347,10 @@ describe('lrud', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root')
-      navigation.registerNode('a', { index: 2, isFocusable: true })
-      navigation.registerNode('b', { index: 4, isFocusable: true })
-      navigation.registerNode('c', { index: 3, isFocusable: true })
-      navigation.registerNode('d', { index: 1, isFocusable: true })
+      navigation.registerNode('a', { index: 0, isFocusable: true }) // order: |a|
+      navigation.registerNode('b', { index: 1, isFocusable: true }) // order: a, |b|
+      navigation.registerNode('c', { index: 1, isFocusable: true }) // order: a, |c|, b
+      navigation.registerNode('d', { index: 0, isFocusable: true }) // order: |d|, a, c, b
 
       navigation.assignFocus('b')
 
@@ -363,10 +363,10 @@ describe('lrud', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root')
-      navigation.registerNode('a', { index: 2, isFocusable: true })
-      navigation.registerNode('b', { index: 4, isFocusable: true })
-      navigation.registerNode('c', { index: 3, isFocusable: true })
-      navigation.registerNode('d', { index: 1, isFocusable: true })
+      navigation.registerNode('a', { index: 0, isFocusable: true }) // order: |a|
+      navigation.registerNode('b', { index: 1, isFocusable: true }) // order: a, |b|
+      navigation.registerNode('c', { index: 1, isFocusable: true }) // order: a, |c|, b
+      navigation.registerNode('d', { index: 0, isFocusable: true }) // order: |d|, a, c, b
 
       navigation.assignFocus('d')
 
@@ -424,9 +424,9 @@ describe('lrud', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root')
-      navigation.registerNode('a', { index: 2 })
-      navigation.registerNode('b', { index: 1 })
-      navigation.registerNode('c', { index: 3 })
+      navigation.registerNode('a', { index: 0 }) // order: |a|
+      navigation.registerNode('b', { index: 0 }) // order: |b|, a
+      navigation.registerNode('c', { index: 2 }) // order: b, a, |c|
 
       const root = navigation.getNode('root')
 
@@ -437,17 +437,17 @@ describe('lrud', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root')
-      navigation.registerNode('a', { index: 21 })
-      navigation.registerNode('b', { index: 10 })
-      navigation.registerNode('c', { index: 3 })
-      navigation.registerNode('d', { index: 5 })
-      navigation.registerNode('e', { index: 4 })
-      navigation.registerNode('f', { index: 7 })
-      navigation.registerNode('g', { index: 6 })
-      navigation.registerNode('h', { index: 9 })
-      navigation.registerNode('i', { index: 8 })
-      navigation.registerNode('j', { index: 15 })
-      navigation.registerNode('k', { index: 11 })
+      navigation.registerNode('a', { index: 0 }) // order: |a|
+      navigation.registerNode('b', { index: 0 }) // order: |b|, a
+      navigation.registerNode('c', { index: 0 }) // order: |c|, b, a
+      navigation.registerNode('d', { index: 1 }) // order: c, |d|, b, a
+      navigation.registerNode('e', { index: 1 }) // order: c, |e|, d, b, a
+      navigation.registerNode('f', { index: 3 }) // order: c, e, d, |f|, b, a
+      navigation.registerNode('g', { index: 3 }) // order: c, e, d, |g|, f, b, a
+      navigation.registerNode('h', { index: 5 }) // order: c, e, d, g, f, |h|, b, a
+      navigation.registerNode('i', { index: 5 }) // order: c, e, d, g, f, |i|, h, b, a
+      navigation.registerNode('j', { index: 8 }) // order: c, e, d, g, f, i, h, b, |j|, a
+      navigation.registerNode('k', { index: 8 }) // order: c, e, d, g, f, i, h, b, |k|, j, a
 
       const root = navigation.getNode('root')
 
@@ -493,9 +493,9 @@ describe('lrud', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root')
-      navigation.registerNode('a', { index: 3 })
-      navigation.registerNode('b', { index: 1 })
-      navigation.registerNode('c', { index: 2 })
+      navigation.registerNode('a', { index: 0 }) // order: |a|
+      navigation.registerNode('b', { index: 0 }) // order: |b|, a
+      navigation.registerNode('c', { index: 1 }) // order: b, |c|, a
 
       const root = navigation.getNode('root')
 
@@ -506,17 +506,17 @@ describe('lrud', () => {
       const navigation = new Lrud()
 
       navigation.registerNode('root')
-      navigation.registerNode('a', { index: 3 })
-      navigation.registerNode('b', { index: 1 })
-      navigation.registerNode('c', { index: 2 })
-      navigation.registerNode('d', { index: 5 })
-      navigation.registerNode('e', { index: 8 })
-      navigation.registerNode('f', { index: 7 })
-      navigation.registerNode('g', { index: 3 })
-      navigation.registerNode('h', { index: 6 })
-      navigation.registerNode('i', { index: 9 })
-      navigation.registerNode('j', { index: 10 })
-      navigation.registerNode('k', { index: 11 })
+      navigation.registerNode('a', { index: 0 }) // order: |a|
+      navigation.registerNode('b', { index: 0 }) // order: |b|, a
+      navigation.registerNode('c', { index: 1 }) // order: b, |c|, a
+      navigation.registerNode('d', { index: 3 }) // order: b, c, a, |d|
+      navigation.registerNode('e', { index: 4 }) // order: b, c, a, d, |e|
+      navigation.registerNode('f', { index: 4 }) // order: b, c, a, d, |f|, e
+      navigation.registerNode('g', { index: 3 }) // order: b, c, a, |g|, d, f, e
+      navigation.registerNode('h', { index: 5 }) // order: b, c, a, g, d, |h|, f, e
+      navigation.registerNode('i', { index: 8 }) // order: b, c, a, g, d, h, f, e, |i|
+      navigation.registerNode('j', { index: 9 }) // order: b, c, a, g, d, h, f, e, i, |j|
+      navigation.registerNode('k', { index: 10 }) // order: b, c, a, g, d, h, f, e, i, j, |k|
 
       const root = navigation.getNode('root')
 
@@ -525,35 +525,16 @@ describe('lrud', () => {
   })
 
   describe('reindexChildrenOfNode', () => {
-    test('deleting a leaf should re-index the other leaves when leaves are added without indexes', () => {
+    test('deleting a child should re-index the other children', () => {
       const navigation = new Lrud()
 
       navigation
         .registerNode('root')
-        .registerNode('c', { index: 9 })
-        .registerNode('a', { index: 4 })
-        .registerNode('d', { index: 13 })
-        .registerNode('b', { index: 6 })
-
-      let root = navigation.getNode('root')
-      root = navigation.reindexChildrenOfNode(root)
-
-      expect(root.children.a.index).toEqual(0)
-      expect(root.children.b.index).toEqual(1)
-      expect(root.children.c.index).toEqual(2)
-      expect(root.children.d.index).toEqual(3)
-    })
-
-    test('test it through unregister', () => {
-      const navigation = new Lrud()
-
-      navigation
-        .registerNode('root')
-        .registerNode('c', { index: 9 })
-        .registerNode('a', { index: 4 })
-        .registerNode('e', { index: 16 })
-        .registerNode('d', { index: 13 })
-        .registerNode('b', { index: 6 })
+        .registerNode('c', { index: 0 }) // order: |c|
+        .registerNode('a', { index: 0 }) // order: |a|, c
+        .registerNode('e', { index: 2 }) // order: a, c, |e|
+        .registerNode('d', { index: 2 }) // order: a, c, |d|, e
+        .registerNode('b', { index: 1 }) // order: a, |b|, c, d, e
 
       navigation.unregisterNode('e')
 
@@ -568,17 +549,17 @@ describe('lrud', () => {
 
       navigation
         .registerNode('root')
-        .registerNode('c', { index: 9 })
-        .registerNode('a', { index: 4 })
-        .registerNode('e', { index: 16 })
-        .registerNode('d', { index: 13 })
-        .registerNode('b', { index: 6 })
-        .registerNode('f', { index: 10 })
-        .registerNode('g', { index: 20 })
-        .registerNode('h', { index: 17 })
-        .registerNode('i', { index: 15 })
-        .registerNode('j', { index: 3 })
-        .registerNode('k', { index: 1 })
+        .registerNode('c', { index: 0 }) // order: |c|
+        .registerNode('a', { index: 0 }) // order: |a|, c
+        .registerNode('e', { index: 2 }) // order: a, c, |e|
+        .registerNode('d', { index: 2 }) // order: a, c, |d|, e
+        .registerNode('b', { index: 1 }) // order: a, |b|, c, d, e
+        .registerNode('f', { index: 3 }) // order: a, b, c, |f|, d, e
+        .registerNode('g', { index: 6 }) // order: a, b, c, f, d, e, |g|
+        .registerNode('h', { index: 6 }) // order: a, b, c, f, d, e, |h|, g
+        .registerNode('i', { index: 5 }) // order: a, b, c, f, d, |i|, e, h, g
+        .registerNode('j', { index: 0 }) // order: |j|, a, b, c, f, d, i, e, h, g
+        .registerNode('k', { index: 0 }) // order: |k|, j, a, b, c, f, d, i, e, h, g
 
       navigation.unregisterNode('e')
 
@@ -588,6 +569,10 @@ describe('lrud', () => {
       expect(navigation.getNode('b').index).toEqual(3)
       expect(navigation.getNode('c').index).toEqual(4)
       expect(navigation.getNode('f').index).toEqual(5)
+      expect(navigation.getNode('d').index).toEqual(6)
+      expect(navigation.getNode('i').index).toEqual(7)
+      expect(navigation.getNode('h').index).toEqual(8)
+      expect(navigation.getNode('g').index).toEqual(9)
     })
   })
 

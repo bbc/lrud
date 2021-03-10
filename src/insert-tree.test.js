@@ -201,4 +201,76 @@ describe('insertTree()', () => {
     expect(instance.tree['root'].children['beta'].children['charlie']).toBeTruthy()
     expect(instance.tree['root'].children['beta'].children['charlie'].children).toBeTruthy()
   })
+
+  /**
+   * @see https://github.com/bbc/lrud/issues/84
+   */
+  test('should correctly maintain index when replacing first child', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root')
+    navigation.registerNode('a')
+    navigation.registerNode('b')
+    navigation.registerNode('c')
+
+    navigation.insertTree({
+      a: {
+        isFocusable: true
+      }
+    })
+
+    // expect top node was replaced with inserted tree
+    expect(navigation.getNode('a').isFocusable).toEqual(true)
+
+    // expect index of the top node parent is maintained
+    expect(navigation.getNode('a').index).toEqual(0)
+  })
+
+  test('coherent index, keep parent\'s children indices coherent if index is not maintained', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root')
+    navigation.registerNode('a')
+    navigation.registerNode('b')
+    navigation.registerNode('c')
+    navigation.registerNode('d')
+
+    navigation.insertTree({
+      c: {
+        index: 1,
+        isFocusable: true
+      }
+    }, { maintainIndex: false })
+
+    // expect top node was replaced with inserted tree
+    expect(navigation.getNode('c').isFocusable).toEqual(true)
+
+    // original 'c' was unregistered, so 'd' was shifted down to '2',
+    // but than new 'c' was inserted at '1', so 'd' was shifted up back to '3' and 'b' was shifted up to '2'
+    expect(navigation.getNode('a').index).toEqual(0)
+    expect(navigation.getNode('b').index).toEqual(2)
+    expect(navigation.getNode('c').index).toEqual(1)
+    expect(navigation.getNode('d').index).toEqual(3)
+  })
+
+  test('coherent index, should maintain original child index overriding provided index', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root')
+    navigation.registerNode('a')
+    navigation.registerNode('b')
+
+    navigation.insertTree({
+      a: {
+        index: 5,
+        isFocusable: true
+      }
+    })
+
+    // expect top node was replaced with inserted tree
+    expect(navigation.getNode('a').isFocusable).toEqual(true)
+
+    // existing 'a' node was unregistered, but its index is reassigned and kept by re-registered 'a' node
+    expect(navigation.getNode('a').index).toEqual(0)
+  })
 })

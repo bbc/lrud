@@ -186,16 +186,19 @@ export class Lrud {
       }
     }
 
-    // if no `index` set, calculate it
-    if (!node.index) {
-      const parentNode = this.getNode(node.parent)
-      if (parentNode) {
-        const parentsChildren = this.getNode(node.parent).children
-        if (!parentsChildren) {
-          node.index = 0
-        } else {
-          node.index = (Object.keys(parentsChildren).length)
-        }
+    const parentNode = this.getNode(node.parent)
+    if (parentNode) {
+      const parentsChildrenIds = Object.keys(parentNode.children || {})
+      // if no `index` set, calculate it
+      if (typeof node.index !== 'number') {
+        node.index = parentsChildrenIds.length
+      } else {
+        parentsChildrenIds.forEach(childId => {
+          const child = parentNode.children[childId]
+          if (child.index >= node.index) {
+            child.index += 1
+          }
+        })
       }
     }
 
@@ -203,6 +206,10 @@ export class Lrud {
     const path = arrayFind(this.nodePathList, path => endsWith(path, parentPathId)) + '.children.' + nodeId
     Set(this.tree, path, node)
     this.nodePathList.push(path)
+
+    if (parentNode) {
+      this.reindexChildrenOfNode(parentNode)
+    }
 
     // if the node is focusable, we want to add its path to our focusableNodePathList
     if (isNodeFocusable(node)) {
@@ -945,23 +952,11 @@ export class Lrud {
       replacementNode.parent = originalNode.parent
     }
 
-    const parentNode = this.getNode(replacementNode.parent)
-
-    if (options.maintainIndex && originalNode && originalNode.index) {
+    if (options.maintainIndex && originalNode && typeof originalNode.index === 'number') {
       replacementNode.index = originalNode.index
-      Object.keys(parentNode.children).forEach(childId => {
-        const child = parentNode.children[childId]
-        if (child.index >= originalNode.index) {
-          child.index += 1
-        }
-      })
     }
 
     this.registerTree(tree)
-
-    if (options.maintainIndex) {
-      this.reindexChildrenOfNode(parentNode)
-    }
   }
 
   doesNodeHaveFocusableChildren (node: Node): boolean {
