@@ -20,4 +20,11 @@ describe('registerTree()', () => {
     expect(Beta.tree.root.children.a).toBeTruthy()
     expect(Beta.tree.root.children.b).toBeTruthy()
   })
+
+  test('should not fail when tree is not defined', () => {
+    const navigation = new Lrud()
+    navigation.registerNode('root')
+
+    expect(() => navigation.registerTree(undefined)).not.toThrow()
+  })
 })
