@@ -36,7 +36,10 @@ export const arrayFind = <A>(arr: A[], func): A | undefined => {
  *
  * @param {object} node
  */
-export const isNodeFocusable = (node: Node): boolean => node.isFocusable != null ? node.isFocusable : !!node.selectAction
+export const isNodeFocusable = (node: Node): boolean => {
+  if (!node) return false
+  return node.isFocusable != null ? node.isFocusable : !!node.selectAction
+}
 
 /**
  * given a keyCode, lookup and return the direction from the keycodes mapping file
@@ -115,7 +118,7 @@ export const isNodeIdInPath = (path: string, nodeId: string): boolean => isNodeI
  * @param {number} index
  */
 export const _findChildWithMatchingIndexRange = (node, index): Node => {
-  if (!node.children) {
+  if (!node || !node.children) {
     return null
   }
 
@@ -136,7 +139,7 @@ export const _findChildWithMatchingIndexRange = (node, index): Node => {
  * @param {number} index
  */
 export const _findChildWithIndex = (node, index): Node => {
-  if (!node.children) {
+  if (!node || !node.children) {
     return null
   }
 
@@ -162,7 +165,7 @@ export const _findChildWithIndex = (node, index): Node => {
  * @param {number[]} indexRange
  */
 export const _findChildWithClosestIndex = (node, index, indexRange = null): Node => {
-  if (!node.children) {
+  if (!node || !node.children) {
     return null
   }
 
@@ -184,6 +187,8 @@ export const _findChildWithClosestIndex = (node, index, indexRange = null): Node
 }
 
 export const isNodeInTree = (nodeId: string, tree: object): boolean => {
+  if (!nodeId || !tree) return false
+
   let nodeInTree = false
 
   const _isNodeInTree = (tree): void => {
@@ -222,6 +227,8 @@ export const getNodesFromTree = (tree: object): Node[] => {
     })
   }
 
-  _getNodesFromTree(tree, undefined)
+  if (tree) {
+    _getNodesFromTree(tree, undefined)
+  }
   return nodes
 }

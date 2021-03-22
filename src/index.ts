@@ -548,7 +548,7 @@ export class Lrud {
    * @param {object} node
    */
   getNextFocusableChild (node: Node): Node {
-    if (!node.children) {
+    if (!node || !node.children) {
       return
     }
     // there's no child that is (or was) focused, so we can quickly pick first focusable child
@@ -576,7 +576,7 @@ export class Lrud {
    * @param {object} node
    */
   getPrevFocusableChild (node: Node): Node {
-    if (!node.children) {
+    if (!node || !node.children) {
       return
     }
     // there's no child that is (or was) focused, so we can quickly pick last focusable child
@@ -605,7 +605,7 @@ export class Lrud {
    * @param {object} node
    */
   getNodeFirstChild (node: Node): Node {
-    if (!node.children) {
+    if (!node || !node.children) {
       return undefined
     }
 
@@ -620,7 +620,7 @@ export class Lrud {
    * @param {object} node
    */
   getNodeLastChild (node: Node): Node {
-    if (!node.children) {
+    if (!node || !node.children) {
       return undefined
     }
 
@@ -635,7 +635,7 @@ export class Lrud {
    * @param {object} node
    */
   getNodeFirstFocusableChild (node: Node): Node {
-    if (!node.children) {
+    if (!node || !node.children) {
       return undefined
     }
 
@@ -658,7 +658,7 @@ export class Lrud {
    * @param {object} node
    */
   getNodeLastFocusableChild (node: Node): Node {
-    if (!node.children) {
+    if (!node || !node.children) {
       return undefined
     }
 
@@ -798,7 +798,10 @@ export class Lrud {
   setActiveChild (parentId: string, childId: string): void {
     const child = this.getNode(childId)
     const parent = this.getNode(parentId)
-    if (!child) {
+    if (!parent || !child) {
+      return
+    }
+    if (child.parent !== parent.id) {
       return
     }
 
@@ -851,7 +854,7 @@ export class Lrud {
     const parent = this.getNode(parentId)
 
     // if the parent has a parent, bubble up
-    if (parent.parent) {
+    if (parent && parent.parent) {
       this.setActiveChildRecursive(parent.parent, parent.id)
     }
   }
@@ -865,7 +868,7 @@ export class Lrud {
    */
   unsetActiveChild (parentId: string, activeChildId: string): void {
     let parent = this.getNode(parentId)
-    if (!parent.activeChild) return
+    if (!parent || !parent.activeChild) return
     if (parent.activeChild !== activeChildId) return
 
     // activeChildId may be already deleted, creating its path manually
@@ -972,6 +975,7 @@ export class Lrud {
    * @param {object} tree
    */
   registerTree (tree: object): void {
+    if (!tree) return
     getNodesFromTree(tree).forEach(node => {
       this.registerNode(node.id, node)
     })
@@ -990,6 +994,7 @@ export class Lrud {
    * @param {object} options.maintainIndex if true, and new tree is replacing an existing branch of the tree, maintain the original branches relative index
    */
   insertTree (tree: object, options: InsertTreeOptions = { maintainIndex: true }): void {
+    if (!tree) return
     const replacementNode = tree[Object.keys(tree)[0]]
 
     if (!replacementNode.id) {
@@ -1009,6 +1014,7 @@ export class Lrud {
   }
 
   doesNodeHaveFocusableChildren (node: Node): boolean {
+    if (!node) return false
     return this.focusableNodePathList.some(path => isNodeIdTheRootOfPath(path, node.id) || isNodeIdInTheMiddleOfPath(path, node.id))
   }
 

@@ -381,6 +381,18 @@ describe('lrud', () => {
 
       expect(nextFocusableChild).toBeUndefined()
     })
+
+    test('should not fail of node does not exists', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root')
+
+      let nextFocusableChild = navigation.getRootNode()
+      expect(() => {
+        nextFocusableChild = navigation.getNextFocusableChild(navigation.getNode('not_existing'))
+      }).not.toThrow()
+
+      expect(nextFocusableChild).toBeUndefined()
+    })
   })
 
   describe('getPrevFocusableChild()', () => {
@@ -445,6 +457,18 @@ describe('lrud', () => {
 
       expect(prevFocusableChild).toBeUndefined()
     })
+
+    test('should not fail of node does not exists', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root')
+
+      let nextFocusableChild = navigation.getRootNode()
+      expect(() => {
+        nextFocusableChild = navigation.getPrevFocusableChild(navigation.getNode('not_existing'))
+      }).not.toThrow()
+
+      expect(nextFocusableChild).toBeUndefined()
+    })
   })
 
   describe('getNodeFirstFocusableChild()', () => {
@@ -489,6 +513,18 @@ describe('lrud', () => {
 
       expect(firstFocusableChild).toBeUndefined()
     })
+
+    test('should not fail of node does not exists', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root')
+
+      let nextFocusableChild = navigation.getRootNode()
+      expect(() => {
+        nextFocusableChild = navigation.getNodeFirstFocusableChild(navigation.getNode('not_existing'))
+      }).not.toThrow()
+
+      expect(nextFocusableChild).toBeUndefined()
+    })
   })
 
   describe('getNodeLastFocusableChild()', () => {
@@ -532,6 +568,18 @@ describe('lrud', () => {
       }).not.toThrow()
 
       expect(lastFocusableChild).toBeUndefined()
+    })
+
+    test('should not fail of node does not exists', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root')
+
+      let nextFocusableChild = navigation.getRootNode()
+      expect(() => {
+        nextFocusableChild = navigation.getNodeLastFocusableChild(navigation.getNode('not_existing'))
+      }).not.toThrow()
+
+      expect(nextFocusableChild).toBeUndefined()
     })
   })
 
@@ -612,6 +660,18 @@ describe('lrud', () => {
 
       expect(navigation.getNodeFirstChild(root).id).toEqual('c')
     })
+
+    test('should not fail of node does not exists', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root')
+
+      let nextFocusableChild = navigation.getRootNode()
+      expect(() => {
+        nextFocusableChild = navigation.getNodeFirstChild(navigation.getNode('not_existing'))
+      }).not.toThrow()
+
+      expect(nextFocusableChild).toBeUndefined()
+    })
   })
 
   describe('getNodeLastChild()', () => {
@@ -680,6 +740,18 @@ describe('lrud', () => {
       const root = navigation.getNode('root')
 
       expect(navigation.getNodeLastChild(root).id).toEqual('k')
+    })
+
+    test('should not fail of node does not exists', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root')
+
+      let nextFocusableChild = navigation.getRootNode()
+      expect(() => {
+        nextFocusableChild = navigation.getNodeLastChild(navigation.getNode('not_existing'))
+      }).not.toThrow()
+
+      expect(nextFocusableChild).toBeUndefined()
     })
   })
 
@@ -750,6 +822,41 @@ describe('lrud', () => {
       expect(navigation.currentFocusNodeId).toEqual('b0')
       expect(navigation.getNode('root').activeChild).toEqual('b')
     })
+
+    it('should not fail when parent does not exist', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('a0', { isFocusable: true, parent: 'a' })
+
+      expect(() => navigation.setActiveChild('not_existing', 'a0')).not.toThrow()
+    })
+
+    it('should do nothing when child does not exist', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('a0', { isFocusable: true, parent: 'a' })
+
+      navigation.assignFocus('a0')
+
+      expect(() => navigation.setActiveChild('a', 'not_existing')).not.toThrow()
+      expect(navigation.getNode('a').activeChild).toEqual('a0')
+    })
+
+    it('should do nothing when child is not direct child of parent', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('a0', { isFocusable: true, parent: 'a' })
+        .registerNode('b', { parent: 'root' })
+
+      expect(() => navigation.setActiveChild('b', 'a0')).not.toThrow()
+      expect(navigation.getNode('b').activeChild).toBeUndefined()
+    })
   })
 
   describe('setActiveChildRecursive', () => {
@@ -767,6 +874,70 @@ describe('lrud', () => {
       navigation.setActiveChildRecursive('a', 'a0')
       expect(navigation.currentFocusNodeId).toEqual('a1')
       expect(navigation.getNode('root').activeChild).toEqual('a')
+    })
+
+    it('should not fail when parent does not exist', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('a0', { isFocusable: true, parent: 'a' })
+
+      expect(() => navigation.setActiveChildRecursive('not_existing', 'a0')).not.toThrow()
+    })
+  })
+
+  describe('unsetActiveChild', () => {
+    it('should recurse up the tree', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('a0', { isFocusable: true, parent: 'a' })
+
+      navigation.assignFocus('a0')
+
+      navigation.unsetActiveChild('a', 'a0')
+      expect(navigation.getNode('a').activeChild).toBeUndefined()
+      expect(navigation.getNode('root').activeChild).toBeUndefined()
+    })
+
+    it('should not fail when parent does not exist', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('a0', { isFocusable: true, parent: 'a' })
+
+      expect(() => navigation.unsetActiveChild('not_existing', 'a0')).not.toThrow()
+    })
+
+    it('should do nothing when child does not exist', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('a0', { isFocusable: true, parent: 'a' })
+
+      navigation.assignFocus('a0')
+
+      expect(() => navigation.unsetActiveChild('a', 'not_existing')).not.toThrow()
+      expect(navigation.getNode('a').activeChild).toEqual('a0')
+    })
+
+    it('should do nothing when child is not direct child of parent', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('a0', { isFocusable: true, parent: 'a' })
+        .registerNode('b', { parent: 'root' })
+        .registerNode('b0', { isFocusable: true, parent: 'b' })
+
+      navigation.assignFocus('b0')
+
+      expect(() => navigation.unsetActiveChild('b', 'a0')).not.toThrow()
+      expect(navigation.getNode('b').activeChild).toEqual('b0')
     })
   })
 
@@ -917,6 +1088,13 @@ describe('lrud', () => {
       expect(navigation.getNode('a').activeChild).toBeUndefined()
       expect(navigation.getNode('root').activeChild).toBeUndefined()
     })
+
+    test('should not fail when node does not exists', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root')
+
+      expect(() => navigation.setNodeFocusable('not_existing', true)).not.toThrow()
+    })
   })
 
   describe('getPathForNodeId()', () => {
@@ -960,6 +1138,16 @@ describe('lrud', () => {
       expect(navigation.doesNodeHaveFocusableChildren(navigation.getNode('bb'))).toEqual(false)
       expect(navigation.doesNodeHaveFocusableChildren(navigation.getNode('c'))).toEqual(false)
     })
+
+    test('should not fail when node does not exists', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root')
+      navigation.registerNode('a', { isFocusable: true, parent: 'root' })
+
+      const notExistingNode = navigation.getNode('not_existing')
+      expect(() => navigation.doesNodeHaveFocusableChildren(notExistingNode)).not.toThrow()
+      expect(navigation.doesNodeHaveFocusableChildren(notExistingNode)).toEqual(false)
+    })
   })
 
   describe('isNodeFocusableCandidate()', () => {
@@ -986,6 +1174,16 @@ describe('lrud', () => {
       expect(navigation.isNodeFocusableCandidate(navigation.getNode('ba'))).toEqual(false)
       expect(navigation.isNodeFocusableCandidate(navigation.getNode('bb'))).toEqual(false)
       expect(navigation.isNodeFocusableCandidate(navigation.getNode('c'))).toEqual(true)
+    })
+
+    test('should not fail when node does not exists', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root')
+      navigation.registerNode('a', { isFocusable: true, parent: 'root' })
+
+      const notExistingNode = navigation.getNode('not_existing')
+      expect(() => navigation.isNodeFocusableCandidate(notExistingNode)).not.toThrow()
+      expect(navigation.isNodeFocusableCandidate(notExistingNode)).toEqual(false)
     })
   })
 })

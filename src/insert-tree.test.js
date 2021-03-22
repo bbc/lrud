@@ -273,4 +273,11 @@ describe('insertTree()', () => {
     // existing 'a' node was unregistered, but its index is reassigned and kept by re-registered 'a' node
     expect(navigation.getNode('a').index).toEqual(0)
   })
+
+  test('should not fail when tree is not defined', () => {
+    const navigation = new Lrud()
+    navigation.registerNode('root')
+
+    expect(() => navigation.insertTree(undefined)).not.toThrow()
+  })
 })

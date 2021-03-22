@@ -12,7 +12,8 @@ const {
   _findChildWithMatchingIndexRange,
   _findChildWithClosestIndex,
   _findChildWithIndex,
-  isNodeInTree
+  isNodeInTree,
+  getNodesFromTree
 } = require('./utils')
 
 describe('Closest()', () => {
@@ -99,6 +100,12 @@ describe('isNodeFocusable()', () => {
     }
 
     expect(isNodeFocusable(node)).toEqual(false)
+  })
+
+  test('should not fail when node does not exists', () => {
+    const notExistingNode = undefined
+    expect(() => isNodeFocusable(notExistingNode)).not.toThrow()
+    expect(isNodeFocusable(notExistingNode)).toEqual(false)
   })
 })
 
@@ -214,6 +221,14 @@ describe('isNodeIdInPath()', () => {
   it('node id is not in path', () => {
     expect(isNodeIdInPath('1.2.3', 'z')).toEqual(false)
   })
+
+  it('node id is not defined', () => {
+    expect(isNodeIdInPath('1.2.3', undefined)).toEqual(false)
+  })
+
+  it('path is not defined', () => {
+    expect(isNodeIdInPath(undefined, 'z')).toEqual(false)
+  })
 })
 
 describe('_findChildWithMatchingIndexRange()', () => {
@@ -285,6 +300,11 @@ describe('_findChildWithMatchingIndexRange()', () => {
     const found = _findChildWithMatchingIndexRange(node, 6)
 
     expect(found).toEqual(null)
+  })
+
+  test('should not fail when node does not exists', () => {
+    const notExistingNode = undefined
+    expect(() => _findChildWithMatchingIndexRange(notExistingNode, 0)).not.toThrow()
   })
 })
 
@@ -501,6 +521,11 @@ describe('_findChildWithClosestIndex()', () => {
 
     expect(found).toEqual(node.children.d)
   })
+
+  test('should not fail when node does not exists', () => {
+    const notExistingNode = undefined
+    expect(() => _findChildWithClosestIndex(notExistingNode, 0)).not.toThrow()
+  })
 })
 
 describe('_findChildWithIndex()', () => {
@@ -604,6 +629,11 @@ describe('_findChildWithIndex()', () => {
     const found = _findChildWithIndex(node, 1)
     expect(found).toEqual(null)
   })
+
+  test('should not fail when node does not exists', () => {
+    const notExistingNode = undefined
+    expect(() => _findChildWithIndex(notExistingNode, 0)).not.toThrow()
+  })
 })
 
 describe('isNodeInTree()', () => {
@@ -685,6 +715,11 @@ describe('isNodeInTree()', () => {
 
     expect(isNodeInTree('node_x', tree)).toEqual(false)
   })
+
+  test('should not fail when tree is not defined', () => {
+    expect(() => isNodeInTree('node_x', undefined)).not.toThrow()
+    expect(isNodeInTree('node_x', undefined)).toEqual(false)
+  })
 })
 
 describe('getDirectionForKeyCode()', () => {
@@ -695,5 +730,12 @@ describe('getDirectionForKeyCode()', () => {
   it('get direction for unknown keycode', () => {
     const direction = getDirectionForKeyCode(999999999)
     expect(direction).toEqual(null)
+  })
+})
+
+describe('getNodesFromTree()', () => {
+  test('should not fail when tree is not defined', () => {
+    expect(() => getNodesFromTree(undefined)).not.toThrow()
+    expect(getNodesFromTree(undefined)).toEqual([])
   })
 })
