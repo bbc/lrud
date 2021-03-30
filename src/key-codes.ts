@@ -1,47 +1,34 @@
-const left = 'LEFT'
-const right = 'RIGHT'
-const up = 'UP'
-const down = 'DOWN'
-const enter = 'ENTER'
+import { Direction, Directions } from './interfaces'
 
-export const KeyCodes = {
-  map: {
-    LEFT: left,
-    RIGHT: right,
-    UP: up,
-    DOWN: down,
-    ENTER: enter
-  },
-  codes: {
-    4: left,
-    21: left,
-    37: left,
-    214: left,
-    205: left,
-    218: left,
-    5: right,
-    22: right,
-    39: right,
-    213: right,
-    206: right,
-    217: right,
-    29460: up,
-    19: up,
-    38: up,
-    211: up,
-    203: up,
-    215: up,
-    29461: down,
-    20: down,
-    40: down,
-    212: down,
-    204: down,
-    216: down,
-    29443: enter,
-    13: enter,
-    67: enter,
-    32: enter,
-    23: enter,
-    195: enter
-  }
+export const KeyCodes: { [keyCode: number]: Direction } = {
+  4: Directions.LEFT,
+  21: Directions.LEFT,
+  37: Directions.LEFT,
+  214: Directions.LEFT,
+  205: Directions.LEFT,
+  218: Directions.LEFT,
+  5: Directions.RIGHT,
+  22: Directions.RIGHT,
+  39: Directions.RIGHT,
+  213: Directions.RIGHT,
+  206: Directions.RIGHT,
+  217: Directions.RIGHT,
+  29460: Directions.UP,
+  19: Directions.UP,
+  38: Directions.UP,
+  211: Directions.UP,
+  203: Directions.UP,
+  215: Directions.UP,
+  29461: Directions.DOWN,
+  20: Directions.DOWN,
+  40: Directions.DOWN,
+  212: Directions.DOWN,
+  204: Directions.DOWN,
+  216: Directions.DOWN,
+  29443: Directions.ENTER,
+  13: Directions.ENTER,
+  67: Directions.ENTER,
+  32: Directions.ENTER,
+  23: Directions.ENTER,
+  195: Directions.ENTER
 }

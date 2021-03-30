@@ -124,4 +124,40 @@ describe('cancellable movement - functions on the node', () => {
     navigation.handleKeyEvent({ direction: 'right' })
     expect(navigation.currentFocusNodeId).toEqual('d')
   })
+
+  it('should cancel when shouldCancelLeave returns true, no onLeaveCancelled callback', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'horizontal' })
+      .registerNode('a', { isFocusable: true })
+      .registerNode('b', {
+        isFocusable: true,
+        shouldCancelLeave: () => true
+      })
+      .registerNode('c', { isFocusable: true })
+
+    navigation.assignFocus('b')
+
+    navigation.handleKeyEvent({ direction: 'left' })
+
+    expect(navigation.currentFocusNodeId).toEqual('b')
+  })
+
+  it('should cancel when shouldEnterLeave returns true, no onEnterCancelled callback', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'horizontal' })
+      .registerNode('a', { isFocusable: true })
+      .registerNode('b', {
+        isFocusable: true,
+        shouldCancelEnter: () => true
+      })
+      .registerNode('c', { isFocusable: true })
+
+    navigation.assignFocus('a')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+
+    expect(navigation.currentFocusNodeId).toEqual('a')
+  })
 })

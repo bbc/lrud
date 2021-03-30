@@ -6,12 +6,38 @@ describe('lrud', () => {
   describe('getRootNode()', () => {
     test('return the root node', () => {
       const navigation = new Lrud()
-
       navigation.registerNode('root')
 
       const node = navigation.getRootNode()
 
       expect(node.id).toEqual('root')
+    })
+
+    test('should throw an error when root node is not defined', () => {
+      const navigation = new Lrud()
+
+      expect(() => navigation.getRootNode()).toThrow('no root node')
+    })
+  })
+
+  describe('getCurrentFocusNode()', () => {
+    test('should return the current focused node', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root', { isFocusable: true })
+      navigation.assignFocus('root')
+
+      const node = navigation.getCurrentFocusNode()
+
+      expect(node.id).toEqual('root')
+    })
+
+    test('should return return nothing when current focused node is not defined', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root', { isFocusable: true })
+
+      const node = navigation.getCurrentFocusNode()
+
+      expect(node).toBeUndefined()
     })
   })
 
@@ -69,7 +95,7 @@ describe('lrud', () => {
 
       expect(node2.selectAction).toEqual(12)
       expect(node2.parent).toEqual('BOX_A')
-      expect(navigation.tree.root.children['BOX_A'].children['NODE_2']).toBeUndefined()
+      expect(navigation.nodes.root.children.BOX_A.children.NODE_2).toBeUndefined()
     })
   })
 
@@ -103,8 +129,6 @@ describe('lrud', () => {
       navigation.assignFocus('b')
 
       expect(navigation.currentFocusNodeId).toEqual('b')
-      expect(navigation.currentFocusNodePath).toEqual('root.children.b')
-      expect(navigation.currentFocusNode).toEqual(navigation.getNode('b'))
       expect(navigation.getNode('root').activeChild).toEqual('b')
     })
 
@@ -142,6 +166,16 @@ describe('lrud', () => {
       navigation.assignFocus('a')
 
       expect(navigation.currentFocusNodeId).toEqual('a')
+    })
+
+    test('should throw an error when focusing non focusable node', () => {
+      const navigation = new Lrud()
+
+      navigation.registerNode('root')
+
+      expect(() => {
+        navigation.assignFocus('root')
+      }).toThrow('trying to assign focus to a non focusable node')
     })
   })
 
@@ -188,14 +222,14 @@ describe('lrud', () => {
     test('should avoid infinite scan when root node reached', () => {
       const navigation = new Lrud()
 
-      navigation.registerNode('root', {orientation: 'horizontal'})
-      navigation.registerNode('undefined', {parent: 'root', isFocusable: true})
+      navigation.registerNode('root', { orientation: 'horizontal' })
+      navigation.registerNode('undefined', { parent: 'root', isFocusable: true })
 
       navigation.assignFocus('undefined')
 
       expect(
         () => navigation.climbUp(navigation.getNode('undefined'), 'right')
-      ).not.toThrow({name: 'RangeError', message: 'Maximum call stack size exceeded'})
+      ).not.toThrow({ name: 'RangeError', message: 'Maximum call stack size exceeded' })
     })
   })
 
@@ -294,6 +328,18 @@ describe('lrud', () => {
       const child = navigation.getNextFocusableChildInDirection(navigation.getNode('root'), 'up')
 
       expect(child.id).toEqual('a')
+    })
+
+    test('should not fail when node is not defined', () => {
+      const navigation = new Lrud()
+
+      let child
+
+      expect(() => {
+        child = navigation.getNextFocusableChildInDirection(undefined, 'up')
+      }).not.toThrow()
+
+      expect(child).toBeUndefined()
     })
   })
 
@@ -823,6 +869,18 @@ describe('lrud', () => {
       expect(navigation.getNode('root').activeChild).toEqual('b')
     })
 
+    it('should change existing parent\'s activeChild property', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root', isFocusable: true })
+        .registerNode('b', { parent: 'root', isFocusable: true })
+
+      navigation.assignFocus('a')
+      navigation.setActiveChild('root', 'b')
+      expect(navigation.getNode('root').activeChild).toEqual('b')
+    })
+
     it('should not fail when parent does not exist', () => {
       const navigation = new Lrud()
       navigation
@@ -894,12 +952,62 @@ describe('lrud', () => {
         .registerNode('root')
         .registerNode('a', { parent: 'root' })
         .registerNode('a0', { isFocusable: true, parent: 'a' })
+        .registerNode('a00', { isFocusable: true, parent: 'a0' })
+        .registerNode('b', { isFocusable: true, parent: 'root' })
 
-      navigation.assignFocus('a0')
+      navigation.assignFocus('a00')
+      expect(navigation.getNode('a0').activeChild).toEqual('a00')
+      expect(navigation.getNode('a').activeChild).toEqual('a0')
+      expect(navigation.getNode('root').activeChild).toEqual('a')
 
-      navigation.unsetActiveChild('a', 'a0')
+      navigation.assignFocus('b')
+      expect(navigation.getNode('a0').activeChild).toEqual('a00')
+      expect(navigation.getNode('a').activeChild).toEqual('a0')
+      expect(navigation.getNode('root').activeChild).toEqual('b')
+
+      navigation.unsetActiveChild('a0', 'a00')
+      expect(navigation.getNode('a0').activeChild).toBeUndefined()
       expect(navigation.getNode('a').activeChild).toBeUndefined()
+      expect(navigation.getNode('root').activeChild).toEqual('b')
+    })
+
+    it('should recurse up the tree - unsetting current focused node', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('a0', { isFocusable: true, parent: 'a' })
+        .registerNode('a00', { isFocusable: true, parent: 'a0' })
+        .registerNode('a000', { isFocusable: true, parent: 'a00' })
+        .registerNode('b', { isFocusable: true, parent: 'root' })
+
+      navigation.assignFocus('a000')
+
+      navigation.unsetActiveChild('a00', 'a000')
       expect(navigation.getNode('root').activeChild).toBeUndefined()
+      expect(navigation.getNode('a').activeChild).toBeUndefined()
+      expect(navigation.getNode('a0').activeChild).toBeUndefined()
+      expect(navigation.getNode('a00').activeChild).toBeUndefined()
+    })
+
+    it('should recurse up the tree - unsetting node on the current focused node branch', () => {
+      const navigation = new Lrud()
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('a0', { isFocusable: true, parent: 'a' })
+        .registerNode('a00', { isFocusable: true, parent: 'a0' })
+        .registerNode('a000', { isFocusable: true, parent: 'a00' })
+        .registerNode('b', { isFocusable: true, parent: 'root' })
+
+      navigation.assignFocus('a000')
+
+      navigation.unsetActiveChild('a0', 'a00')
+      expect(navigation.getNode('root').activeChild).toBeUndefined()
+      expect(navigation.getNode('a').activeChild).toBeUndefined()
+      expect(navigation.getNode('a0').activeChild).toBeUndefined()
+      // note that activeChild setting in the subtree of unset activeChild should remain not changed
+      expect(navigation.getNode('a00').activeChild).toEqual('a000')
     })
 
     it('should not fail when parent does not exist', () => {
@@ -1003,7 +1111,7 @@ describe('lrud', () => {
       expect(navigation.getNode('a').isFocusable).toEqual(true)
     })
 
-    test('changing the node focusability should change the property', () => {
+    test('changing the node focusability should change the property, true -> false', () => {
       const navigation = new Lrud()
 
       navigation
@@ -1015,34 +1123,16 @@ describe('lrud', () => {
       expect(navigation.getNode('a').isFocusable).toEqual(false)
     })
 
-    test('making a previously focusable node unfocusable should remove it from the list of focusable nodes', () => {
-      const navigation = new Lrud()
-
-      navigation
-        .registerNode('root')
-        .registerNode('a', { isFocusable: true })
-        .registerNode('b', { selectAction: true })
-
-      navigation.setNodeFocusable('a', false)
-      navigation.setNodeFocusable('b', false)
-
-      expect(navigation.focusableNodePathList).not.toEqual(expect.arrayContaining(['root.children.a']))
-      expect(navigation.focusableNodePathList).not.toEqual(expect.arrayContaining(['root.children.b']))
-    })
-
-    test('making a previously unfocusable node focusable should add it to the list of focusable nodes', () => {
+    test('changing the node focusability should change the property, false -> true', () => {
       const navigation = new Lrud()
 
       navigation
         .registerNode('root')
         .registerNode('a', { isFocusable: false })
-        .registerNode('b')
 
       navigation.setNodeFocusable('a', true)
-      navigation.setNodeFocusable('b', true)
 
-      expect(navigation.focusableNodePathList).toEqual(expect.arrayContaining(['root.children.a']))
-      expect(navigation.focusableNodePathList).toEqual(expect.arrayContaining(['root.children.b']))
+      expect(navigation.getNode('a').isFocusable).toEqual(true)
     })
 
     test('making child nodes unfocusable should prevent focus', () => {
@@ -1051,7 +1141,7 @@ describe('lrud', () => {
       navigation
         .registerNode('root')
         .registerNode('a')
-        .registerNode('b', {parent: 'a', isFocusable: true})
+        .registerNode('b', { parent: 'a', isFocusable: true })
 
       expect(() => navigation.assignFocus('a')).not.toThrow()
       navigation.setNodeFocusable('b', false)
@@ -1064,7 +1154,7 @@ describe('lrud', () => {
       navigation
         .registerNode('root')
         .registerNode('a')
-        .registerNode('b', {parent: 'a', isFocusable: true})
+        .registerNode('b', { parent: 'a', isFocusable: true })
 
       navigation.assignFocus('b')
       navigation.setNodeFocusable('b', false)
@@ -1077,8 +1167,8 @@ describe('lrud', () => {
       navigation
         .registerNode('root')
         .registerNode('a')
-        .registerNode('b', {parent: 'a', isFocusable: true})
-        .registerNode('c', {parent: 'a', isFocusable: true})
+        .registerNode('b', { parent: 'a', isFocusable: true })
+        .registerNode('c', { parent: 'a', isFocusable: true })
 
       navigation.assignFocus('b')
       expect(navigation.getNode('a').activeChild).toEqual('b')
@@ -1089,27 +1179,22 @@ describe('lrud', () => {
       expect(navigation.getNode('root').activeChild).toBeUndefined()
     })
 
+    test('should not fail when changing root node focusability', () => {
+      const navigation = new Lrud()
+      navigation.registerNode('root')
+
+      navigation.setNodeFocusable('root', true)
+      expect(navigation.getRootNode().isFocusable).toEqual(true)
+
+      navigation.setNodeFocusable('root', false)
+      expect(navigation.getRootNode().isFocusable).toEqual(false)
+    })
+
     test('should not fail when node does not exists', () => {
       const navigation = new Lrud()
       navigation.registerNode('root')
 
       expect(() => navigation.setNodeFocusable('not_existing', true)).not.toThrow()
-    })
-  })
-
-  describe('getPathForNodeId()', () => {
-    test('should return undefined - nodeId is not defined', () => {
-      const navigation = new Lrud()
-
-      navigation.registerNode('root')
-      navigation.registerNode('undefined', { })
-      navigation.registerNode('null', { })
-
-      expect(navigation.getPathForNodeId('undefined')).toEqual('root.children.undefined')
-      expect(navigation.getPathForNodeId(undefined)).toBeUndefined()
-
-      expect(navigation.getPathForNodeId('null')).toEqual('root.children.null')
-      expect(navigation.getPathForNodeId(null)).toBeUndefined()
     })
   })
 
@@ -1126,7 +1211,6 @@ describe('lrud', () => {
       navigation.registerNode('ba', { parent: 'b' })
       navigation.registerNode('bb', { parent: 'b' })
       navigation.registerNode('c', { parent: 'root', isFocusable: true })
-
 
       expect(navigation.doesNodeHaveFocusableChildren(navigation.getNode('root'))).toEqual(true)
       expect(navigation.doesNodeHaveFocusableChildren(navigation.getNode('a'))).toEqual(true)
@@ -1184,6 +1268,239 @@ describe('lrud', () => {
       const notExistingNode = navigation.getNode('not_existing')
       expect(() => navigation.isNodeFocusableCandidate(notExistingNode)).not.toThrow()
       expect(navigation.isNodeFocusableCandidate(notExistingNode)).toEqual(false)
+    })
+  })
+
+  describe('isSameOrParentForChild()', () => {
+    test('should correctly recognize parent node', () => {
+      const navigation = new Lrud()
+
+      navigation
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('aa', { parent: 'a' })
+        .registerNode('aaa', { parent: 'aa' })
+        .registerNode('aab', { parent: 'aa' })
+        .registerNode('b', { parent: 'root' })
+        .registerNode('ba', { parent: 'b' })
+
+      expect(navigation.isSameOrParentForChild('a', undefined)).toEqual(false)
+      expect(navigation.isSameOrParentForChild(undefined, 'a')).toEqual(false)
+      expect(navigation.isSameOrParentForChild(undefined, undefined)).toEqual(false)
+
+      expect(navigation.isSameOrParentForChild('a', 'a')).toEqual(true)
+
+      expect(navigation.isSameOrParentForChild('a', 'aa')).toEqual(true)
+      expect(navigation.isSameOrParentForChild('aa', 'a')).toEqual(false)
+
+      expect(navigation.isSameOrParentForChild('a', 'aaa')).toEqual(true)
+      expect(navigation.isSameOrParentForChild('aaa', 'aa')).toEqual(false)
+
+      expect(navigation.isSameOrParentForChild('a', 'ba')).toEqual(false)
+      expect(navigation.isSameOrParentForChild('ba', 'a')).toEqual(false)
+
+      expect(navigation.isSameOrParentForChild('aa', 'ab')).toEqual(false)
+      expect(navigation.isSameOrParentForChild('ba', 'aa')).toEqual(false)
+    })
+  })
+
+  describe('moveNode()', () => {
+    test('should not fail when one of the arguments is missing', () => {
+      const navigation = new Lrud()
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+
+      expect(
+        () => navigation.moveNode('a', undefined)
+      ).not.toThrow()
+      expect(
+        () => navigation.moveNode(undefined, 'root')
+      ).not.toThrow()
+    })
+
+    test('should do nothing when moved node is a root node', () => {
+      const navigation = new Lrud()
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+
+      expect(
+        () => navigation.moveNode('root', 'a')
+      ).not.toThrow()
+    })
+
+    test('should do nothing when moving to already assigned parent', () => {
+      const navigation = new Lrud()
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+
+      expect(
+        () => navigation.moveNode('a', 'root')
+      ).not.toThrow()
+    })
+
+    test('should append moved node to the new parent if new index not specified', () => {
+      const navigation = new Lrud()
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('aa', { parent: 'a' })
+        .registerNode('ab', { parent: 'a' })
+        .registerNode('b', { parent: 'root' })
+        .registerNode('ba', { parent: 'b' })
+
+      navigation.moveNode('aa', 'b')
+
+      expect(navigation.getNode('a').children).toEqual({
+        ab: { id: 'ab', parent: 'a', index: 0 }
+      })
+
+      expect(navigation.getNode('b').children).toEqual({
+        ba: { id: 'ba', parent: 'b', index: 0 },
+        aa: { id: 'aa', parent: 'b', index: 1 }
+      })
+    })
+
+    test('should insert moved node to the new parent at a given index', () => {
+      const navigation = new Lrud()
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('aa', { parent: 'a' })
+        .registerNode('ab', { parent: 'a' })
+        .registerNode('b', { parent: 'root' })
+        .registerNode('ba', { parent: 'b' })
+        .registerNode('bb', { parent: 'b' })
+
+      navigation.moveNode('aa', 'b', { index: 1 })
+
+      expect(navigation.getNode('a').children).toEqual({
+        ab: { id: 'ab', parent: 'a', index: 0 }
+      })
+
+      expect(navigation.getNode('b').children).toEqual({
+        ba: { id: 'ba', parent: 'b', index: 0 },
+        aa: { id: 'aa', parent: 'b', index: 1 },
+        bb: { id: 'bb', parent: 'b', index: 2 }
+      })
+    })
+
+    test('should insert moved node maintaining it\'s current position if possible', () => {
+      const navigation = new Lrud()
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('aa', { parent: 'a' })
+        .registerNode('ab', { parent: 'a' })
+        .registerNode('b', { parent: 'root' })
+        .registerNode('ba', { parent: 'b' })
+        .registerNode('bb', { parent: 'b' })
+
+      navigation.moveNode('aa', 'b', { maintainIndex: true })
+
+      expect(navigation.getNode('a').children).toEqual({
+        ab: { id: 'ab', parent: 'a', index: 0 }
+      })
+
+      expect(navigation.getNode('b').children).toEqual({
+        aa: { id: 'aa', parent: 'b', index: 0 },
+        ba: { id: 'ba', parent: 'b', index: 1 },
+        bb: { id: 'bb', parent: 'b', index: 2 }
+      })
+
+      // index of moved node is greater than the new parent's children count, index should be kept coherent and compact
+      navigation.moveNode('bb', 'a', { maintainIndex: true })
+
+      expect(navigation.getNode('a').children).toEqual({
+        ab: { id: 'ab', parent: 'a', index: 0 },
+        bb: { id: 'bb', parent: 'a', index: 1 }
+      })
+
+      expect(navigation.getNode('b').children).toEqual({
+        aa: { id: 'aa', parent: 'b', index: 0 },
+        ba: { id: 'ba', parent: 'b', index: 1 }
+      })
+    })
+
+    test('should favor given index value over maintaining existing one', () => {
+      const navigation = new Lrud()
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('aa', { parent: 'a' })
+        .registerNode('ab', { parent: 'a' })
+        .registerNode('b', { parent: 'root' })
+        .registerNode('ba', { parent: 'b' })
+        .registerNode('bb', { parent: 'b' })
+
+      navigation.moveNode('aa', 'b', { index: 1, maintainIndex: true })
+
+      expect(navigation.getNode('a').children).toEqual({
+        ab: { id: 'ab', parent: 'a', index: 0 }
+      })
+
+      // new index value is 1, maintained index value would be 0
+      expect(navigation.getNode('b').children).toEqual({
+        ba: { id: 'ba', parent: 'b', index: 0 },
+        aa: { id: 'aa', parent: 'b', index: 1 },
+        bb: { id: 'bb', parent: 'b', index: 2 }
+      })
+    })
+
+    test('should unset old parent\'s activeNode, if points to moved node', () => {
+      const navigation = new Lrud()
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('aa', { parent: 'a', isFocusable: true })
+        .registerNode('b', { parent: 'root' })
+        .registerNode('ba', { parent: 'b', isFocusable: true })
+
+      navigation.assignFocus('aa')
+      expect(navigation.getNode('a').activeChild).toEqual('aa')
+      expect(navigation.getNode('root').activeChild).toEqual('a')
+
+      // changing focus, so moved node is not the current focused node
+      navigation.assignFocus('ba')
+
+      navigation.moveNode('aa', 'b')
+
+      expect(navigation.getNode('a').activeChild).toBeUndefined()
+      // new parent's activeChild remains not changed
+      expect(navigation.getNode('b').activeChild).toEqual('ba')
+      expect(navigation.getNode('root').activeChild).toEqual('b')
+    })
+
+    test('should reassign activeChild is moving currently focused node', () => {
+      const navigation = new Lrud()
+        .registerNode('root')
+        .registerNode('a', { parent: 'root' })
+        .registerNode('aa', { parent: 'a', isFocusable: true })
+        .registerNode('b', { parent: 'root' })
+        .registerNode('ba', { parent: 'b', isFocusable: true })
+
+      navigation.assignFocus('aa')
+      expect(navigation.getNode('a').activeChild).toEqual('aa')
+      expect(navigation.getNode('root').activeChild).toEqual('a')
+
+      navigation.moveNode('aa', 'b')
+
+      expect(navigation.getNode('a').activeChild).toBeUndefined()
+      expect(navigation.getNode('b').activeChild).toEqual('aa')
+      expect(navigation.getNode('root').activeChild).toEqual('b')
+    })
+
+    test('should not remove overrides pointing to moved node', () => {
+      const navigation = new Lrud()
+        .registerNode('root')
+        .registerNode('a', { parent: 'root', orientation: 'horizontal' })
+        .registerNode('aa', { parent: 'a', isFocusable: true })
+        .registerNode('ab', { parent: 'a', isFocusable: true })
+        .registerNode('b', { parent: 'root' })
+
+      navigation.assignFocus('aa')
+
+      navigation.registerOverride('override_aa_to_ab', { id: 'aa', target: 'ab', direction: 'down' })
+      navigation.registerOverride('override_ab_to_aa', { id: 'ab', target: 'aa', direction: 'down' })
+
+      navigation.moveNode('aa', 'b')
+
+      expect(navigation.overrides.override_aa_to_ab).toBeDefined()
+      expect(navigation.overrides.override_ab_to_aa).toBeDefined()
     })
   })
 })

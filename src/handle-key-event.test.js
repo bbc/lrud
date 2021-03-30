@@ -204,7 +204,7 @@ describe('handleKeyEvent()', () => {
     expect(() => {
       navigation.handleKeyEvent({ direction: 'down' })
     }).not.toThrow()
-    expect(navigation.currentFocusNodeId).toEqual(null)
+    expect(navigation.currentFocusNodeId).toBeUndefined()
   })
 
   test('no focused node, should not fail and force focusing first focusable node', () => {
@@ -221,5 +221,88 @@ describe('handleKeyEvent()', () => {
       navigation.handleKeyEvent({ direction: 'down' }, { forceFocus: true })
     }).not.toThrow()
     expect(navigation.currentFocusNodeId).toEqual('ab')
+  })
+
+  test('should not fail when forcing focus, but there\'s no node to be focused', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root')
+
+    let focusedNode
+    expect(() => {
+      focusedNode = navigation.handleKeyEvent({ direction: 'down' }, { forceFocus: true })
+    }).not.toThrow()
+    expect(focusedNode).toBeUndefined()
+  })
+
+  test('should detect direction basing on key event', () => {
+    const navigation = new Lrud()
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('a', { parent: 'root', isFocusable: true })
+      .registerNode('b', { parent: 'root', isFocusable: true })
+
+    navigation.assignFocus('a')
+
+    const result = navigation.handleKeyEvent({ keyCode: 5 })
+
+    expect(result.id).toEqual('b')
+  })
+
+  test('should do nothing when direction can not be determined', () => {
+    const navigation = new Lrud()
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('a', { parent: 'root', isFocusable: true })
+      .registerNode('b', { parent: 'root', isFocusable: true })
+
+    navigation.assignFocus('a')
+
+    const result = navigation.handleKeyEvent({})
+
+    expect(result).toBeUndefined()
+    expect(navigation.currentFocusNodeId).toEqual('a')
+  })
+
+  test('should do nothing when key event is not defined', () => {
+    const navigation = new Lrud()
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('a', { parent: 'root', isFocusable: true })
+      .registerNode('b', { parent: 'root', isFocusable: true })
+
+    navigation.assignFocus('a')
+
+    const result = navigation.handleKeyEvent(undefined)
+
+    expect(result).toBeUndefined()
+    expect(navigation.currentFocusNodeId).toEqual('a')
+  })
+
+  /*
+   * This is very useful feature, it allows to define closed boxes from which focus can not jump out.
+   * For example modal popups, that transparently overlays main page and has Ok/Cancel buttons. Focus should stay
+   * withing this popup, but the rest of the LRUD tree may stay untouched.
+   */
+  test('should do nothing when parent orientation is not defined', () => {
+    const navigation = new Lrud()
+      .registerNode('root', { orientation: undefined })
+      .registerNode('a', { parent: 'root', isFocusable: true })
+      .registerNode('b', { parent: 'root', isFocusable: true })
+      .registerNode('c', { parent: 'root', isFocusable: true })
+
+    navigation.assignFocus('b')
+
+    expect(navigation.handleKeyEvent({ direction: 'down' })).toBeUndefined()
+    expect(navigation.currentFocusNodeId).toEqual('b')
+
+    expect(navigation.handleKeyEvent({ direction: 'up' })).toBeUndefined()
+    expect(navigation.currentFocusNodeId).toEqual('b')
+
+    expect(navigation.handleKeyEvent({ direction: 'left' })).toBeUndefined()
+    expect(navigation.currentFocusNodeId).toEqual('b')
+
+    expect(navigation.handleKeyEvent({ direction: 'right' })).toBeUndefined()
+    expect(navigation.currentFocusNodeId).toEqual('b')
+
+    expect(navigation.handleKeyEvent({ direction: '*' })).toBeUndefined()
+    expect(navigation.currentFocusNodeId).toEqual('b')
   })
 })

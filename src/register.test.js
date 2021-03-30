@@ -12,7 +12,7 @@ describe('registerNode()', () => {
 
     expect(navigation.rootNodeId).toEqual('root')
 
-    expect(navigation.tree.root.selectAction).toEqual(true)
+    expect(navigation.nodes.root.selectAction).toEqual(true)
   })
 
   test('registering a node (after the root node) without a parent puts it under the root node', () => {
@@ -22,9 +22,9 @@ describe('registerNode()', () => {
     navigation.registerNode('beta', { x: 1 })
     navigation.registerNode('charlie', { x: 2 })
 
-    expect(navigation.tree.alpha.z).toEqual(1)
-    expect(navigation.tree.alpha.children.beta).not.toBeUndefined()
-    expect(navigation.tree.alpha.children.charlie).not.toBeUndefined()
+    expect(navigation.nodes.alpha.z).toEqual(1)
+    expect(navigation.nodes.alpha.children.beta).not.toBeUndefined()
+    expect(navigation.nodes.alpha.children.charlie).not.toBeUndefined()
   })
 
   test('registering a node with a nested parent', () => {
@@ -34,19 +34,19 @@ describe('registerNode()', () => {
     navigation.registerNode('beta', { b: 2 })
     navigation.registerNode('charlie', { c: 3, parent: 'beta' })
 
-    expect(navigation.tree.alpha.children.beta.children.charlie.parent).toEqual('beta')
+    expect(navigation.nodes.alpha.children.beta.children.charlie.parent).toEqual('beta')
   })
 
   test('registering a node with a nested parent where the previous node have the same ending', () => {
     const navigation = new Lrud()
 
     navigation.registerNode('alpha', { a: 1 })
-    navigation.registerNode('beta_beta', { c: 3})
+    navigation.registerNode('beta_beta', { c: 3 })
     navigation.registerNode('beta', { b: 2 })
 
     navigation.registerNode('charlie', { d: 4, parent: 'beta' })
 
-    expect(navigation.tree.alpha.children.beta.children.charlie).toBeTruthy()
+    expect(navigation.nodes.alpha.children.beta.children.charlie).toBeTruthy()
   })
 
   test('registering a node with a deeply nested parent', () => {
@@ -60,8 +60,8 @@ describe('registerNode()', () => {
     navigation.registerNode('PID-Y', { parent: 'content-grid' })
     navigation.registerNode('PID-Z', { parent: 'content-grid' })
 
-    expect(navigation.tree.root.children['region-a']).not.toBeUndefined()
-    expect(navigation.tree.root.children['region-b']).not.toBeUndefined()
+    expect(navigation.nodes.root.children['region-a']).not.toBeUndefined()
+    expect(navigation.nodes.root.children['region-b']).not.toBeUndefined()
   })
 
   // reword this
@@ -108,9 +108,9 @@ describe('registerNode()', () => {
       .registerNode('b')
       .registerNode('c')
 
-    expect(navigation.tree.root.children.a).not.toBeUndefined()
-    expect(navigation.tree.root.children.b).not.toBeUndefined()
-    expect(navigation.tree.root.children.c).not.toBeUndefined()
+    expect(navigation.nodes.root.children.a).not.toBeUndefined()
+    expect(navigation.nodes.root.children.b).not.toBeUndefined()
+    expect(navigation.nodes.root.children.c).not.toBeUndefined()
   })
 
   test('registering a node that already exists should throw an error', () => {
@@ -159,5 +159,43 @@ describe('registerNode()', () => {
 
     expect(navigation.getNode('c').index).toEqual(1)
     expect(navigation.getNode('b').index).toEqual(2)
+  })
+
+  test('should force using id given as a method parameter', () => {
+    const navigation = new Lrud()
+    navigation.registerNode('root')
+
+    navigation.registerNode('a', { id: 'b', parent: 'root' })
+
+    expect(navigation.getNode('a')).toBeDefined()
+    expect(navigation.getNode('b')).toBeUndefined()
+  })
+
+  test('should ignore children provided in node configuration', () => {
+    const navigation = new Lrud()
+    navigation.registerNode('root')
+
+    navigation.registerNode('a', {
+      parent: 'root',
+      children: {
+        aa: { isFocusable: true }
+      }
+    })
+
+    expect(navigation.getNode('a').children).toBeUndefined()
+  })
+
+  test('should do nothing when registering node under not existing parent', () => {
+    const navigation = new Lrud()
+    navigation.registerNode('root')
+    navigation.registerNode('a')
+    navigation.registerNode('b')
+
+    let result
+    expect(() => {
+      result = navigation.registerNode('c', { index: 1, parent: 'd' })
+    }).not.toThrow()
+
+    expect(result).toEqual(navigation)
   })
 })

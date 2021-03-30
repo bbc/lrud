@@ -144,7 +144,7 @@ describe('event scenarios', () => {
 
     const navigation = new Lrud()
 
-    navigation.registerNode('root', {orientation: 'vertical'})
+    navigation.registerNode('root', { orientation: 'vertical' })
 
     navigation
       .registerNode('left')
@@ -158,11 +158,10 @@ describe('event scenarios', () => {
 
     navigation.assignFocus('b')
 
-
     navigation.on('active', activeSpy)
-    navigation.unregisterNode('left');
+    navigation.unregisterNode('left')
 
-    expect(navigation.currentFocusNodeId).toBe('c');
+    expect(navigation.currentFocusNodeId).toBe('c')
 
     // only called once, as `c` is already the activeChild of `right`
     expect(activeSpy).toHaveBeenCalledWith(expect.objectContaining({
@@ -203,7 +202,7 @@ describe('event scenarios', () => {
         parent: 'root',
         isFocusable: true
       },
-      direction: 'RIGHT',
+      direction: 'right',
       offset: 1
     })
   })
@@ -239,7 +238,7 @@ describe('event scenarios', () => {
         parent: 'root',
         isFocusable: true
       },
-      direction: 'LEFT',
+      direction: 'left',
       offset: -1
     })
   })
@@ -369,7 +368,48 @@ describe('event scenarios', () => {
     expect(navigation.currentFocusNodeId).toEqual('b')
   })
 
-  test('node onActive - leaf', () => {
+  test('node onBlur - unregistering', () => {
+    const navigation = new Lrud()
+
+    let hasRun = false
+
+    navigation
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('a', {
+        isFocusable: true,
+        onBlur: () => {
+          hasRun = true
+        }
+      })
+
+    navigation.assignFocus('a')
+
+    navigation.unregisterNode('a')
+
+    expect(hasRun).toEqual(true)
+    expect(navigation.currentFocusNodeId).toBeUndefined()
+  })
+
+  test('node onActive - leaf, parent\'s activeChild not set', () => {
+    const navigation = new Lrud()
+    let activeChild = null
+
+    navigation
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('row-a', { orientation: 'vertical' })
+      .registerNode('A', { isFocusable: true, parent: 'row-a' })
+      .registerNode('row-b', { orientation: 'vertical' })
+      .registerNode('B', { isFocusable: false, parent: 'row-b' })
+      .registerNode('C', { isFocusable: true, parent: 'row-b', onActive: () => { activeChild = 'C' } })
+
+    navigation.assignFocus('A')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+
+    expect(activeChild).toEqual('C')
+  })
+
+  test('node onActive - leaf, changing current parent\'s activeChild', () => {
     const navigation = new Lrud()
     let activeChild = null
 
@@ -418,9 +458,83 @@ describe('event scenarios', () => {
 
     navigation.assignFocus('a')
 
-    navigation.handleKeyEvent({ direction: 'ENTER' })
+    navigation.handleKeyEvent({ direction: 'enter' })
 
     expect(onSelectMock).toBeCalledTimes(1)
+  })
+
+  test('node onMove - forward', () => {
+    const onMoveSpy = jest.fn()
+
+    const navigation = new Lrud()
+
+    navigation
+      .registerNode('root', { orientation: 'horizontal', onMove: onMoveSpy })
+      .registerNode('a', { isFocusable: true })
+      .registerNode('b', { isFocusable: true })
+      .registerNode('c', { isFocusable: true })
+
+    navigation.assignFocus('b')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+
+    expect(onMoveSpy).toHaveBeenCalledWith({
+      node: expect.objectContaining({
+        id: 'root',
+        orientation: 'horizontal'
+      }),
+      leave: expect.objectContaining({
+        id: 'b',
+        index: 1,
+        parent: 'root',
+        isFocusable: true
+      }),
+      enter: expect.objectContaining({
+        id: 'c',
+        index: 2,
+        parent: 'root',
+        isFocusable: true
+      }),
+      direction: 'right',
+      offset: 1
+    })
+  })
+
+  test('node onMove - backward', () => {
+    const onMoveSpy = jest.fn()
+
+    const navigation = new Lrud()
+
+    navigation
+      .registerNode('root', { orientation: 'horizontal', onMove: onMoveSpy })
+      .registerNode('a', { isFocusable: true })
+      .registerNode('b', { isFocusable: true })
+      .registerNode('c', { isFocusable: true })
+
+    navigation.assignFocus('b')
+
+    navigation.handleKeyEvent({ direction: 'left' })
+
+    expect(onMoveSpy).toHaveBeenCalledWith({
+      node: expect.objectContaining({
+        id: 'root',
+        orientation: 'horizontal'
+      }),
+      leave: expect.objectContaining({
+        id: 'b',
+        index: 1,
+        parent: 'root',
+        isFocusable: true
+      }),
+      enter: expect.objectContaining({
+        id: 'a',
+        index: 0,
+        parent: 'root',
+        isFocusable: true
+      }),
+      direction: 'left',
+      offset: -1
+    })
   })
 
   test('instance emit select', () => {
@@ -433,7 +547,7 @@ describe('event scenarios', () => {
     navigation.assignFocus('a')
     navigation.on('select', onSelectMock)
 
-    navigation.handleKeyEvent({ direction: 'ENTER' })
+    navigation.handleKeyEvent({ direction: 'enter' })
 
     expect(onSelectMock).toBeCalledTimes(1)
   })
@@ -448,7 +562,7 @@ describe('event scenarios', () => {
     navigation.assignFocus('a')
     navigation.on('select', onSelectMock)
 
-    navigation.handleKeyEvent({ direction: 'ENTER' })
+    navigation.handleKeyEvent({ direction: 'enter' })
 
     expect(onSelectMock).toBeCalledTimes(2)
   })
@@ -463,12 +577,26 @@ describe('event scenarios', () => {
     navigation.assignFocus('a')
     navigation.on('select', onSelectMock)
 
-    navigation.handleKeyEvent({ direction: 'ENTER' })
+    navigation.handleKeyEvent({ direction: 'enter' })
 
-    navigation.off('select', onSelectMock);
+    navigation.off('select', onSelectMock)
 
-    navigation.handleKeyEvent({ direction: 'ENTER' })
+    navigation.handleKeyEvent({ direction: 'enter' })
 
     expect(onSelectMock).toBeCalledTimes(1)
+  })
+
+  test('should do nothing on enter when there\'s no currently focused node', () => {
+    const navigation = new Lrud()
+    const onSelectMock = jest.fn()
+
+    navigation.registerNode('root')
+      .registerNode('a', { isFocusable: true, onSelect: onSelectMock })
+
+    const result = navigation.handleKeyEvent({ direction: 'enter' })
+
+    expect(result).toBeUndefined()
+    expect(onSelectMock).not.toBeCalled()
+    expect(navigation.currentFocusNodeId).toBeUndefined()
   })
 })

@@ -58,6 +58,8 @@ navigation
 
 If focus was on `item-2`, a `left` keypress will put focus to `item-1`, and `right` keypress will put focus to `item-3`. This is because the `row` is set to `orientation: horizontal`. If the `row` was set to `orientation: vertical`, it would respond to key presses of `up` and `down`, respectively.
 
+If `orientation` is not defined than focus can not be moved within that node. This is a very powerful feature, that allows creating closed boxes, from which focus can not "jump out". It's the best to think about modal popups with semi transparent overlay here. It may contain Ok/Cancel buttons and focus must be moved only around those buttons. The rest of the page is still visible in the background and LRUD navigation tree may stay untouched. See the [Recipe 5 - Error Modal Popup](./recipes.md#recipe-5---error-modal-popup).
+
 ### `isWrapping`
 
 `boolean`
@@ -115,7 +117,7 @@ For further details, see the [docs on index alignment](./index-align.md).
 
 An array with 2 elements. Value `[0]` is the lower bound of matching indexes, `[1]` is the upper bound.
 
-Used in conjuction with `isIndexAlign` behaviour, allows a node to replicate the effects of a "column span" by assuming the role of multiple indexes relative to its siblings.
+Used in conjunction with `isIndexAlign` behaviour, allows a node to replicate the effects of a "column span" by assuming the role of multiple indexes relative to its siblings.
 
 For further details, see the [docs on index alignment](./index-align.md).
 
@@ -210,9 +212,9 @@ If given, the `onEnterCancelled` function will be called if this node has a matc
 
 ## Unregistering a node
 
-A node can be removed from the navigation tree by calling `navigation.unregisterNode()` with the id of the node
+A node can be removed from the navigation tree by calling `navigation.unregisterNode()` with the id of the node.
 
-Unregistering a node will also remove all of its children and trigger events correctly.
+Unregistering a node will also remove all of its children and trigger events correctly. Overrides pointing to the removed node (and any of its direct and indirect children) will be removed as well.
 
 If an unregister causes the current focused node to be removed, focus will be moved to the _last_ node that could be focused. This also works when unregistering a branch.
 
@@ -225,6 +227,22 @@ A config object can be given to `unregisterNode(<nodeId>, <unregisterOptions>)` 
 - `forceRefocus:boolean` When `true`, the default behaviour of finding a new node to focus on if unregistering the current
   focused node will continue to work as normal. This value also defaults to `true`. Pass as `false` to stop the auto-refocus
   behaviour. Remember, if you are unregistering the current focused node, and passing `forceRefocus` as `false`, you need to manually call `assignFocus()` afterwards or the user will be left in limbo!
+
+## Moving a node
+
+A node can be moved from its current parent to the new parent by calling `navigation.moveNode()` with the id of the node to be moved and the id of the new parent node.
+
+This method has few advantages over regular unregisterNode/registerNode operation:
+
+ * It maintains the currently focused node. If moved node (or its direct or indirect child) is a currently focused node, then it will stay focused.
+ * It maintains overrides pointing to the moved node or its direct and indirect children.
+
+### Moving Options
+
+A config object can be given to `moveNode(<nodeId>, <newParentId>, <moveNodeOptions>)` to force specific behaviour.
+
+- `index:number` Defines position at which node should be inserted into new parent's children list. Despite the given value, index  of new parent's children is kept coherent and compact.
+- `maintainIndex:boolean` When `true`, the node will be inserted into new parent's children list at the same position as it was under old parent, if possible. Otherwise, the node will be appended to new parent's children list. Despite the node's current index value, index of new parent's children is kept coherent and compact. If `index` value is specified in options, the `maintainIndex` takes no effect, it's ignored. 
 
 ## Assigning Focus
 
@@ -306,7 +324,7 @@ New overrides can be registered with `navigation.registerOverride(<overrideId>, 
 
 `navigation.overrides` is an object, each key representing an override object.
 
-The override object below represents that when LRUD is bubbling its key event, when it hits the `box-1` node, and direction of travel is `DOWN`, STOP the propogation of the bubble event and focus directly on `box-2`.
+The override object below represents that when LRUD is bubbling its key event, when it hits the `box-1` node, and direction of travel is `DOWN`, STOP the propagation of the bubble event and focus directly on `box-2`.
 
 ```js
 navigation.overrides = {

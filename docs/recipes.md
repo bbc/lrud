@@ -109,3 +109,32 @@ navigation.assignFocus('item-1')
 ```
 
 With the setup above, if the user attempted to select `item-a`, or `item-b`, `shouldCancelEnterItem()` would be run. If this function returned `true`, that movement would be blocked, and focus would remain on `item-1`.
+
+## Recipe 5 - Error Modal Popup
+
+Leaving `orientation` undefined in parent node allows creating closed boxes, from which focus can not "jump out". It's the best to think about modal popups with semi transparent overlay here. It may contain Ok/Cancel buttons and focus must be moved only around those buttons. The rest of the page is still visible in the background and LRUD navigation tree may stay untouched.
+
+Following example simulates such popup. Press `enter` on any child node of `mainPage` to move focus to `errorPopup` and on any popup button to move focus back to `mainPage`. Note that you can navigate only withing the `mainPage` or `errorPopup`. You can not move focus between those two other wat than on purpose.
+
+```js
+const toMainPage = () => navigation.assignFocus('mainPage')
+const toErrorPopup = () => navigation.assignFocus('errorPopup')
+
+navigation.registerNode('root', { orientation: undefined })
+
+navigation.registerNode('mainPage', { parent: 'root', orientation: 'vertical', isIndexAlign: true })
+    .registerNode('row0', { parent: 'mainPage', orientation: 'horizontal' })
+        .registerNode('card0', { parent: 'row0', isFocusable: true, onSelect: toErrorPopup })
+        .registerNode('card1', { parent: 'row0', isFocusable: true, onSelect: toErrorPopup })
+        .registerNode('card2', { parent: 'row0', isFocusable: true, onSelect: toErrorPopup })
+    .registerNode('row1', { parent: 'mainPage', orientation: 'horizontal' })
+        .registerNode('card3', { parent: 'row1', isFocusable: true, onSelect: toErrorPopup })
+        .registerNode('card4', { parent: 'row1', isFocusable: true, onSelect: toErrorPopup })
+        .registerNode('card5', { parent: 'row1', isFocusable: true, onSelect: toErrorPopup })
+
+navigation.registerNode('errorPopup', { parent: 'root', orientation: 'horizontal' })
+    .registerNode('okButton', { parent: 'errorPopup', isFocusable: true, onSelect: toMainPage })
+    .registerNode('cancelButon', { parent: 'errorPopup', isFocusable: true, onSelect: toMainPage })
+
+navigation.assignFocus('card0')
+```
