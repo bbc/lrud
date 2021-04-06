@@ -527,7 +527,7 @@ describe('unregisterNode()', () => {
     ])
   })
 
-  test('unregistering a sibling of the focused node should not recalculate focus', () => {
+  test('unregistering a pibling of the focused node should not recalculate focus', () => {
     const nav = new Lrud()
 
     nav.register('root', {
