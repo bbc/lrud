@@ -566,7 +566,7 @@ describe('unregisterNode()', () => {
     expect(onBlur).not.toBeCalled()
   })
 
-  test('unregistering a sibling of the focused node should not remove focus - forceRefocus false', () => {
+  test('unregistering a pibling of the focused node should not remove focus - forceRefocus false', () => {
     const nav = new Lrud()
 
     nav.register('root', {
