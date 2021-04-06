@@ -114,7 +114,7 @@ With the setup above, if the user attempted to select `item-a`, or `item-b`, `sh
 
 Leaving `orientation` undefined in parent node allows creating closed boxes, from which focus can not "jump out". It's the best to think about modal popups with semi transparent overlay here. It may contain Ok/Cancel buttons and focus must be moved only around those buttons. The rest of the page is still visible in the background and LRUD navigation tree may stay untouched.
 
-Following example simulates such popup. Press `enter` on any child node of `mainPage` to move focus to `errorPopup` and on any popup button to move focus back to `mainPage`. Note that you can navigate only withing the `mainPage` or `errorPopup`. You can not move focus between those two other wat than on purpose.
+Following example simulates such popup. Press `enter` on any child node of `mainPage` to move focus to `errorPopup` and on any popup button to move focus back to `mainPage`. Note that you can navigate only within the `mainPage` or `errorPopup`. You cannot move focus between those two regions without pressing `enter`.
 
 ```js
 const toMainPage = () => navigation.assignFocus('mainPage')
