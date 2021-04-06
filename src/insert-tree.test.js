@@ -2,7 +2,7 @@
 const { Lrud } = require('./index')
 
 describe('insertTree()', () => {
-  test('insert a simple tree into an empty instance', () => {
+  test('should insert a simple tree into an empty instance', () => {
     const instance = new Lrud()
     const tree = {
       root: {
@@ -21,13 +21,13 @@ describe('insertTree()', () => {
     instance.insertTree(tree)
     instance.assignFocus('node_a')
 
-    expect(instance.tree['root']).toBeTruthy()
-    expect(instance.tree['root'].children['node_a']).toBeTruthy()
-    expect(instance.tree['root'].children['node_b']).toBeTruthy()
+    expect(instance.nodes.root).toBeTruthy()
+    expect(instance.nodes.root.children.node_a).toBeTruthy()
+    expect(instance.nodes.root.children.node_b).toBeTruthy()
     expect(instance.currentFocusNodeId).toEqual('node_a')
   })
 
-  test('insert a simple tree into an existing branch of lrud', () => {
+  test('should insert a simple tree into an existing branch of lrud', () => {
     const tree = {
       alpha: {
         orientation: 'horizontal',
@@ -49,23 +49,23 @@ describe('insertTree()', () => {
       .registerNode('alpha', { isFocusable: true })
       .registerNode('beta', { isFocusable: true })
 
-    expect(instance.tree['root']).toBeTruthy()
-    expect(instance.tree['root'].children['alpha']).toBeTruthy()
-    expect(instance.tree['root'].children['alpha'].isFocusable).toEqual(true)
-    expect(instance.tree['root'].children['alpha'].children).toEqual(undefined)
-    expect(instance.tree['root'].children['beta']).toBeTruthy()
-    expect(instance.tree['root'].children['beta'].isFocusable).toEqual(true)
-    expect(instance.tree['root'].children['beta'].children).toEqual(undefined)
+    expect(instance.nodes.root).toBeTruthy()
+    expect(instance.nodes.root.children.alpha).toBeTruthy()
+    expect(instance.nodes.root.children.alpha.isFocusable).toEqual(true)
+    expect(instance.nodes.root.children.alpha.children).toEqual(undefined)
+    expect(instance.nodes.root.children.beta).toBeTruthy()
+    expect(instance.nodes.root.children.beta.isFocusable).toEqual(true)
+    expect(instance.nodes.root.children.beta.children).toEqual(undefined)
 
     instance.insertTree(tree)
 
-    expect(instance.tree['root']).toBeTruthy()
-    expect(instance.tree['root'].children['alpha']).toBeTruthy()
-    expect(instance.tree['root'].children['alpha'].children['node_a'].isFocusable).toEqual(true)
-    expect(instance.tree['root'].children['alpha'].children['node_b'].isFocusable).toEqual(true)
-    expect(instance.tree['root'].children['beta']).toBeTruthy()
-    expect(instance.tree['root'].children['beta'].isFocusable).toEqual(true)
-    expect(instance.tree['root'].children['beta'].children).toEqual(undefined)
+    expect(instance.nodes.root).toBeTruthy()
+    expect(instance.nodes.root.children.alpha).toBeTruthy()
+    expect(instance.nodes.root.children.alpha.children.node_a.isFocusable).toEqual(true)
+    expect(instance.nodes.root.children.alpha.children.node_b.isFocusable).toEqual(true)
+    expect(instance.nodes.root.children.beta).toBeTruthy()
+    expect(instance.nodes.root.children.beta.isFocusable).toEqual(true)
+    expect(instance.nodes.root.children.beta.children).toEqual(undefined)
   })
 
   test('simple tree, inserting into existing branch, maintain index order', () => {
@@ -91,15 +91,15 @@ describe('insertTree()', () => {
       .registerNode('beta', { isFocusable: true })
       .registerNode('charlie', { isFocusable: true })
 
-    expect(instance.tree['root'].children['alpha'].index).toEqual(0)
-    expect(instance.tree['root'].children['beta'].index).toEqual(1)
-    expect(instance.tree['root'].children['charlie'].index).toEqual(2)
+    expect(instance.nodes.root.children.alpha.index).toEqual(0)
+    expect(instance.nodes.root.children.beta.index).toEqual(1)
+    expect(instance.nodes.root.children.charlie.index).toEqual(2)
 
     instance.insertTree(tree)
 
-    expect(instance.tree['root'].children['alpha'].index).toEqual(0)
-    expect(instance.tree['root'].children['beta'].index).toEqual(1)
-    expect(instance.tree['root'].children['charlie'].index).toEqual(2)
+    expect(instance.nodes.root.children.alpha.index).toEqual(0)
+    expect(instance.nodes.root.children.beta.index).toEqual(1)
+    expect(instance.nodes.root.children.charlie.index).toEqual(2)
   })
 
   test('simple tree, inserting into existing branch, DONT maintain index order', () => {
@@ -125,16 +125,16 @@ describe('insertTree()', () => {
       .registerNode('beta', { isFocusable: true })
       .registerNode('charlie', { isFocusable: true })
 
-    expect(instance.tree['root'].children['alpha'].index).toEqual(0)
-    expect(instance.tree['root'].children['beta'].index).toEqual(1)
-    expect(instance.tree['root'].children['charlie'].index).toEqual(2)
+    expect(instance.nodes.root.children.alpha.index).toEqual(0)
+    expect(instance.nodes.root.children.beta.index).toEqual(1)
+    expect(instance.nodes.root.children.charlie.index).toEqual(2)
 
     instance.insertTree(tree, { maintainIndex: false })
 
     // note that beta is now at the end, as it was picked and re-inserted
-    expect(instance.tree['root'].children['alpha'].index).toEqual(0)
-    expect(instance.tree['root'].children['charlie'].index).toEqual(1)
-    expect(instance.tree['root'].children['beta'].index).toEqual(2)
+    expect(instance.nodes.root.children.alpha.index).toEqual(0)
+    expect(instance.nodes.root.children.charlie.index).toEqual(1)
+    expect(instance.nodes.root.children.beta.index).toEqual(2)
   })
 
   test('insert a tree under the root node of the existing tree, as no parent given on the top node of the tree', () => {
@@ -161,14 +161,14 @@ describe('insertTree()', () => {
 
     instance.insertTree(tree)
 
-    expect(instance.tree['root'].children['alpha']).toBeTruthy()
-    expect(instance.tree['root'].children['beta']).toBeTruthy()
-    expect(instance.tree['root'].children['charlie']).toBeTruthy()
-    expect(instance.tree['root'].children['charlie'].children).toBeTruthy()
+    expect(instance.nodes.root.children.alpha).toBeTruthy()
+    expect(instance.nodes.root.children.beta).toBeTruthy()
+    expect(instance.nodes.root.children.charlie).toBeTruthy()
+    expect(instance.nodes.root.children.charlie.children).toBeTruthy()
 
-    expect(instance.tree['root'].children['alpha'].index).toEqual(0)
-    expect(instance.tree['root'].children['beta'].index).toEqual(1)
-    expect(instance.tree['root'].children['charlie'].index).toEqual(2)
+    expect(instance.nodes.root.children.alpha.index).toEqual(0)
+    expect(instance.nodes.root.children.beta.index).toEqual(1)
+    expect(instance.nodes.root.children.charlie.index).toEqual(2)
   })
 
   test('insert a tree under a branch that ISNT the root node', () => {
@@ -196,10 +196,10 @@ describe('insertTree()', () => {
 
     instance.insertTree(tree)
 
-    expect(instance.tree['root'].children['alpha']).toBeTruthy()
-    expect(instance.tree['root'].children['beta']).toBeTruthy()
-    expect(instance.tree['root'].children['beta'].children['charlie']).toBeTruthy()
-    expect(instance.tree['root'].children['beta'].children['charlie'].children).toBeTruthy()
+    expect(instance.nodes.root.children.alpha).toBeTruthy()
+    expect(instance.nodes.root.children.beta).toBeTruthy()
+    expect(instance.nodes.root.children.beta.children.charlie).toBeTruthy()
+    expect(instance.nodes.root.children.beta.children.charlie.children).toBeTruthy()
   })
 
   /**
@@ -279,5 +279,23 @@ describe('insertTree()', () => {
     navigation.registerNode('root')
 
     expect(() => navigation.insertTree(undefined)).not.toThrow()
+  })
+
+  test('should fix inserted tree root node id', () => {
+    const navigation = new Lrud()
+    navigation.registerNode('root')
+
+    navigation.insertTree({
+      a: {
+        id: 'other_than_a',
+        isFocusable: true
+      }
+    })
+
+    expect(navigation.getNode('a')).toBeDefined()
+    expect(navigation.getNode('a').isFocusable).toEqual(true)
+    expect(navigation.getNode('a').parent).toEqual('root')
+
+    expect(navigation.getNode('other_than_a')).toBeUndefined()
   })
 })

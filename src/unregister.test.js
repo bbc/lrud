@@ -10,17 +10,17 @@ describe('unregisterNode()', () => {
     navigation.registerNode('NODE_A', { isFocusable: true })
     navigation.registerNode('NODE_B', { isFocusable: true })
 
-    expect(navigation.tree.root.children['NODE_A']).not.toBeUndefined()
+    expect(navigation.nodes.root.children.NODE_A).not.toBeUndefined()
 
     navigation.unregisterNode('NODE_A')
 
-    expect(navigation.tree.root.children['NODE_A']).toBeUndefined()
+    expect(navigation.nodes.root.children.NODE_A).toBeUndefined()
 
     expect(navigation.getNode('NODE_A')).toEqual(undefined)
 
-    expect(navigation.nodePathList).toEqual([
+    expect(Object.keys(navigation.nodes)).toEqual([
       'root',
-      'root.children.NODE_B'
+      'NODE_B'
     ])
   })
 
@@ -37,28 +37,28 @@ describe('unregisterNode()', () => {
     navigation.registerNode('NODE_5', { selectAction: 25, parent: 'BOX_B' })
     navigation.registerNode('NODE_6', { selectAction: 26, parent: 'BOX_B' })
 
-    expect(navigation.tree.root.children['BOX_A'].children['NODE_1']).not.toBeUndefined()
-    expect(navigation.tree.root.children['BOX_A'].children['NODE_2']).not.toBeUndefined()
-    expect(navigation.tree.root.children['BOX_A'].children['NODE_3']).not.toBeUndefined()
-    expect(navigation.tree.root.children['BOX_B'].children['NODE_4']).not.toBeUndefined()
-    expect(navigation.tree.root.children['BOX_B'].children['NODE_5']).not.toBeUndefined()
-    expect(navigation.tree.root.children['BOX_B'].children['NODE_6']).not.toBeUndefined()
+    expect(navigation.nodes.root.children.BOX_A.children.NODE_1).not.toBeUndefined()
+    expect(navigation.nodes.root.children.BOX_A.children.NODE_2).not.toBeUndefined()
+    expect(navigation.nodes.root.children.BOX_A.children.NODE_3).not.toBeUndefined()
+    expect(navigation.nodes.root.children.BOX_B.children.NODE_4).not.toBeUndefined()
+    expect(navigation.nodes.root.children.BOX_B.children.NODE_5).not.toBeUndefined()
+    expect(navigation.nodes.root.children.BOX_B.children.NODE_6).not.toBeUndefined()
 
     navigation.unregisterNode('BOX_B')
 
-    expect(navigation.tree.root.children['BOX_A'].children['NODE_1']).not.toBeUndefined()
-    expect(navigation.tree.root.children['BOX_A'].children['NODE_2']).not.toBeUndefined()
-    expect(navigation.tree.root.children['BOX_A'].children['NODE_3']).not.toBeUndefined()
-    expect(navigation.tree.root.children['BOX_B']).toBeUndefined()
-    expect(navigation.tree.root.children['BOX_B']).toBeUndefined()
-    expect(navigation.tree.root.children['BOX_B']).toBeUndefined()
+    expect(navigation.nodes.root.children.BOX_A.children.NODE_1).not.toBeUndefined()
+    expect(navigation.nodes.root.children.BOX_A.children.NODE_2).not.toBeUndefined()
+    expect(navigation.nodes.root.children.BOX_A.children.NODE_3).not.toBeUndefined()
+    expect(navigation.nodes.root.children.BOX_B).toBeUndefined()
+    expect(navigation.nodes.root.children.BOX_B).toBeUndefined()
+    expect(navigation.nodes.root.children.BOX_B).toBeUndefined()
 
-    expect(navigation.nodePathList).toEqual([
+    expect(Object.keys(navigation.nodes)).toEqual([
       'root',
-      'root.children.BOX_A',
-      'root.children.BOX_A.children.NODE_1',
-      'root.children.BOX_A.children.NODE_2',
-      'root.children.BOX_A.children.NODE_3'
+      'BOX_A',
+      'NODE_1',
+      'NODE_2',
+      'NODE_3'
     ])
   })
 
@@ -204,12 +204,12 @@ describe('unregisterNode()', () => {
     })
 
     expect(navigation.overrides).toEqual({
-      'override_a': {
+      override_a: {
         id: 'NODE_A',
         direction: 'up',
         target: 'NODE_B'
       },
-      'override_b': {
+      override_b: {
         id: 'NODE_C',
         direction: 'up',
         target: 'NODE_D'
@@ -219,7 +219,7 @@ describe('unregisterNode()', () => {
     navigation.unregisterNode('NODE_B')
 
     expect(navigation.overrides).toEqual({
-      'override_b': {
+      override_b: {
         id: 'NODE_C',
         direction: 'up',
         target: 'NODE_D'
@@ -272,12 +272,12 @@ describe('unregisterNode()', () => {
     })
 
     expect(navigation.overrides).toEqual({
-      'override_a': {
+      override_a: {
         id: 'NODE_A',
         direction: 'up',
         target: 'NODE_B'
       },
-      'override_b': {
+      override_b: {
         id: 'NODE_C',
         direction: 'up',
         target: 'NODE_D'
@@ -287,7 +287,7 @@ describe('unregisterNode()', () => {
     navigation.unregisterNode('NODE_C')
 
     expect(navigation.overrides).toEqual({
-      'override_a': {
+      override_a: {
         id: 'NODE_A',
         direction: 'up',
         target: 'NODE_B'
@@ -308,7 +308,7 @@ describe('unregisterNode()', () => {
     })
     navigation.unregisterNode('root')
 
-    expect(navigation.tree).toMatchObject({})
+    expect(navigation.nodes).toMatchObject({})
     expect(navigation.overrides).toMatchObject({})
   })
 
@@ -419,11 +419,11 @@ describe('unregisterNode()', () => {
       parent: 'container'
     })
 
-    expect(nav.tree['root']).toBeTruthy()
-    expect(nav.tree['root'].children['node2']).toBeTruthy()
-    expect(nav.tree['root'].children['node2'].children['container']).toBeTruthy()
-    expect(nav.tree['root'].children['node2'].children['container'].children['item']).toBeTruthy()
-    expect(nav.tree['root'].children['node1']).toBeFalsy()
+    expect(nav.nodes.root).toBeTruthy()
+    expect(nav.nodes.root.children.node2).toBeTruthy()
+    expect(nav.nodes.root.children.node2.children.container).toBeTruthy()
+    expect(nav.nodes.root.children.node2.children.container.children.item).toBeTruthy()
+    expect(nav.nodes.root.children.node1).toBeFalsy()
   })
 
   test('unregistering nodes that start with the same string', () => {
@@ -436,9 +436,9 @@ describe('unregisterNode()', () => {
 
     navigation.unregisterNode('brand')
 
-    expect(navigation.nodePathList).toEqual([
+    expect(Object.keys(navigation.nodes)).toEqual([
       'root',
-      'root.children.brand-content'
+      'brand-content'
     ])
 
     expect(navigation.getNode('brand-content')).toBeTruthy()
@@ -458,20 +458,16 @@ describe('unregisterNode()', () => {
 
     navigation.unregisterNode('x')
 
-    expect(navigation.nodePathList).toEqual([
+    expect(Object.keys(navigation.nodes)).toEqual([
       'root',
-      'root.children.xx',
-      'root.children.xx.children.xx-1',
-      'root.children.xx.children.xx-2'
-    ])
-    expect(navigation.focusableNodePathList).toEqual([
-      'root.children.xx.children.xx-1',
-      'root.children.xx.children.xx-2'
+      'xx',
+      'xx-1',
+      'xx-2'
     ])
     expect(navigation.getNode('xx-2')).toBeTruthy()
   })
 
-  test('unregistering a focusable node should remove it from both the path lists', () => {
+  test('unregistering a focusable node should remove it from the nodes list', () => {
     const navigation = new Lrud()
 
     navigation
@@ -485,19 +481,13 @@ describe('unregisterNode()', () => {
 
     navigation.unregisterNode('x-1')
 
-    expect(navigation.nodePathList).toEqual([
+    expect(Object.keys(navigation.nodes)).toEqual([
       'root',
-      'root.children.x',
-      'root.children.x.children.x-2',
-      'root.children.xx',
-      'root.children.xx.children.xx-1',
-      'root.children.xx.children.xx-2'
-    ])
-
-    expect(navigation.focusableNodePathList).toEqual([
-      'root.children.x.children.x-2',
-      'root.children.xx.children.xx-1',
-      'root.children.xx.children.xx-2'
+      'x',
+      'x-2',
+      'xx',
+      'xx-1',
+      'xx-2'
     ])
   })
 
@@ -516,34 +506,24 @@ describe('unregisterNode()', () => {
       .registerNode('xx-2', { parent: 'xx', isFocusable: true })
 
     // ensure state is correct after registration (for sanitys sake...)
-    expect(navigation.nodePathList).toEqual([
+    expect(Object.keys(navigation.nodes)).toEqual([
       'root',
-      'root.children.x',
-      'root.children.x.children.x-1',
-      'root.children.x.children.x-2',
-      'root.children.xx',
-      'root.children.xx.children.xx-1',
-      'root.children.xx.children.xx-2'
-    ])
-    expect(navigation.focusableNodePathList).toEqual([
-      'root.children.x.children.x-1',
-      'root.children.x.children.x-2',
-      'root.children.xx.children.xx-1',
-      'root.children.xx.children.xx-2'
+      'x',
+      'x-1',
+      'x-2',
+      'xx',
+      'xx-1',
+      'xx-2'
     ])
 
     // now we unregister the parent node, and ensure its children and it are gone from relevant paths
     navigation.unregisterNode('xx')
 
-    expect(navigation.nodePathList).toEqual([
+    expect(Object.keys(navigation.nodes)).toEqual([
       'root',
-      'root.children.x',
-      'root.children.x.children.x-1',
-      'root.children.x.children.x-2'
-    ])
-    expect(navigation.focusableNodePathList).toEqual([
-      'root.children.x.children.x-1',
-      'root.children.x.children.x-2'
+      'x',
+      'x-1',
+      'x-2'
     ])
   })
 
@@ -561,7 +541,7 @@ describe('unregisterNode()', () => {
 
     nav.register('item1', {
       parent: 'node1',
-      selectAction: {},
+      selectAction: {}
     })
 
     nav.register('node2', {
@@ -569,7 +549,7 @@ describe('unregisterNode()', () => {
       parent: 'root'
     })
 
-    const onBlur = jest.fn();
+    const onBlur = jest.fn()
     nav.register('item2', {
       parent: 'node2',
       selectAction: {},
@@ -583,7 +563,7 @@ describe('unregisterNode()', () => {
     nav.unregisterNode('item1')
 
     expect(nav.currentFocusNodeId).toEqual('item2')
-    expect(onBlur).not.toBeCalled();
+    expect(onBlur).not.toBeCalled()
   })
 
   test('unregistering a pibling of the focused node should not remove focus - forceRefocus false', () => {
@@ -622,6 +602,22 @@ describe('unregisterNode()', () => {
     expect(nav.currentFocusNodeId).toEqual('item2')
   })
 
+  test('unregistering node that was focused but now is not should clean parent\'s activeChild', () => {
+    const navigation = new Lrud()
+      .registerNode('root')
+      .registerNode('a', { parent: 'root' })
+      .registerNode('aa', { parent: 'a', isFocusable: true })
+      .registerNode('b', { parent: 'root' })
+      .registerNode('ba', { parent: 'b', isFocusable: true })
+
+    navigation.assignFocus('aa')
+    navigation.assignFocus('ba')
+
+    navigation.unregisterNode('aa')
+
+    expect(navigation.getNode('a').activeChild).toBeUndefined()
+  })
+
   test('unregistering with forceRefocus false should not do a refocus - removing focused node', () => {
     const nav = new Lrud()
 
@@ -635,7 +631,7 @@ describe('unregisterNode()', () => {
     nav.unregisterNode('node2', { forceRefocus: false })
 
     expect(nav.currentFocusNodeId).toEqual(undefined)
-    expect(nav.tree.root.activeChild).toEqual(undefined)
+    expect(nav.nodes.root.activeChild).toEqual(undefined)
   })
 
   test('unregistering with forceRefocus false should not do a refocus - removing parent of focused node', () => {
@@ -654,6 +650,20 @@ describe('unregisterNode()', () => {
     nav.unregisterNode('box1', { forceRefocus: false })
 
     expect(nav.currentFocusNodeId).toEqual(undefined)
-    expect(nav.tree.root.activeChild).toEqual(undefined)
+    expect(nav.nodes.root.activeChild).toEqual(undefined)
+  })
+
+  test('should do nothing when unregistering not existing node', () => {
+    const navigation = new Lrud()
+
+    navigation.register('root')
+      .register('a')
+
+    let result
+    expect(() => {
+      result = navigation.unregisterNode('b')
+    }).not.toThrow()
+
+    expect(result).toEqual(navigation)
   })
 })

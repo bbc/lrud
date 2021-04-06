@@ -3,7 +3,7 @@
 const { Lrud } = require('./index')
 
 describe('onActiveChildChange() tests', () => {
-  test('horizontal list, active changes are on leafs', () => {
+  test('horizontal list, active changes are on leaves', () => {
     const navigation = new Lrud()
 
     let moveObject

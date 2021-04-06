@@ -13,12 +13,12 @@ describe('registerTree()', () => {
     Alpha.registerNode('b', { isFocusable: true })
 
     // register A's tree against B
-    Beta.registerTree(Alpha.tree)
+    Beta.registerTree({ [Alpha.rootNodeId]: Alpha.getRootNode() })
 
     // B should now have the correct nodes in its tree
-    expect(Beta.tree.root).toBeTruthy()
-    expect(Beta.tree.root.children.a).toBeTruthy()
-    expect(Beta.tree.root.children.b).toBeTruthy()
+    expect(Beta.nodes.root).toBeTruthy()
+    expect(Beta.nodes.root.children.a).toBeTruthy()
+    expect(Beta.nodes.root.children.b).toBeTruthy()
   })
 
   test('should not fail when tree is not defined', () => {

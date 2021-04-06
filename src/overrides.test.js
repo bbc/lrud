@@ -43,6 +43,27 @@ describe('overrides', () => {
     expect(navigation.currentFocusNodeId).toEqual('b')
   })
 
+  test('ignores override if direction does not match', () => {
+    const navigation = new Lrud()
+
+    navigation.registerNode('root', { orientation: 'horizontal' })
+    navigation.registerNode('a', { orientation: 'horizontal' })
+    navigation.registerNode('aa', { parent: 'a', isFocusable: true })
+    navigation.registerNode('ab', { parent: 'a', isFocusable: true })
+    navigation.registerNode('b', { orientation: 'horizontal' })
+    navigation.registerNode('ba', { parent: 'b', isFocusable: true })
+
+    navigation.registerOverride('override_aa_down_ba', {
+      id: 'aa',
+      direction: 'down',
+      target: 'ba'
+    })
+    navigation.assignFocus('aa')
+
+    navigation.handleKeyEvent({ direction: 'right' })
+    expect(navigation.currentFocusNodeId).toEqual('ab')
+  })
+
   test('registering an override without an id should throw an exception', () => {
     const navigation = new Lrud()
 

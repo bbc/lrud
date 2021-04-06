@@ -142,7 +142,7 @@ describe('test scenarios', () => {
     navigation.handleKeyEvent({ direction: 'left' })
     expect(navigation.currentFocusNodeId).toEqual('Space')
 
-    // the activeCHild of row-2 is still `K`, and that index is outside of our indexRange we're
+    // the activeChild of row-2 is still `K`, and that index is outside of our indexRange we're
     // leaving - therefore, we go to the first value of the index range, which in this case
     // is `G`
     navigation.handleKeyEvent({ direction: 'up' })
