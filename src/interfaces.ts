@@ -25,9 +25,11 @@ export type NodeIndex = number
 export type NodeIndexRange = [NodeIndex, NodeIndex]
 
 export interface Node {
-  id?: NodeId
-  parent?: NodeId
+  id: NodeId
+  parent?: Node
   index?: NodeIndex
+  children?: Node[]
+  activeChild?: Node
   indexRange?: NodeIndexRange
   selectAction?: any
   isFocusable?: boolean
@@ -35,14 +37,14 @@ export interface Node {
   isStopPropagate?: boolean
   orientation?: Orientation
   isIndexAlign?: boolean
+  overrides?: { [direction in Direction]?: Node }
+  overrideSources?: { direction: Direction, node: Node }[]
   onLeave?: (leave: Node) => void
   onEnter?: (enter: Node) => void
   shouldCancelLeave?: (leave: Node, enter: Node) => boolean
   onLeaveCancelled?: (currentFocusNode: Node, focusableNode: Node) => void
   shouldCancelEnter?: (leave: Node, enter: Node) => boolean
   onEnterCancelled?: (currentFocusNode: Node, focusableNode: Node) => void
-  activeChild?: NodeId
-  children?: NodeTree
   onSelect?: (node: Node) => void
   onInactive?: (node: Node) => void
   onActive?: (node: Node) => void
@@ -50,21 +52,15 @@ export interface Node {
   onBlur?: (node: Node) => void
   onFocus?: (node: Node) => void
   onMove?: (event: { node: Node, leave: Node, enter: Node, direction: Direction, offset: -1 | 1 }) => void
-
-  [name: string]: any
 }
 
-export type NodeTree = { [id in NodeId]: Node }
-
-export type OverrideId = string;
-
-export interface Override {
-  id: NodeId
-  direction: string
-  target: NodeId
+export interface NodeConfig extends Omit<Node, 'id'|'parent'|'activeChild'|'children'|'overrides'|'overrideSources'> {
+  id?: NodeId
+  parent?: NodeId
+  children?: NodeConfig[]
 }
 
-export type OverrideTree = { [id in OverrideId]: Override }
+export type NodesBag = { [id in NodeId]: Node }
 
 export interface KeyEvent {
   keyCode?: number
@@ -86,4 +82,8 @@ export interface UnregisterNodeOptions {
 export interface MoveNodeOptions {
   index?: NodeIndex,
   maintainIndex?: boolean
+}
+
+export interface RegisterOverrideOptions {
+  forceOverride?: boolean
 }

@@ -3,10 +3,10 @@ import {
   Direction,
   Directions,
   Node,
+  NodeConfig,
   NodeId,
   NodeIndex,
   NodeIndexRange,
-  NodeTree,
   Orientation,
   Orientations
 } from './interfaces'
@@ -78,30 +78,9 @@ export const findChildWithMatchingIndexRange = (node: Node, index: NodeIndex): N
     return undefined
   }
 
-  for (const childId of Object.keys(node.children)) {
-    const child = node.children[childId]
+  for (let i = 0; i < node.children.length; i++) {
+    const child = node.children[i]
     if (child.indexRange && (child.indexRange[0] <= index && child.indexRange[1] >= index)) {
-      return child
-    }
-  }
-
-  return undefined
-}
-
-/**
- * Returns a child from the given node whose index matches the given index.
- *
- * @param {object} node - node, which children indices will be examined
- * @param {number} index - searched index value
- */
-export const findChildWithIndex = (node: Node, index: NodeIndex): Node | undefined => {
-  if (!node || !node.children) {
-    return undefined
-  }
-
-  for (const childId of Object.keys(node.children)) {
-    const child = node.children[childId]
-    if (child.index === index) {
       return child
     }
   }
@@ -126,19 +105,25 @@ export const findChildWithClosestIndex = (node: Node, index: NodeIndex, indexRan
 
   // if we have an indexRange, and the nodes active child is inside that index range,
   // just return the active child
-  const activeChild = node.children[node.activeChild]
-  if (indexRange && activeChild && activeChild.index >= indexRange[0] && activeChild.index <= indexRange[1] && isNodeFocusable(activeChild)) {
-    return activeChild
+  if (
+    indexRange && node.activeChild &&
+    node.activeChild.index >= indexRange[0] && node.activeChild.index <= indexRange[1] &&
+    isNodeFocusable(node.activeChild)
+  ) {
+    return node.activeChild
   }
 
-  const indexes = Object.keys(node.children)
-    .filter(childId => isNodeFocusable(node.children[childId]) || node.children[childId].children)
-    .map(childId => node.children[childId].index) as [number]
+  const indices = []
+  for (let i = 0; i < node.children.length; i++) {
+    if (isNodeFocusable(node.children[i]) || node.children[i].children) {
+      indices.push(i)
+    }
+  }
 
-  if (indexes.length <= 0) {
+  if (indices.length <= 0) {
     return undefined
   }
-  return findChildWithIndex(node, closestIndex(indexes, index))
+  return node.children[closestIndex(indices, index)]
 }
 
 /**
@@ -152,157 +137,51 @@ export const insertChildNode = (parent: Node, newChild: Node): void => {
     return
   }
 
-  const childrenIds = Object.keys(parent.children || {})
-  const orderedChildren = {}
-
-  newChild.parent = parent.id
-
-  if (typeof newChild.index !== 'number' || newChild.index > childrenIds.length) {
-    newChild.index = childrenIds.length
+  if (!parent.children) {
+    parent.children = []
   }
 
-  for (const childId of childrenIds) {
-    const child = parent.children[childId]
+  newChild.parent = parent
 
+  if (typeof newChild.index !== 'number' || newChild.index > parent.children.length) {
+    newChild.index = parent.children.length
+    parent.children.push(newChild)
+  } else {
     // Inserting new child, from now on all further children needs to have index value increased by one
-    if (child.index >= newChild.index) {
-      if (!orderedChildren[newChild.id]) {
-        orderedChildren[newChild.id] = newChild
-      }
-      child.index += 1
+    parent.children.splice(newChild.index, 0, newChild)
+    for (let i = newChild.index + 1; i < parent.children.length; i++) {
+      parent.children[i].index = i
     }
-
-    orderedChildren[child.id] = child
   }
-
-  if (!orderedChildren[newChild.id]) {
-    orderedChildren[newChild.id] = newChild
-  }
-
-  parent.children = orderedChildren
 }
 
 /**
  * Removes given child from the parent's children, keeping indices coherent and compact.
  *
  * @param parent - node from which children given child is about to be removed
- * @param childId - id of the node to be removed from parent's children
+ * @param child - node to be removed from parent's children
  */
-export const removeChildNode = (parent: Node, childId: NodeId): void => {
-  if (!childId || !parent || !parent.children || !parent.children[childId]) {
+export const removeChildNode = (parent: Node, child: Node): void => {
+  if (!child || !parent || !parent.children) {
     return
   }
 
-  const removedChildIndex = parent.children[childId].index
-  delete parent.children[childId]
-
-  for (const childId of Object.keys(parent.children)) {
-    const child = parent.children[childId]
-    if (child.index > removedChildIndex) {
-      child.index -= 1
+  let removedChildIndex = -1
+  for (let i = 0; i < parent.children.length; i++) {
+    if (parent.children[i] === child) {
+      removedChildIndex = i
+    } else if (removedChildIndex !== -1) {
+      parent.children[i].index = i - 1
     }
   }
-}
 
-/**
- * Returns flatten tree of nodes.
- *
- * Returned node values are kept coherent and delivers basic information about the node:
- *   - missing 'id' and 'parent' fields are filled in
- *   - children subtree is removed
- *
- * E.g.
- *   {
- *      'root': {
- *         children: {
- *           'a': { isFocusable: true },
- *           'b': {
- *             orientation: 'horizontal',
- *             children: {
- *               ba: { isFocusable: true },
- *               bb: { isFocusable: true }
- *           }
- *         }
- *       }
- *     }
- *   }
- *
- * Expect:
- *    {
- *      'root': { id: 'root' }
- *      'a': { id: 'a', parent: 'root', isFocusable: true }
- *      'b': { id: 'b', parent: 'root', orientation: 'horizontal' }
- *      'ba': { id: 'ba', parent: 'b', isFocusable: true }
- *      'bb': { id: 'bb', parent: 'b', isFocusable: true }
- *   }
- *
- * @param tree - tree to flatten
- */
-export const flattenNodeTree = (tree: NodeTree): NodeTree => {
-  const flatNodeTree = {}
-
-  if (!tree) {
-    return flatNodeTree
+  if (removedChildIndex !== -1) {
+    if (parent.children.length === 1) {
+      parent.children = undefined
+    } else {
+      parent.children.splice(removedChildIndex, 1)
+    }
   }
-
-  const _flatten = (tree: NodeTree, parent?: NodeId): void => {
-    Object.keys(tree).forEach(nodeId => {
-      flatNodeTree[nodeId] = {
-        ...tree[nodeId],
-        id: nodeId,
-        parent: tree[nodeId].parent || parent,
-        children: undefined
-      }
-
-      if (tree[nodeId].children) {
-        _flatten(tree[nodeId].children, nodeId)
-      }
-    })
-  }
-
-  _flatten(tree)
-
-  return flatNodeTree
-}
-
-/**
- * Returns flatten node's sub-tree including the given node.
- *
- * Returned node values are kept coherent and delivers basic information about the node:
- *   - missing 'id' and 'parent' fields are filled in
- *   - children subtree is removed
- *
- * E.g.
- *    {
- *      id: 'root'
- *      children: {
- *        'a': { isFocusable: true },
- *        'b': {
- *          orientation: 'horizontal',
- *          children: {
- *            ba: { isFocusable: true },
- *            bb: { isFocusable: true }
- *          }
- *        }
- *      }
- *    }
- *
- * Expect:
- *    {
- *      'root': { id: 'root' }
- *      'a': { id: 'a', parent: 'root', isFocusable: true }
- *      'b': { id: 'b', parent: 'root', orientation: 'horizontal' }
- *      'ba': { id: 'ba', parent: 'b', isFocusable: true }
- *      'bb': { id: 'bb', parent: 'b', isFocusable: true }
- *   }
- *
- * @param node - node which sub-tree is about to be flatten
- */
-export const flattenNode = (node: Node): NodeTree => {
-  if (!node) {
-    return {}
-  }
-  return flattenNodeTree({ [node.id]: node })
 }
 
 /**
@@ -343,4 +222,98 @@ export const toValidDirection = (direction: Direction): Direction | undefined =>
     }
   }
   return undefined
+}
+
+/**
+ * Creates node object from given node parameters.
+ *
+ * Node creation method is optimized for JavaScript engine.
+ * Objects created in "the same way" allows JavaScript engine reusing existing HiddenClass transition chain.
+ * Moreover most used properties are defined "at the beginning" making access to them a bit faster.
+ *
+ * @param {string} nodeId - id of the node
+ * @param {object} [nodeConfig] - node parameters
+ */
+export const prepareNode = (nodeId: NodeId, nodeConfig?: NodeConfig): Node => {
+  if (!nodeId) {
+    throw Error('Node ID has to be defined')
+  }
+
+  const node: Node = {
+    id: nodeId,
+    parent: undefined,
+    index: undefined,
+    children: undefined,
+    activeChild: undefined
+  }
+
+  if (!nodeConfig) {
+    return node
+  }
+
+  if (typeof nodeConfig.index === 'number') {
+    node.index = nodeConfig.index
+  }
+  if (nodeConfig.orientation) {
+    node.orientation = nodeConfig.orientation
+  }
+  if (nodeConfig.indexRange) {
+    node.indexRange = nodeConfig.indexRange
+  }
+  if (nodeConfig.selectAction) {
+    node.selectAction = nodeConfig.selectAction
+  }
+  if (nodeConfig.isFocusable) {
+    node.isFocusable = nodeConfig.isFocusable
+  }
+  if (nodeConfig.isWrapping) {
+    node.isWrapping = nodeConfig.isWrapping
+  }
+  if (nodeConfig.isStopPropagate) {
+    node.isStopPropagate = nodeConfig.isStopPropagate
+  }
+  if (nodeConfig.isIndexAlign) {
+    node.isIndexAlign = nodeConfig.isIndexAlign
+  }
+  if (nodeConfig.onLeave) {
+    node.onLeave = nodeConfig.onLeave
+  }
+  if (nodeConfig.onEnter) {
+    node.onEnter = nodeConfig.onEnter
+  }
+  if (nodeConfig.shouldCancelLeave) {
+    node.shouldCancelLeave = nodeConfig.shouldCancelLeave
+  }
+  if (nodeConfig.onLeaveCancelled) {
+    node.onLeaveCancelled = nodeConfig.onLeaveCancelled
+  }
+  if (nodeConfig.shouldCancelEnter) {
+    node.shouldCancelEnter = nodeConfig.shouldCancelEnter
+  }
+  if (nodeConfig.onEnterCancelled) {
+    node.onEnterCancelled = nodeConfig.onEnterCancelled
+  }
+  if (nodeConfig.onSelect) {
+    node.onSelect = nodeConfig.onSelect
+  }
+  if (nodeConfig.onInactive) {
+    node.onInactive = nodeConfig.onInactive
+  }
+  if (nodeConfig.onActive) {
+    node.onActive = nodeConfig.onActive
+  }
+  if (nodeConfig.onActiveChildChange) {
+    node.onActiveChildChange = nodeConfig.onActiveChildChange
+  }
+  if (nodeConfig.onBlur) {
+    node.onBlur = nodeConfig.onBlur
+  }
+  if (nodeConfig.onFocus) {
+    node.onFocus = nodeConfig.onFocus
+  }
+  if (nodeConfig.onMove) {
+    node.onMove = nodeConfig.onMove
+  }
+
+  return node
 }

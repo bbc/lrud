@@ -1,7 +1,6 @@
 /* eslint-env jest */
 
 const {
-  calculateIsFocusableValue,
   closestIndex,
   insertChildNode,
   isNodeFocusable,
@@ -9,9 +8,7 @@ const {
   getDirectionForKeyCode,
   findChildWithMatchingIndexRange,
   findChildWithClosestIndex,
-  findChildWithIndex,
-  flattenNode,
-  flattenNodeTree,
+  prepareNode,
   removeChildNode,
   toValidDirection,
   toValidOrientation
@@ -64,7 +61,7 @@ describe('closestIndex()', () => {
 describe('isNodeFocusable()', () => {
   it('node should be focusable, it has a selectAction', () => {
     const node = {
-      selectAction: true
+      id: 'node', selectAction: true
     }
 
     expect(isNodeFocusable(node)).toEqual(true)
@@ -72,7 +69,7 @@ describe('isNodeFocusable()', () => {
 
   it('node should be focusable, it has isFocusable true', () => {
     const node = {
-      isFocusable: true
+      id: 'node', isFocusable: true
     }
 
     expect(isNodeFocusable(node)).toEqual(true)
@@ -80,7 +77,7 @@ describe('isNodeFocusable()', () => {
 
   it('node should not be focusable, it has isFocusable but its false', () => {
     const node = {
-      isFocusable: false
+      id: 'node', isFocusable: false
     }
 
     expect(isNodeFocusable(node)).toEqual(false)
@@ -88,7 +85,7 @@ describe('isNodeFocusable()', () => {
 
   it('node should not be focusable, it has isFocusable undefined', () => {
     const node = {
-      isFocusable: undefined
+      id: 'node', isFocusable: undefined
     }
 
     expect(isNodeFocusable(node)).toEqual(false)
@@ -96,7 +93,7 @@ describe('isNodeFocusable()', () => {
 
   it('node should not be focusable, it has isFocusable null', () => {
     const node = {
-      isFocusable: null
+      id: 'node', isFocusable: null
     }
 
     expect(isNodeFocusable(node)).toEqual(false)
@@ -104,7 +101,7 @@ describe('isNodeFocusable()', () => {
 
   it('node should not be focusable, it has neither a selectAction nor isFocusable', () => {
     const node = {
-      x: true
+      id: 'node'
     }
 
     expect(isNodeFocusable(node)).toEqual(false)
@@ -112,8 +109,7 @@ describe('isNodeFocusable()', () => {
 
   it('node should not be focusable, it has isFocusable false, and a selectAction', () => {
     const node = {
-      isFocusable: false,
-      selectAction: true
+      id: 'node', isFocusable: false, selectAction: true
     }
 
     expect(isNodeFocusable(node)).toEqual(false)
@@ -169,16 +165,10 @@ describe('findChildWithMatchingIndexRange()', () => {
   it('has a child with an index range that encompasses the index', () => {
     const node = {
       id: 'a',
-      children: {
-        x: {
-          id: 'x',
-          indexRange: [0, 1]
-        },
-        y: {
-          id: 'y',
-          indexRange: [2, 3]
-        }
-      }
+      children: [
+        { id: 'x', indexRange: [0, 1] },
+        { id: 'y', indexRange: [2, 3] }
+      ]
     }
 
     const found = findChildWithMatchingIndexRange(node, 2)
@@ -189,16 +179,10 @@ describe('findChildWithMatchingIndexRange()', () => {
   it('has a child with an index range that encompasses the index, first child', () => {
     const node = {
       id: 'a',
-      children: {
-        x: {
-          id: 'x',
-          indexRange: [0, 1]
-        },
-        y: {
-          id: 'y',
-          indexRange: [2, 3]
-        }
-      }
+      children: [
+        { id: 'x', indexRange: [0, 1] },
+        { id: 'y', indexRange: [2, 3] }
+      ]
     }
 
     const found = findChildWithMatchingIndexRange(node, 0)
@@ -209,16 +193,10 @@ describe('findChildWithMatchingIndexRange()', () => {
   it('does not have a child with an index range that encompasses the index', () => {
     const node = {
       id: 'a',
-      children: {
-        x: {
-          id: 'x',
-          indexRange: [0, 1]
-        },
-        y: {
-          id: 'y',
-          indexRange: [2, 3]
-        }
-      }
+      children: [
+        { id: 'x', indexRange: [0, 1] },
+        { id: 'y', indexRange: [2, 3] }
+      ]
     }
 
     const found = findChildWithMatchingIndexRange(node, 6)
@@ -246,23 +224,11 @@ describe('findChildWithClosestIndex()', () => {
   it('find the child with the exact index', () => {
     const node = {
       id: 'root',
-      children: {
-        a: {
-          id: 'a',
-          index: 0,
-          isFocusable: true
-        },
-        b: {
-          id: 'b',
-          index: 1,
-          isFocusable: true
-        },
-        c: {
-          id: 'c',
-          index: 2,
-          isFocusable: true
-        }
-      }
+      children: [
+        { id: 'a', index: 0, isFocusable: true },
+        { id: 'b', index: 1, isFocusable: true },
+        { id: 'c', index: 2, isFocusable: true }
+      ]
     }
 
     const found = findChildWithClosestIndex(node, 1)
@@ -273,23 +239,11 @@ describe('findChildWithClosestIndex()', () => {
   it('find the child with closest index, lower', () => {
     const node = {
       id: 'root',
-      children: {
-        a: {
-          id: 'a',
-          index: 0,
-          isFocusable: true
-        },
-        b: {
-          id: 'b',
-          index: 1,
-          isFocusable: true
-        },
-        c: {
-          id: 'c',
-          index: 2,
-          isFocusable: true
-        }
-      }
+      children: [
+        { id: 'a', index: 0, isFocusable: true },
+        { id: 'b', index: 1, isFocusable: true },
+        { id: 'c', index: 2, isFocusable: true }
+      ]
     }
 
     const found = findChildWithClosestIndex(node, 5)
@@ -300,26 +254,14 @@ describe('findChildWithClosestIndex()', () => {
   it('find the child with closest index, higher', () => {
     const node = {
       id: 'root',
-      children: {
-        a: {
-          id: 'a',
-          index: 0,
-          isFocusable: true
-        },
-        b: {
-          id: 'b',
-          index: 5,
-          isFocusable: true
-        },
-        c: {
-          id: 'c',
-          index: 10,
-          isFocusable: true
-        }
-      }
+      children: [
+        { id: 'a', index: 0, isFocusable: false },
+        { id: 'b', index: 1, isFocusable: true },
+        { id: 'c', index: 2, isFocusable: true }
+      ]
     }
 
-    const found = findChildWithClosestIndex(node, 4)
+    const found = findChildWithClosestIndex(node, -1)
 
     expect(found.id).toEqual('b')
   })
@@ -327,25 +269,13 @@ describe('findChildWithClosestIndex()', () => {
   it('find the child via an indexRange, so return the active child (when its focusable)', () => {
     const node = {
       id: 'root',
-      activeChild: 'b',
-      children: {
-        a: {
-          id: 'a',
-          isFocusable: true,
-          index: 0
-        },
-        b: {
-          id: 'b',
-          isFocusable: true,
-          index: 1
-        },
-        c: {
-          id: 'c',
-          isFocusable: true,
-          index: 2
-        }
-      }
+      children: [
+        { id: 'a', isFocusable: true, index: 0 },
+        { id: 'b', isFocusable: true, index: 1 },
+        { id: 'c', isFocusable: true, index: 2 }
+      ]
     }
+    node.activeChild = node.children[1]
 
     const found = findChildWithClosestIndex(node, 0, [1, 2])
 
@@ -355,30 +285,14 @@ describe('findChildWithClosestIndex()', () => {
   it('find the child via an indexRange, but the active ISNT in the index range, so do it by the passed index', () => {
     const node = {
       id: 'root',
-      activeChild: 'a',
-      children: {
-        a: {
-          id: 'a',
-          index: 0,
-          isFocusable: true
-        },
-        b: {
-          id: 'b',
-          index: 1,
-          isFocusable: true
-        },
-        c: {
-          id: 'c',
-          index: 2,
-          isFocusable: true
-        },
-        d: {
-          id: 'd',
-          index: 5,
-          isFocusable: true
-        }
-      }
+      children: [
+        { id: 'a', index: 0, isFocusable: true },
+        { id: 'b', index: 1, isFocusable: true },
+        { id: 'c', index: 2, isFocusable: true },
+        { id: 'd', index: 5, isFocusable: true }
+      ]
     }
+    node.activeChild = node.children[0]
 
     const found = findChildWithClosestIndex(node, 5, [1, 2])
 
@@ -399,26 +313,14 @@ describe('findChildWithClosestIndex()', () => {
     const node = {
       id: 'root',
       isFocusable: true,
-      activeChild: 'a',
-      children: {
-        a: {
-          id: 'a',
-          index: 0
-        },
-        b: {
-          id: 'b',
-          index: 1
-        },
-        c: {
-          id: 'c',
-          index: 2
-        },
-        d: {
-          id: 'd',
-          index: 5
-        }
-      }
+      children: [
+        { id: 'a', index: 0 },
+        { id: 'b', index: 1 },
+        { id: 'c', index: 2 },
+        { id: 'd', index: 3 }
+      ]
     }
+    node.activeChild = node.children[0]
 
     const found = findChildWithClosestIndex(node, 1)
 
@@ -429,144 +331,23 @@ describe('findChildWithClosestIndex()', () => {
     const node = {
       id: 'root',
       isFocusable: true,
-      activeChild: 'a',
-      children: {
-        a: {
-          id: 'a',
-          index: 0
-        },
-        b: {
-          id: 'b',
-          index: 1
-        },
-        c: {
-          id: 'c',
-          index: 2
-        },
-        d: {
-          id: 'd',
-          index: 5,
-          isFocusable: true
-        }
-      }
+      children: [
+        { id: 'a', index: 0 },
+        { id: 'b', index: 1 },
+        { id: 'c', index: 2 },
+        { id: 'd', index: 3, isFocusable: true }
+      ]
     }
+    node.activeChild = node.children[0]
 
     const found = findChildWithClosestIndex(node, 1)
 
-    expect(found).toEqual(node.children.d)
+    expect(found).toEqual(node.children[3])
   })
 
   test('should not fail when node does not exists', () => {
     const notExistingNode = undefined
     expect(() => findChildWithClosestIndex(notExistingNode, 0)).not.toThrow()
-  })
-})
-
-describe('findChildWithIndex()', () => {
-  it('get the child with the index, child exists', () => {
-    const node = {
-      id: 'root',
-      children: {
-        a: {
-          id: 'a',
-          index: 0
-        },
-        b: {
-          id: 'b',
-          index: 1
-        },
-        c: {
-          id: 'c',
-          index: 2
-        }
-      }
-    }
-
-    const found = findChildWithIndex(node, 1)
-    expect(found.id).toEqual('b')
-  })
-
-  it('get the child with the index, child exists as first child', () => {
-    const node = {
-      id: 'root',
-      children: {
-        a: {
-          id: 'a',
-          index: 0
-        },
-        b: {
-          id: 'b',
-          index: 1
-        },
-        c: {
-          id: 'c',
-          index: 2
-        }
-      }
-    }
-
-    const found = findChildWithIndex(node, 0)
-    expect(found.id).toEqual('a')
-  })
-
-  it('get the child with the index, child exists as last child', () => {
-    const node = {
-      id: 'root',
-      children: {
-        a: {
-          id: 'a',
-          index: 0
-        },
-        b: {
-          id: 'b',
-          index: 1
-        },
-        c: {
-          id: 'c',
-          index: 2
-        }
-      }
-    }
-
-    const found = findChildWithIndex(node, 2)
-    expect(found.id).toEqual('c')
-  })
-
-  it('get the child with the index, child does not exist', () => {
-    const node = {
-      id: 'root',
-      children: {
-        a: {
-          id: 'a',
-          index: 0
-        },
-        b: {
-          id: 'b',
-          index: 1
-        },
-        c: {
-          id: 'c',
-          index: 2
-        }
-      }
-    }
-
-    const found = findChildWithIndex(node, 5)
-    expect(found).toBeUndefined()
-  })
-
-  it('does not have any children', () => {
-    const node = {
-      id: 'root'
-    }
-
-    const found = findChildWithIndex(node, 1)
-    expect(found).toBeUndefined()
-  })
-
-  test('should not fail when node does not exists', () => {
-    const notExistingNode = undefined
-    expect(() => findChildWithIndex(notExistingNode, 0)).not.toThrow()
   })
 })
 
@@ -595,122 +376,118 @@ describe('getDirectionForKeyCode()', () => {
 describe('insertChildNode()', () => {
   test('should not fail when one of the arguments is not defined', () => {
     expect(() => {
-      insertChildNode(undefined, {})
+      insertChildNode(undefined, { id: 'node' })
     }).not.toThrow()
 
     expect(() => {
-      insertChildNode({}, undefined)
+      insertChildNode({ id: 'node' }, undefined)
     }).not.toThrow()
   })
 
   test('should append child if index is not defined', () => {
     const parent = {
       id: 'parent',
-      children: {
-        child_0: { id: 'child_0', parent: 'parent', index: 0 },
-        child_1: { id: 'child_1', parent: 'parent', index: 1 }
-      }
+      children: [
+        { id: 'child_0', index: 0 },
+        { id: 'child_1', index: 1 }
+      ]
     }
 
     const child = {
-      id: 'new_child',
-      parent: 'old_parent'
+      id: 'new_child'
     }
 
     insertChildNode(parent, child)
 
-    expect(child.parent).toEqual('parent')
-    expect(parent.children).toEqual({
-      child_0: { id: 'child_0', parent: 'parent', index: 0 },
-      child_1: { id: 'child_1', parent: 'parent', index: 1 },
-      new_child: { id: 'new_child', parent: 'parent', index: 2 }
-    })
+    expect(child.parent.id).toEqual('parent')
+    expect(parent.children).toEqual([
+      expect.objectContaining({ id: 'child_0', index: 0 }),
+      expect.objectContaining({ id: 'child_1', index: 1 }),
+      expect.objectContaining({ id: 'new_child', index: 2 })
+    ])
   })
 
   test('should append child if index is greater than parent\'s children length', () => {
     const parent = {
       id: 'parent',
-      children: {
-        child_0: { id: 'child_0', parent: 'parent', index: 0 },
-        child_1: { id: 'child_1', parent: 'parent', index: 1 }
-      }
+      children: [
+        { id: 'child_0', index: 0 },
+        { id: 'child_1', index: 1 }
+      ]
     }
 
     const child = {
       id: 'new_child',
-      parent: 'old_parent',
       index: 3
     }
 
     insertChildNode(parent, child)
 
-    expect(child.parent).toEqual('parent')
-    expect(parent.children).toEqual({
-      child_0: { id: 'child_0', parent: 'parent', index: 0 },
-      child_1: { id: 'child_1', parent: 'parent', index: 1 },
-      new_child: { id: 'new_child', parent: 'parent', index: 2 }
-    })
+    expect(child.parent.id).toEqual('parent')
+    expect(parent.children).toEqual([
+      expect.objectContaining({ id: 'child_0', index: 0 }),
+      expect.objectContaining({ id: 'child_1', index: 1 }),
+      expect.objectContaining({ id: 'new_child', index: 2 })
+    ])
   })
 
   test('should shift nodes indices by one', () => {
     const parent = {
       id: 'parent',
-      children: {
-        child_0: { id: 'child_0', parent: 'parent', index: 0 },
-        child_1: { id: 'child_1', parent: 'parent', index: 1 }
-      }
+      children: [
+        { id: 'child_0', index: 0 },
+        { id: 'child_1', index: 1 }
+      ]
     }
 
     const child = {
       id: 'new_child',
-      parent: 'old_parent',
       index: 1
     }
 
     insertChildNode(parent, child)
 
-    expect(child.parent).toEqual('parent')
-    expect(parent.children).toEqual({
-      child_0: { id: 'child_0', parent: 'parent', index: 0 },
-      new_child: { id: 'new_child', parent: 'parent', index: 1 },
-      child_1: { id: 'child_1', parent: 'parent', index: 2 }
-    })
+    expect(child.parent.id).toEqual('parent')
+    expect(parent.children).toEqual([
+      expect.objectContaining({ id: 'child_0', index: 0 }),
+      expect.objectContaining({ id: 'new_child', index: 1 }),
+      expect.objectContaining({ id: 'child_1', index: 2 })
+    ])
   })
 
   test('should insert node at first position', () => {
     const parent = {
       id: 'parent',
-      children: {
-        child_0: { id: 'child_0', parent: 'parent', index: 0 },
-        child_1: { id: 'child_1', parent: 'parent', index: 1 }
-      }
+      children: [
+        { id: 'child_0', index: 0 },
+        { id: 'child_1', index: 1 }
+      ]
     }
 
     const child = {
       id: 'new_child',
-      parent: 'old_parent',
       index: 0
     }
 
     insertChildNode(parent, child)
 
-    expect(child.parent).toEqual('parent')
-    expect(parent.children).toEqual({
-      new_child: { id: 'new_child', parent: 'parent', index: 0 },
-      child_0: { id: 'child_0', parent: 'parent', index: 1 },
-      child_1: { id: 'child_1', parent: 'parent', index: 2 }
-    })
+    expect(child.parent.id).toEqual('parent')
+    expect(parent.children).toEqual([
+      expect.objectContaining({ id: 'new_child', index: 0 }),
+      expect.objectContaining({ id: 'child_0', index: 1 }),
+      expect.objectContaining({ id: 'child_1', index: 2 })
+    ])
   })
 })
 
 describe('removeChildNode()', () => {
   test('should not fail when one of the arguments is not defined', () => {
     expect(() => {
-      removeChildNode(undefined, 'root')
+      removeChildNode(undefined, { id: 'root' })
     }).not.toThrow()
 
     expect(() => {
-      removeChildNode({}, undefined)
+      removeChildNode({ id: 'root' }, undefined)
     }).not.toThrow()
   })
 
@@ -720,172 +497,44 @@ describe('removeChildNode()', () => {
     }
 
     expect(() => {
-      removeChildNode(parent, 'some_child')
+      removeChildNode(parent, { id: 'some_child' })
     }).not.toThrow()
   })
 
   test('should not fail and do nothing when parent doesn\'t contain removed child', () => {
     const parent = {
       id: 'parent',
-      children: {
-        child: { id: 'child', parent: 'parent', index: 0 }
-      }
+      children: [
+        { id: 'child', index: 0 }
+      ]
     }
 
     expect(() => {
-      removeChildNode(parent, 'some_child')
+      removeChildNode(parent, { id: 'some_child' })
     }).not.toThrow()
 
-    expect(parent.children.child).toBeDefined()
+    expect(parent.children).toBeDefined()
+    expect(parent.children[0].id).toEqual('child')
   })
 
   test('should remove child and reindex left children', () => {
     const parent = {
       id: 'parent',
-      children: {
-        child_0: { id: 'child_0', parent: 'parent', index: 0 },
-        child_1: { id: 'child_1', parent: 'parent', index: 1 },
-        child_2: { id: 'child_2', parent: 'parent', index: 2 }
-      }
+      children: [
+        { id: 'child_0', index: 0 },
+        { id: 'child_1', index: 1 },
+        { id: 'child_2', index: 2 }
+      ]
     }
 
     expect(() => {
-      removeChildNode(parent, 'child_1')
+      removeChildNode(parent, parent.children[1])
     }).not.toThrow()
 
-    expect(parent.children).toEqual({
-      child_0: { id: 'child_0', parent: 'parent', index: 0 },
-      child_2: { id: 'child_2', parent: 'parent', index: 1 }
-    })
-  })
-})
-
-describe('flattenNodeTree()', () => {
-  test('should not fail and return empty tree when arguments is not defined', () => {
-    let flatNodeTree
-
-    expect(() => {
-      flatNodeTree = flattenNodeTree(undefined)
-    }).not.toThrow()
-
-    expect(flatNodeTree).toEqual({})
-  })
-
-  test('should return flatten nodes', () => {
-    const tree = {
-      root: {
-        id: 'root',
-        children: {
-          a: {
-            id: 'a',
-            parent: 'root',
-            index: 0,
-            orientation: 'horizontal',
-            children: {
-              aa: { id: 'aa', parent: 'a', index: 0, isFocusable: true },
-              ab: { id: 'ab', parent: 'a', index: 1, isFocusable: false }
-            }
-          },
-          b: {
-            id: 'b',
-            parent: 'root',
-            index: 1,
-            orientation: 'vertical',
-            children: {
-              ba: { id: 'ba', parent: 'b', index: 0, isFocusable: true },
-              bb: { id: 'bb', parent: 'b', index: 1, isFocusable: false }
-            }
-          }
-        }
-      }
-    }
-
-    expect(flattenNodeTree(tree)).toEqual({
-      root: { id: 'root' },
-      a: { id: 'a', parent: 'root', index: 0, orientation: 'horizontal' },
-      aa: { id: 'aa', parent: 'a', index: 0, isFocusable: true },
-      ab: { id: 'ab', parent: 'a', index: 1, isFocusable: false },
-      b: { id: 'b', parent: 'root', index: 1, orientation: 'vertical' },
-      ba: { id: 'ba', parent: 'b', index: 0, isFocusable: true },
-      bb: { id: 'bb', parent: 'b', index: 1, isFocusable: false }
-    })
-  })
-
-  test('should fulfill missing parent and id fields', () => {
-    const tree = {
-      root: {
-        id: 'root',
-        children: {
-          a: { id: 'a' },
-          b: { parent: 'root' },
-          c: {}
-        }
-      }
-    }
-
-    expect(flattenNodeTree(tree)).toEqual({
-      root: { id: 'root' },
-      a: { id: 'a', parent: 'root' },
-      b: { id: 'b', parent: 'root' },
-      c: { id: 'c', parent: 'root' }
-    })
-  })
-})
-
-describe('flattenNode()', () => {
-  test('should not fail and return empty tree when arguments is not defined', () => {
-    let flatNodeTree
-
-    expect(() => {
-      flatNodeTree = flattenNode(undefined)
-    }).not.toThrow()
-
-    expect(flatNodeTree).toEqual({})
-  })
-
-  test('should return flatten nodes', () => {
-    const node = {
-      id: 'root',
-      children: {
-        a: {
-          id: 'a',
-          parent: 'root',
-          index: 0,
-          orientation: 'horizontal',
-          children: {
-            aa: { id: 'aa', parent: 'a', index: 0, isFocusable: true },
-            ab: { id: 'ab', parent: 'a', index: 1, isFocusable: false }
-          }
-        },
-        b: { id: 'b', parent: 'root', index: 1, orientation: 'vertical' }
-      }
-    }
-
-    expect(flattenNode(node)).toEqual({
-      root: { id: 'root' },
-      a: { id: 'a', parent: 'root', index: 0, orientation: 'horizontal' },
-      aa: { id: 'aa', parent: 'a', index: 0, isFocusable: true },
-      ab: { id: 'ab', parent: 'a', index: 1, isFocusable: false },
-      b: { id: 'b', parent: 'root', index: 1, orientation: 'vertical' }
-    })
-  })
-
-  test('should fulfill missing parent and id fields', () => {
-    const node = {
-      id: 'root',
-      children: {
-        a: { id: 'a' },
-        b: { parent: 'root' },
-        c: {}
-      }
-    }
-
-    expect(flattenNode(node)).toEqual({
-      root: { id: 'root' },
-      a: { id: 'a', parent: 'root' },
-      b: { id: 'b', parent: 'root' },
-      c: { id: 'c', parent: 'root' }
-    })
+    expect(parent.children).toEqual([
+      expect.objectContaining({ id: 'child_0', index: 0 }),
+      expect.objectContaining({ id: 'child_2', index: 1 })
+    ])
   })
 })
 
@@ -930,5 +579,43 @@ describe('toValidOrientation()', () => {
     expect(toValidOrientation('vertical')).toEqual('vertical')
     expect(toValidOrientation('VERTICAL')).toEqual('vertical')
     expect(toValidOrientation('VeRtIcAl')).toEqual('vertical')
+  })
+})
+
+describe('prepareNode()', () => {
+  test('should correctly create node', () => {
+    const baseNode = { id: 'node', parent: undefined, index: undefined, children: undefined, activeChild: undefined }
+
+    expect(() => prepareNode(undefined)).toThrow('Node ID has to be defined')
+
+    expect(prepareNode('node')).toEqual(baseNode)
+    expect(prepareNode('node', {})).toEqual(baseNode)
+    // parent property is not copied, it's computed in registerNode method
+    expect(prepareNode('node', { parent: 'parent' })).toEqual(baseNode)
+
+    expect(prepareNode('node', { index: 'index' })).toEqual(baseNode)
+    expect(prepareNode('node', { index: 1 })).toEqual({ ...baseNode, index: 1 })
+    expect(prepareNode('node', { orientation: 'horizontal' })).toEqual({ ...baseNode, orientation: 'horizontal' })
+    expect(prepareNode('node', { indexRange: [0, 1] })).toEqual({ ...baseNode, indexRange: [0, 1] })
+    expect(prepareNode('node', { selectAction: 'action' })).toEqual({ ...baseNode, selectAction: 'action' })
+    expect(prepareNode('node', { isFocusable: true })).toEqual({ ...baseNode, isFocusable: true })
+    expect(prepareNode('node', { isWrapping: true })).toEqual({ ...baseNode, isWrapping: true })
+    expect(prepareNode('node', { isStopPropagate: true })).toEqual({ ...baseNode, isStopPropagate: true })
+    expect(prepareNode('node', { isIndexAlign: true })).toEqual({ ...baseNode, isIndexAlign: true })
+
+    const mock = jest.fn()
+    expect(prepareNode('node', { onLeave: mock })).toEqual({ ...baseNode, onLeave: mock })
+    expect(prepareNode('node', { onEnter: mock })).toEqual({ ...baseNode, onEnter: mock })
+    expect(prepareNode('node', { shouldCancelLeave: mock })).toEqual({ ...baseNode, shouldCancelLeave: mock })
+    expect(prepareNode('node', { onLeaveCancelled: mock })).toEqual({ ...baseNode, onLeaveCancelled: mock })
+    expect(prepareNode('node', { shouldCancelEnter: mock })).toEqual({ ...baseNode, shouldCancelEnter: mock })
+    expect(prepareNode('node', { onEnterCancelled: mock })).toEqual({ ...baseNode, onEnterCancelled: mock })
+    expect(prepareNode('node', { onSelect: mock })).toEqual({ ...baseNode, onSelect: mock })
+    expect(prepareNode('node', { onInactive: mock })).toEqual({ ...baseNode, onInactive: mock })
+    expect(prepareNode('node', { onActive: mock })).toEqual({ ...baseNode, onActive: mock })
+    expect(prepareNode('node', { onActiveChildChange: mock })).toEqual({ ...baseNode, onActiveChildChange: mock })
+    expect(prepareNode('node', { onBlur: mock })).toEqual({ ...baseNode, onBlur: mock })
+    expect(prepareNode('node', { onFocus: mock })).toEqual({ ...baseNode, onFocus: mock })
+    expect(prepareNode('node', { onMove: mock })).toEqual({ ...baseNode, onMove: mock })
   })
 })
