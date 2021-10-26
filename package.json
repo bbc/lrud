@@ -40,7 +40,7 @@
     "rollup-plugin-commonjs": "^9.1.2",
     "rollup-plugin-node-resolve": "^4.2.4",
     "rollup-plugin-typescript": "^1.0.1",
-    "rollup-plugin-typescript2": "^0.21.0",
+    "rollup-plugin-typescript2": "^0.30.0",
     "rollup-plugin-uglify": "^6.0.4",
     "ts-jest": "^26.5.4",
     "tslib": "^2.1.0",
