@@ -5,18 +5,21 @@ const { Lrud } = require('./index')
 describe('unregisterNode()', () => {
   test('unregistering a leaf should remove it', () => {
     const navigation = new Lrud()
+      .registerNode('root', { orientation: 'vertical' })
+      .registerNode('NODE_A', { isFocusable: true })
+      .registerNode('NODE_B', { isFocusable: true })
 
-    navigation.registerNode('root', { orientation: 'vertical' })
-    navigation.registerNode('NODE_A', { isFocusable: true })
-    navigation.registerNode('NODE_B', { isFocusable: true })
-
-    expect(navigation.nodes.root.children.NODE_A).not.toBeUndefined()
+    expect(navigation.rootNode.children[0]).not.toBeUndefined()
+    expect(navigation.rootNode.children[0].id).toEqual('NODE_A')
+    expect(navigation.rootNode.children.length).toEqual(2)
 
     navigation.unregisterNode('NODE_A')
 
-    expect(navigation.nodes.root.children.NODE_A).toBeUndefined()
+    expect(navigation.rootNode.children[0]).not.toBeUndefined()
+    expect(navigation.rootNode.children[0].id).toEqual('NODE_B')
+    expect(navigation.rootNode.children.length).toEqual(1)
 
-    expect(navigation.getNode('NODE_A')).toEqual(undefined)
+    expect(navigation.getNode('NODE_A')).toBeUndefined()
 
     expect(Object.keys(navigation.nodes)).toEqual([
       'root',
@@ -26,33 +29,35 @@ describe('unregisterNode()', () => {
 
   test('unregister a whole branch', () => {
     const navigation = new Lrud()
+      .registerNode('root', { selectAction: 1 })
+      .registerNode('BOX_A', { selectAction: 2 })
+      .registerNode('BOX_B', { selectAction: 3 })
+      .registerNode('NODE_1', { selectAction: 11, parent: 'BOX_A' })
+      .registerNode('NODE_2', { selectAction: 12, parent: 'BOX_A' })
+      .registerNode('NODE_3', { selectAction: 13, parent: 'BOX_A' })
+      .registerNode('NODE_4', { selectAction: 24, parent: 'BOX_B' })
+      .registerNode('NODE_5', { selectAction: 25, parent: 'BOX_B' })
+      .registerNode('NODE_6', { selectAction: 26, parent: 'BOX_B' })
 
-    navigation.registerNode('root', { selectAction: 1 })
-    navigation.registerNode('BOX_A', { selectAction: 2 })
-    navigation.registerNode('BOX_B', { selectAction: 3 })
-    navigation.registerNode('NODE_1', { selectAction: 11, parent: 'BOX_A' })
-    navigation.registerNode('NODE_2', { selectAction: 12, parent: 'BOX_A' })
-    navigation.registerNode('NODE_3', { selectAction: 13, parent: 'BOX_A' })
-    navigation.registerNode('NODE_4', { selectAction: 24, parent: 'BOX_B' })
-    navigation.registerNode('NODE_5', { selectAction: 25, parent: 'BOX_B' })
-    navigation.registerNode('NODE_6', { selectAction: 26, parent: 'BOX_B' })
-
-    expect(navigation.nodes.root.children.BOX_A.children.NODE_1).not.toBeUndefined()
-    expect(navigation.nodes.root.children.BOX_A.children.NODE_2).not.toBeUndefined()
-    expect(navigation.nodes.root.children.BOX_A.children.NODE_3).not.toBeUndefined()
-    expect(navigation.nodes.root.children.BOX_B.children.NODE_4).not.toBeUndefined()
-    expect(navigation.nodes.root.children.BOX_B.children.NODE_5).not.toBeUndefined()
-    expect(navigation.nodes.root.children.BOX_B.children.NODE_6).not.toBeUndefined()
+    expect(navigation.rootNode.children.length).toEqual(2)
+    expect(navigation.rootNode.children[0].id).toEqual('BOX_A')
+    expect(navigation.rootNode.children[0].children.length).toEqual(3)
+    expect(navigation.rootNode.children[0].children).toEqual([
+      expect.objectContaining({ id: 'NODE_1' }),
+      expect.objectContaining({ id: 'NODE_2' }),
+      expect.objectContaining({ id: 'NODE_3' })
+    ])
+    expect(navigation.rootNode.children[1].id).toEqual('BOX_B')
+    expect(navigation.rootNode.children[1].children.length).toEqual(3)
+    expect(navigation.rootNode.children[1].children).toEqual([
+      expect.objectContaining({ id: 'NODE_4' }),
+      expect.objectContaining({ id: 'NODE_5' }),
+      expect.objectContaining({ id: 'NODE_6' })
+    ])
 
     navigation.unregisterNode('BOX_B')
 
-    expect(navigation.nodes.root.children.BOX_A.children.NODE_1).not.toBeUndefined()
-    expect(navigation.nodes.root.children.BOX_A.children.NODE_2).not.toBeUndefined()
-    expect(navigation.nodes.root.children.BOX_A.children.NODE_3).not.toBeUndefined()
-    expect(navigation.nodes.root.children.BOX_B).toBeUndefined()
-    expect(navigation.nodes.root.children.BOX_B).toBeUndefined()
-    expect(navigation.nodes.root.children.BOX_B).toBeUndefined()
-
+    expect(navigation.rootNode.children.length).toEqual(1)
     expect(Object.keys(navigation.nodes)).toEqual([
       'root',
       'BOX_A',
@@ -64,29 +69,27 @@ describe('unregisterNode()', () => {
 
   test('if unregistering the focused node, recalculate focus', () => {
     const navigation = new Lrud()
-
-    navigation.registerNode('root', { orientation: 'horizontal' })
-    navigation.registerNode('NODE_1', { parent: 'root', isFocusable: true })
-    navigation.registerNode('NODE_2', { parent: 'root', isFocusable: true })
-    navigation.registerNode('NODE_3', { parent: 'root', isFocusable: true })
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('NODE_1', { parent: 'root', isFocusable: true })
+      .registerNode('NODE_2', { parent: 'root', isFocusable: true })
+      .registerNode('NODE_3', { parent: 'root', isFocusable: true })
 
     navigation.assignFocus('NODE_3')
 
     navigation.unregisterNode('NODE_3')
 
-    expect(navigation.currentFocusNodeId).toEqual('NODE_1')
+    expect(navigation.currentFocusNode.id).toEqual('NODE_1')
   })
 
   test('if unregistering a parent or parent branch of the focused node, recalculate focus', () => {
     const navigation = new Lrud()
-
-    navigation.registerNode('root', { orientation: 'vertical' })
-    navigation.registerNode('BOX_A', { parent: 'root', orientation: 'vertical' })
-    navigation.registerNode('BOX_B', { parent: 'root', orientation: 'vertical' })
-    navigation.registerNode('NODE_1', { parent: 'BOX_A', isFocusable: true })
-    navigation.registerNode('NODE_2', { parent: 'BOX_A', isFocusable: true })
-    navigation.registerNode('NODE_3', { parent: 'BOX_B', isFocusable: true })
-    navigation.registerNode('NODE_4', { parent: 'BOX_B', isFocusable: true })
+      .registerNode('root', { orientation: 'vertical' })
+      .registerNode('BOX_A', { parent: 'root', orientation: 'vertical' })
+      .registerNode('BOX_B', { parent: 'root', orientation: 'vertical' })
+      .registerNode('NODE_1', { parent: 'BOX_A', isFocusable: true })
+      .registerNode('NODE_2', { parent: 'BOX_A', isFocusable: true })
+      .registerNode('NODE_3', { parent: 'BOX_B', isFocusable: true })
+      .registerNode('NODE_4', { parent: 'BOX_B', isFocusable: true })
 
     // so we're focused on the first element of the left pane
     // and we unregister the entire left pane
@@ -94,82 +97,58 @@ describe('unregisterNode()', () => {
     navigation.assignFocus('NODE_1')
     navigation.unregisterNode('BOX_A')
 
-    expect(navigation.currentFocusNodeId).toEqual('NODE_3')
+    expect(navigation.currentFocusNode.id).toEqual('NODE_3')
   })
 
   test('unregistering a node should trigger a `blur` event with that node', () => {
     const navigation = new Lrud()
+      .registerNode('root')
+      .registerNode('BOX_A', { parent: 'root' })
+      .registerNode('BOX_B', { parent: 'root' })
+      .registerNode('NODE_1', { parent: 'BOX_A' })
+      .registerNode('NODE_2', { parent: 'BOX_A' })
+      .registerNode('NODE_3', { parent: 'BOX_A' })
+      .registerNode('NODE_4', { parent: 'BOX_B' })
+      .registerNode('NODE_5', { parent: 'BOX_B' })
+      .registerNode('NODE_6', { parent: 'BOX_B' })
+
     const spy = jest.fn()
     navigation.on('blur', spy)
-    navigation.registerNode('root')
-    navigation.registerNode('BOX_A', { parent: 'root' })
-    navigation.registerNode('BOX_B', { parent: 'root' })
-    navigation.registerNode('NODE_1', { parent: 'BOX_A' })
-    navigation.registerNode('NODE_2', { parent: 'BOX_A' })
-    navigation.registerNode('NODE_3', { parent: 'BOX_A' })
-    navigation.registerNode('NODE_4', { parent: 'BOX_B' })
-    navigation.registerNode('NODE_5', { parent: 'BOX_B' })
-    navigation.registerNode('NODE_6', { parent: 'BOX_B' })
 
     navigation.unregisterNode('BOX_B')
 
     // should trigger with the details of BOX_B
-    expect(spy).toHaveBeenCalledWith({
-      parent: 'root',
-      id: 'BOX_B',
-      index: 1,
-      children: {
-        NODE_4: {
-          id: 'NODE_4',
-          index: 0,
-          parent: 'BOX_B'
-        },
-        NODE_5: {
-          id: 'NODE_5',
-          index: 1,
-          parent: 'BOX_B'
-        },
-        NODE_6: {
-          id: 'NODE_6',
-          index: 2,
-          parent: 'BOX_B'
-        }
-      }
-    })
+    expect(spy).toHaveBeenCalledWith(expect.objectContaining({ id: 'BOX_B' }))
   })
 
   test('unregistering a branch with only 1 leaf should reset focus properly one level up', () => {
     const navigation = new Lrud()
-
-    navigation.registerNode('root', { orientation: 'vertical' })
-    navigation.registerNode('a', { parent: 'root', orientation: 'vertical' })
-    navigation.registerNode('b', { parent: 'root', orientation: 'vertical' })
-    navigation.registerNode('a-1', { parent: 'a', isFocusable: true })
-    navigation.registerNode('a-2', { parent: 'a', isFocusable: true })
-    navigation.registerNode('a-3', { parent: 'a', isFocusable: true })
-    navigation.registerNode('b-1', { parent: 'b', isFocusable: true })
+      .registerNode('root', { orientation: 'vertical' })
+      .registerNode('a', { parent: 'root', orientation: 'vertical' })
+      .registerNode('b', { parent: 'root', orientation: 'vertical' })
+      .registerNode('a-1', { parent: 'a', isFocusable: true })
+      .registerNode('a-2', { parent: 'a', isFocusable: true })
+      .registerNode('a-3', { parent: 'a', isFocusable: true })
+      .registerNode('b-1', { parent: 'b', isFocusable: true })
 
     navigation.assignFocus('b-1')
 
     navigation.unregisterNode('b')
 
     // so now we should be focused on `a-1`, as its the first relevant thing to be focused on
-
-    expect(navigation.currentFocusNodeId).toEqual('a-1')
+    expect(navigation.currentFocusNode.id).toEqual('a-1')
   })
 
   test('unregistering the only leaf of a long line of single branches should reset focus properly [fig-4]', () => {
     const navigation = new Lrud()
-
-    navigation.registerNode('root', { orientation: 'vertical' })
-    navigation.registerNode('a', { parent: 'root', orientation: 'vertical' })
-    navigation.registerNode('a-1', { parent: 'a', isFocusable: true })
-
-    navigation.registerNode('b', { parent: 'root', orientation: 'vertical' })
-    navigation.registerNode('c', { parent: 'b', orientation: 'vertical' })
-    navigation.registerNode('d', { parent: 'c', orientation: 'vertical' })
-    navigation.registerNode('e', { parent: 'd', orientation: 'vertical' })
-    navigation.registerNode('e-1', { parent: 'e', isFocusable: true })
+      .registerNode('root', { orientation: 'vertical' })
+      .registerNode('a', { parent: 'root', orientation: 'vertical' })
+      .registerNode('a-1', { parent: 'a', isFocusable: true })
+      .registerNode('b', { parent: 'root', orientation: 'vertical' })
+      .registerNode('c', { parent: 'b', orientation: 'vertical' })
+      .registerNode('d', { parent: 'c', orientation: 'vertical' })
+      .registerNode('e', { parent: 'd', orientation: 'vertical' })
+      .registerNode('e-1', { parent: 'e', isFocusable: true })
 
     navigation.assignFocus('e-1')
 
@@ -177,54 +156,31 @@ describe('unregisterNode()', () => {
 
     // we have to dig up to the first thing that has children, and then dig down for the next child
     // so basically our focus should now be on `a-1`
-
-    expect(navigation.currentFocusNodeId).toEqual('a-1')
+    expect(navigation.currentFocusNode.id).toEqual('a-1')
   })
 
   test('unregistering a node that is the target of an override should unregister the override', () => {
     const navigation = new Lrud()
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('NODE_A', { isFocusable: true })
+      .registerNode('NODE_B', { isFocusable: true })
+      .registerNode('NODE_C', { isFocusable: true })
+      .registerNode('NODE_D', { isFocusable: true })
+      .registerOverride('NODE_A', 'NODE_B', 'up')
+      .registerOverride('NODE_A', 'NODE_D', 'down')
+      .registerOverride('NODE_C', 'NODE_D', 'up')
 
-    navigation.registerNode('root', { orientation: 'horizontal' })
-    navigation.registerNode('NODE_A', { isFocusable: true })
-    navigation.registerNode('NODE_B', { isFocusable: true })
-    navigation.registerNode('NODE_C', { isFocusable: true })
-    navigation.registerNode('NODE_D', { isFocusable: true })
     navigation.assignFocus('NODE_A')
 
-    navigation.registerOverride('override_a', {
-      id: 'NODE_A',
-      direction: 'up',
-      target: 'NODE_B'
-    })
-
-    navigation.registerOverride('override_b', {
-      id: 'NODE_C',
-      direction: 'up',
-      target: 'NODE_D'
-    })
-
-    expect(navigation.overrides).toEqual({
-      override_a: {
-        id: 'NODE_A',
-        direction: 'up',
-        target: 'NODE_B'
-      },
-      override_b: {
-        id: 'NODE_C',
-        direction: 'up',
-        target: 'NODE_D'
-      }
-    })
+    expect(navigation.nodes.NODE_A.overrides.up).toMatchObject({ id: 'NODE_B' })
+    expect(navigation.nodes.NODE_A.overrides.down).toMatchObject({ id: 'NODE_D' })
+    expect(navigation.nodes.NODE_C.overrides.up).toMatchObject({ id: 'NODE_D' })
 
     navigation.unregisterNode('NODE_B')
 
-    expect(navigation.overrides).toEqual({
-      override_b: {
-        id: 'NODE_C',
-        direction: 'up',
-        target: 'NODE_D'
-      }
-    })
+    expect(navigation.nodes.NODE_A.overrides.up).toBeUndefined()
+    expect(navigation.nodes.NODE_A.overrides.down).toMatchObject({ id: 'NODE_D' })
+    expect(navigation.nodes.NODE_C.overrides.up).toMatchObject({ id: 'NODE_D' })
   })
 
   /**
@@ -232,138 +188,104 @@ describe('unregisterNode()', () => {
    */
   test('unregistering a node should unregister the overrides of its children', () => {
     const navigation = new Lrud()
+      .registerNode('root')
+      .registerNode('a', { parent: 'root' })
+      .registerNode('ab', { parent: 'a' })
+      .registerNode('b', { parent: 'root' })
+      .registerOverride('ab', 'b', 'right')
 
-    navigation.registerNode('root')
-    navigation.registerNode('a', { parent: 'root' })
-    navigation.registerNode('ab', { parent: 'a' })
-    navigation.registerNode('b', { parent: 'root' })
-
-    navigation.registerOverride('override_a', {
-      id: 'ab',
-      direction: 'right',
-      target: 'b'
-    })
+    expect(navigation.nodes.b.overrideSources)
+      .toEqual([{ direction: 'right', node: expect.objectContaining({ id: 'ab' }) }])
 
     navigation.unregister('a')
 
-    expect(navigation.overrides).toEqual({})
+    expect(navigation.nodes.b.overrideSources).toBeUndefined()
   })
 
   test('unregistering a node that is the id of an override should unregister the override', () => {
     const navigation = new Lrud()
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('NODE_A', { isFocusable: true })
+      .registerNode('NODE_B', { isFocusable: true })
+      .registerNode('NODE_C', { isFocusable: true })
+      .registerNode('NODE_D', { isFocusable: true })
+      .registerOverride('NODE_A', 'NODE_B', 'up')
+      .registerOverride('NODE_C', 'NODE_D', 'up')
 
-    navigation.registerNode('root', { orientation: 'horizontal' })
-    navigation.registerNode('NODE_A', { isFocusable: true })
-    navigation.registerNode('NODE_B', { isFocusable: true })
-    navigation.registerNode('NODE_C', { isFocusable: true })
-    navigation.registerNode('NODE_D', { isFocusable: true })
     navigation.assignFocus('NODE_A')
 
-    navigation.registerOverride('override_a', {
-      id: 'NODE_A',
-      direction: 'up',
-      target: 'NODE_B'
-    })
-
-    navigation.registerOverride('override_b', {
-      id: 'NODE_C',
-      direction: 'up',
-      target: 'NODE_D'
-    })
-
-    expect(navigation.overrides).toEqual({
-      override_a: {
-        id: 'NODE_A',
-        direction: 'up',
-        target: 'NODE_B'
-      },
-      override_b: {
-        id: 'NODE_C',
-        direction: 'up',
-        target: 'NODE_D'
-      }
-    })
+    expect(navigation.nodes.NODE_A.overrides.up).toMatchObject({ id: 'NODE_B' })
+    expect(navigation.nodes.NODE_B.overrideSources).toEqual([{ direction: 'up', node: expect.objectContaining({ id: 'NODE_A' }) }])
+    expect(navigation.nodes.NODE_C.overrides.up).toMatchObject({ id: 'NODE_D' })
+    expect(navigation.nodes.NODE_D.overrideSources).toEqual([{ direction: 'up', node: expect.objectContaining({ id: 'NODE_C' }) }])
 
     navigation.unregisterNode('NODE_C')
 
-    expect(navigation.overrides).toEqual({
-      override_a: {
-        id: 'NODE_A',
-        direction: 'up',
-        target: 'NODE_B'
-      }
-    })
+    expect(navigation.nodes.NODE_A.overrides.up).toMatchObject({ id: 'NODE_B' })
+    expect(navigation.nodes.NODE_B.overrideSources).toEqual([{ direction: 'up', node: expect.objectContaining({ id: 'NODE_A' }) }])
+    expect(navigation.nodes.NODE_D.overrideSources).toBeUndefined()
   })
 
-  test('unregistering the root node should leave an empty tree and empty overrides', () => {
+  test('unregistering the root node should leave an empty tree', () => {
     const navigation = new Lrud()
+      .registerNode('root', { orientation: 'vertical' })
+      .registerNode('left', { orientation: 'vertical' })
+      .registerNode('right', { orientation: 'vertical' })
 
-    navigation.registerNode('root', { orientation: 'vertical' })
-    navigation.registerNode('left', { orientation: 'vertical' })
-    navigation.registerNode('right', { orientation: 'vertical' })
-    navigation.registerOverride('x', {
-      id: 'left',
-      direction: 'up',
-      target: 'down'
-    })
     navigation.unregisterNode('root')
 
     expect(navigation.nodes).toMatchObject({})
-    expect(navigation.overrides).toMatchObject({})
   })
 
   test('unregistering the focused node when there is nothing else that can be focused on', () => {
-    const nav = new Lrud()
+    const navigation = new Lrud()
+      .registerNode('root', { orientation: 'vertical' })
+      .registerNode('row1', { orientation: 'horizontal', parent: 'root' })
+      .registerNode('item1', { isFocusable: true, parent: 'row1' })
 
-    nav.registerNode('root', { orientation: 'vertical' })
-    nav.registerNode('row1', { orientation: 'horizontal', parent: 'root' })
-    nav.registerNode('item1', { isFocusable: true, parent: 'row1' })
-
-    nav.assignFocus('item1')
+    navigation.assignFocus('item1')
 
     // nothing else to focus on, but we shouldn't throw an exception
     expect(() => {
-      nav.unregisterNode('item1')
+      navigation.unregisterNode('item1')
     }).not.toThrow()
 
     // activeChild should be cleaned along whole path
-    expect(nav.getNode('root').activeChild).toEqual(undefined)
-    expect(nav.getNode('row1').activeChild).toEqual(undefined)
+    expect(navigation.getNode('root').activeChild).toBeUndefined()
+    expect(navigation.getNode('row1').activeChild).toBeUndefined()
   })
 
   test('unregistering the focused node when there is nothing else that can be focused on - more nesting', () => {
-    const nav = new Lrud()
+    const navigation = new Lrud()
+      .registerNode('root', { orientation: 'vertical' })
+      .registerNode('boxa', { orientation: 'horizontal', parent: 'root' })
+      .registerNode('boxb', { orientation: 'horizontal', parent: 'boxa' })
+      .registerNode('boxc', { orientation: 'horizontal', parent: 'boxb' })
+      .registerNode('item1', { isFocusable: true, parent: 'boxc' })
 
-    nav.registerNode('root', { orientation: 'vertical' })
-    nav.registerNode('boxa', { orientation: 'horizontal', parent: 'root' })
-    nav.registerNode('boxb', { orientation: 'horizontal', parent: 'boxa' })
-    nav.registerNode('boxc', { orientation: 'horizontal', parent: 'boxb' })
-    nav.registerNode('item1', { isFocusable: true, parent: 'boxc' })
-
-    nav.assignFocus('item1')
+    navigation.assignFocus('item1')
 
     // nothing else to focus on, but we shouldn't throw an exception
     expect(() => {
-      nav.unregisterNode('item1')
+      navigation.unregisterNode('item1')
     }).not.toThrow()
 
     // activeChild should be cleaned along whole path
-    expect(nav.getNode('root').activeChild).toEqual(undefined)
-    expect(nav.getNode('boxa').activeChild).toEqual(undefined)
-    expect(nav.getNode('boxb').activeChild).toEqual(undefined)
-    expect(nav.getNode('boxc').activeChild).toEqual(undefined)
+    expect(navigation.getNode('root').activeChild).toBeUndefined()
+    expect(navigation.getNode('boxa').activeChild).toBeUndefined()
+    expect(navigation.getNode('boxb').activeChild).toBeUndefined()
+    expect(navigation.getNode('boxc').activeChild).toBeUndefined()
   })
 
   test('unregistering the focused node when there is other node to focus', () => {
     const navigation = new Lrud()
-
-    navigation.registerNode('root', { orientation: 'vertical' })
-    navigation.registerNode('a', { parent: 'root', orientation: 'horizontal' })
-    navigation.registerNode('aa', { parent: 'a', orientation: 'horizontal' })
-    navigation.registerNode('aaa', { parent: 'aa' })
-    navigation.registerNode('aab', { parent: 'aa', isFocusable: true })
-    navigation.registerNode('b', { parent: 'root' })
-    navigation.registerNode('c', { parent: 'root', isFocusable: true })
+      .registerNode('root', { orientation: 'vertical' })
+      .registerNode('a', { parent: 'root', orientation: 'horizontal' })
+      .registerNode('aa', { parent: 'a', orientation: 'horizontal' })
+      .registerNode('aaa', { parent: 'aa' })
+      .registerNode('aab', { parent: 'aa', isFocusable: true })
+      .registerNode('b', { parent: 'root' })
+      .registerNode('c', { parent: 'root', isFocusable: true })
 
     navigation.assignFocus('aab')
 
@@ -373,63 +295,39 @@ describe('unregisterNode()', () => {
     }).not.toThrow()
 
     // expect `c` to be focused
-    expect(navigation.currentFocusNodeId).toEqual('c')
+    expect(navigation.currentFocusNode.id).toEqual('c')
 
     // invalid activeChild on the branch pointing to the unregistered node should be cleared,
     // where invalid activeChild is a node that doesn't lay on currentFocusNode path
-    expect(navigation.getNode('root').activeChild).toEqual('c')
-    expect(navigation.getNode('a').activeChild).toEqual(undefined)
-    expect(navigation.getNode('aa').activeChild).toEqual(undefined)
+    expect(navigation.getNode('root').activeChild).toEqual(expect.objectContaining({ id: 'c' }))
+    expect(navigation.getNode('a').activeChild).toBeUndefined()
+    expect(navigation.getNode('aa').activeChild).toBeUndefined()
   })
 
   test('unregistering the root node and re-registering should give a clean tree and internal state', () => {
-    const nav = new Lrud()
+    const navigation = new Lrud()
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('node1', { orientation: 'vertical', parent: 'root' })
+      .registerNode('container', { orientation: 'vertical', parent: 'node1' })
+      .registerNode('item', { selectAction: {}, parent: 'container' })
 
-    nav.registerNode('root', {
-      orientation: 'horizontal'
-    })
-    nav.registerNode('node1', {
-      orientation: 'vertical',
-      parent: 'root'
-    })
-    nav.registerNode('container', {
-      orientation: 'vertical',
-      parent: 'node1'
-    })
-    nav.registerNode('item', {
-      selectAction: {},
-      parent: 'container'
-    })
+    navigation.unregisterNode('root')
 
-    nav.unregisterNode('root')
+    navigation
+      .registerNode('root', { orientation: 'horizontal' })
+      .registerNode('node2', { orientation: 'vertical', parent: 'root' })
+      .registerNode('container', { orientation: 'vertical', parent: 'node2' })
+      .registerNode('item', { selectAction: {}, parent: 'container' })
 
-    nav.registerNode('root', {
-      orientation: 'horizontal'
-    })
-    nav.registerNode('node2', {
-      orientation: 'vertical',
-      parent: 'root'
-    })
-    nav.registerNode('container', {
-      orientation: 'vertical',
-      parent: 'node2'
-    })
-    nav.registerNode('item', {
-      selectAction: {},
-      parent: 'container'
-    })
-
-    expect(nav.nodes.root).toBeTruthy()
-    expect(nav.nodes.root.children.node2).toBeTruthy()
-    expect(nav.nodes.root.children.node2.children.container).toBeTruthy()
-    expect(nav.nodes.root.children.node2.children.container.children.item).toBeTruthy()
-    expect(nav.nodes.root.children.node1).toBeFalsy()
+    expect(navigation.rootNode).toBeTruthy()
+    expect(navigation.rootNode.children.length).toEqual(1)
+    expect(navigation.rootNode.children[0].id).toEqual('node2')
+    expect(navigation.rootNode.children[0].children[0].id).toEqual('container')
+    expect(navigation.rootNode.children[0].children[0].children[0].id).toEqual('item')
   })
 
   test('unregistering nodes that start with the same string', () => {
     const navigation = new Lrud()
-
-    navigation
       .registerNode('root')
       .registerNode('brand')
       .registerNode('brand-content')
@@ -446,8 +344,6 @@ describe('unregisterNode()', () => {
 
   test('unregistering a node should remove it and all its children from the tree and internal state', () => {
     const navigation = new Lrud()
-
-    navigation
       .registerNode('root')
       .registerNode('x')
       .registerNode('x-1', { parent: 'x', isFocusable: true })
@@ -469,8 +365,6 @@ describe('unregisterNode()', () => {
 
   test('unregistering a focusable node should remove it from the nodes list', () => {
     const navigation = new Lrud()
-
-    navigation
       .registerNode('root')
       .registerNode('x')
       .registerNode('x-1', { parent: 'x', isFocusable: true })
@@ -493,10 +387,7 @@ describe('unregisterNode()', () => {
 
   test('unregistering a node that has children that are focusable should remove and its children from all relevant internal state', () => {
     // the node from the nodePathList, and the children from the nodePathList & focusableNodePathList
-
     const navigation = new Lrud()
-
-    navigation
       .registerNode('root')
       .registerNode('x')
       .registerNode('x-1', { parent: 'x', isFocusable: true })
@@ -505,7 +396,7 @@ describe('unregisterNode()', () => {
       .registerNode('xx-1', { parent: 'xx', isFocusable: true })
       .registerNode('xx-2', { parent: 'xx', isFocusable: true })
 
-    // ensure state is correct after registration (for sanitys sake...)
+    // ensure state is correct after registration (for sanity sake...)
     expect(Object.keys(navigation.nodes)).toEqual([
       'root',
       'x',
@@ -528,78 +419,44 @@ describe('unregisterNode()', () => {
   })
 
   test('unregistering a pibling of the focused node should not recalculate focus', () => {
-    const nav = new Lrud()
-
-    nav.register('root', {
-      orientation: 'horizontal'
-    })
-
-    nav.register('node1', {
-      orientation: 'vertical',
-      parent: 'root'
-    })
-
-    nav.register('item1', {
-      parent: 'node1',
-      selectAction: {}
-    })
-
-    nav.register('node2', {
-      orientation: 'vertical',
-      parent: 'root'
-    })
+    const navigation = new Lrud()
+      .register('root', { orientation: 'horizontal' })
+      .register('node1', { orientation: 'vertical', parent: 'root' })
+      .register('item1', { parent: 'node1', selectAction: {} })
+      .register('node2', { orientation: 'vertical', parent: 'root' })
 
     const onBlur = jest.fn()
-    nav.register('item2', {
+    navigation.register('item2', {
       parent: 'node2',
       selectAction: {},
       onBlur
     })
 
-    nav.assignFocus('node2')
+    navigation.assignFocus('node2')
 
-    expect(nav.currentFocusNodeId).toEqual('item2')
+    expect(navigation.currentFocusNode.id).toEqual('item2')
 
-    nav.unregisterNode('item1')
+    navigation.unregisterNode('item1')
 
-    expect(nav.currentFocusNodeId).toEqual('item2')
+    expect(navigation.currentFocusNode.id).toEqual('item2')
     expect(onBlur).not.toBeCalled()
   })
 
   test('unregistering a pibling of the focused node should not remove focus - forceRefocus false', () => {
-    const nav = new Lrud()
+    const navigation = new Lrud()
+      .register('root', { orientation: 'horizontal' })
+      .register('node1', { orientation: 'vertical', parent: 'root' })
+      .register('item1', { parent: 'node1', selectAction: {} })
+      .register('node2', { orientation: 'vertical', parent: 'root' })
+      .register('item2', { parent: 'node2', selectAction: {} })
 
-    nav.register('root', {
-      orientation: 'horizontal'
-    })
+    navigation.assignFocus('node2')
 
-    nav.register('node1', {
-      orientation: 'vertical',
-      parent: 'root'
-    })
+    expect(navigation.currentFocusNode.id).toEqual('item2')
 
-    nav.register('item1', {
-      parent: 'node1',
-      selectAction: {}
-    })
+    navigation.unregisterNode('item1', { forceRefocus: false })
 
-    nav.register('node2', {
-      orientation: 'vertical',
-      parent: 'root'
-    })
-
-    nav.register('item2', {
-      parent: 'node2',
-      selectAction: {}
-    })
-
-    nav.assignFocus('node2')
-
-    expect(nav.currentFocusNodeId).toEqual('item2')
-
-    nav.unregisterNode('item1', { forceRefocus: false })
-
-    expect(nav.currentFocusNodeId).toEqual('item2')
+    expect(navigation.currentFocusNode.id).toEqual('item2')
   })
 
   test('unregistering node that was focused but now is not should clean parent\'s activeChild', () => {
@@ -619,25 +476,23 @@ describe('unregisterNode()', () => {
   })
 
   test('unregistering with forceRefocus false should not do a refocus - removing focused node', () => {
-    const nav = new Lrud()
-
-    nav.register('root')
+    const navigation = new Lrud()
+      .register('root')
       .register('node1', { isFocusable: true })
       .register('node2', { isFocusable: true })
       .register('node3', { isFocusable: true })
 
-    nav.assignFocus('node2')
+    navigation.assignFocus('node2')
 
-    nav.unregisterNode('node2', { forceRefocus: false })
+    navigation.unregisterNode('node2', { forceRefocus: false })
 
-    expect(nav.currentFocusNodeId).toEqual(undefined)
-    expect(nav.nodes.root.activeChild).toEqual(undefined)
+    expect(navigation.currentFocusNode).toBeUndefined()
+    expect(navigation.rootNode.activeChild).toBeUndefined()
   })
 
   test('unregistering with forceRefocus false should not do a refocus - removing parent of focused node', () => {
-    const nav = new Lrud()
-
-    nav.register('root')
+    const navigation = new Lrud()
+      .register('root')
       .register('box1')
       .register('node1', { isFocusable: true, parent: 'box1' })
       .register('node2', { isFocusable: true, parent: 'box1' })
@@ -645,18 +500,17 @@ describe('unregisterNode()', () => {
       .register('node4', { isFocusable: true, parent: 'box2' })
       .register('node5', { isFocusable: true, parent: 'box2' })
 
-    nav.assignFocus('node2')
+    navigation.assignFocus('node2')
 
-    nav.unregisterNode('box1', { forceRefocus: false })
+    navigation.unregisterNode('box1', { forceRefocus: false })
 
-    expect(nav.currentFocusNodeId).toEqual(undefined)
-    expect(nav.nodes.root.activeChild).toEqual(undefined)
+    expect(navigation.currentFocusNode).toBeUndefined()
+    expect(navigation.rootNode.activeChild).toBeUndefined()
   })
 
   test('should do nothing when unregistering not existing node', () => {
     const navigation = new Lrud()
-
-    navigation.register('root')
+      .register('root')
       .register('a')
 
     let result

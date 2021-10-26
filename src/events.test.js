@@ -4,181 +4,83 @@ const { Lrud } = require('./index')
 
 describe('event scenarios', () => {
   test('active events should be fired', () => {
-    const activeSpy = jest.fn()
-
     const navigation = new Lrud()
-
-    navigation.on('active', activeSpy)
-    navigation.registerNode('root')
-
-    navigation
+      .registerNode('root')
       .registerNode('left')
       .registerNode('a', { parent: 'left', isFocusable: true })
       .registerNode('b', { parent: 'left', isFocusable: true })
-
-    navigation
       .registerNode('right')
       .registerNode('c', { parent: 'right', isFocusable: true })
       .registerNode('d', { parent: 'right', isFocusable: true })
+
+    const activeSpy = jest.fn()
+    navigation.on('active', activeSpy)
 
     navigation.assignFocus('b')
 
-    // only called once, as `left` is already the activeChild of `root`
-    expect(activeSpy).toHaveBeenCalledWith({
-      parent: 'left',
-      isFocusable: true,
-      id: 'b',
-      index: 1
-    })
+    expect(activeSpy).toHaveBeenCalledTimes(2)
+    expect(activeSpy).toHaveBeenNthCalledWith(1, expect.objectContaining({ id: 'b' }))
+    expect(activeSpy).toHaveBeenNthCalledWith(2, expect.objectContaining({ id: 'left' }))
   })
 
   test('active & inactive events should be fired - bubbling', () => {
-    const activeSpy = jest.fn()
-    const inactiveSpy = jest.fn()
-
     const navigation = new Lrud()
-
-    navigation.on('active', activeSpy)
-    navigation.on('inactive', inactiveSpy)
-    navigation.registerNode('root')
-
-    navigation
+      .registerNode('root')
       .registerNode('left')
       .registerNode('a', { parent: 'left', isFocusable: true })
       .registerNode('b', { parent: 'left', isFocusable: true })
-
-    navigation
       .registerNode('right')
       .registerNode('c', { parent: 'right', isFocusable: true })
       .registerNode('d', { parent: 'right', isFocusable: true })
+
+    const activeSpy = jest.fn()
+    navigation.on('active', activeSpy)
+
+    const inactiveSpy = jest.fn()
+    navigation.on('inactive', inactiveSpy)
 
     navigation.assignFocus('a')
     navigation.assignFocus('d')
 
-    expect(activeSpy.mock.calls).toEqual([
-      // 'a' is focused, 'a' became active
-      [{
-        parent: 'left',
-        isFocusable: true,
-        id: 'a',
-        index: 0
-      }],
-      // bubbling to parent of 'a', 'left' became active
-      [{
-        id: 'left',
-        parent: 'root',
-        index: 0,
-        activeChild: 'a',
-        children: {
-          a: {
-            parent: 'left',
-            isFocusable: true,
-            id: 'a',
-            index: 0
-          },
-          b: {
-            parent: 'left',
-            isFocusable: true,
-            id: 'b',
-            index: 1
-          }
-        }
-      }],
-      // changing focus from 'a' to 'd', 'd' became active
-      [{
-        parent: 'right',
-        isFocusable: true,
-        id: 'd',
-        index: 1
-      }],
-      // bubbling to parent of 'd', 'right' became active
-      [{
-        id: 'right',
-        parent: 'root',
-        index: 1,
-        activeChild: 'd',
-        children: {
-          c: {
-            parent: 'right',
-            isFocusable: true,
-            id: 'c',
-            index: 0
-          },
-          d: {
-            parent: 'right',
-            isFocusable: true,
-            id: 'd',
-            index: 1
-          }
-        }
-      }]
-    ])
+    expect(activeSpy).toHaveBeenCalledTimes(4)
+    // 'a' is focused, 'a' became active
+    expect(activeSpy).toHaveBeenNthCalledWith(1, expect.objectContaining({ id: 'a' }))
+    // bubbling to parent of 'a', 'left' became active
+    expect(activeSpy).toHaveBeenNthCalledWith(2, expect.objectContaining({ id: 'left' }))
+    // changing focus from 'a' to 'd', 'd' became active
+    expect(activeSpy).toHaveBeenNthCalledWith(3, expect.objectContaining({ id: 'd' }))
+    // bubbling to parent of 'd', 'right' became active
+    expect(activeSpy).toHaveBeenNthCalledWith(4, expect.objectContaining({ id: 'right' }))
 
-    expect(inactiveSpy.mock.calls).toEqual([
-      // changing focus from 'a' to 'd', 'left' (parent of 'a') became inactive, because 'right' (parent of 'd') is active now
-      [{
-        id: 'left',
-        parent: 'root',
-        index: 0,
-        activeChild: 'a',
-        children: {
-          a: {
-            parent: 'left',
-            isFocusable: true,
-            id: 'a',
-            index: 0
-          },
-          b: {
-            parent: 'left',
-            isFocusable: true,
-            id: 'b',
-            index: 1
-          }
-        }
-      }]
-    ])
+    expect(inactiveSpy).toHaveBeenCalledTimes(1)
+    // changing focus from 'a' to 'd', 'left' (parent of 'a') became inactive, because 'right' (parent of 'd') is active now
+    expect(inactiveSpy).toHaveBeenNthCalledWith(1, expect.objectContaining({ id: 'left' }))
   })
 
   test('active events should be fired when recalculating focus', () => {
-    const activeSpy = jest.fn()
-
     const navigation = new Lrud()
-
-    navigation.registerNode('root', { orientation: 'vertical' })
-
-    navigation
+      .registerNode('root', { orientation: 'vertical' })
       .registerNode('left')
       .registerNode('a', { parent: 'left', isFocusable: true })
       .registerNode('b', { parent: 'left', isFocusable: true })
-
-    navigation
       .registerNode('right')
       .registerNode('c', { parent: 'right', isFocusable: true })
       .registerNode('d', { parent: 'right', isFocusable: true })
 
     navigation.assignFocus('b')
 
+    const activeSpy = jest.fn()
     navigation.on('active', activeSpy)
     navigation.unregisterNode('left')
 
-    expect(navigation.currentFocusNodeId).toBe('c')
+    expect(navigation.currentFocusNode.id).toEqual('c')
 
     // only called once, as `c` is already the activeChild of `right`
-    expect(activeSpy).toHaveBeenCalledWith(expect.objectContaining({
-      parent: 'root',
-      id: 'right',
-      index: 0
-    }))
+    expect(activeSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 'right' }))
   })
 
   test('`move` should be fired once per key handle - moving right', () => {
-    const moveSpy = jest.fn()
-
     const navigation = new Lrud()
-
-    navigation.on('move', moveSpy)
-
-    navigation
       .registerNode('root', { orientation: 'horizontal' })
       .registerNode('a', { isFocusable: true })
       .registerNode('b', { isFocusable: true })
@@ -187,34 +89,21 @@ describe('event scenarios', () => {
 
     navigation.assignFocus('a')
 
+    const moveSpy = jest.fn()
+    navigation.on('move', moveSpy)
+
     navigation.handleKeyEvent({ direction: 'right' })
 
     expect(moveSpy).toHaveBeenCalledWith({
-      leave: {
-        id: 'a',
-        index: 0,
-        parent: 'root',
-        isFocusable: true
-      },
-      enter: {
-        id: 'b',
-        index: 1,
-        parent: 'root',
-        isFocusable: true
-      },
+      leave: expect.objectContaining({ id: 'a' }),
+      enter: expect.objectContaining({ id: 'b' }),
       direction: 'right',
       offset: 1
     })
   })
 
   test('`move` should be fired once per key handle - moving left', () => {
-    const moveSpy = jest.fn()
-
     const navigation = new Lrud()
-
-    navigation.on('move', moveSpy)
-
-    navigation
       .registerNode('root', { orientation: 'horizontal' })
       .registerNode('a', { isFocusable: true })
       .registerNode('b', { isFocusable: true })
@@ -223,82 +112,69 @@ describe('event scenarios', () => {
 
     navigation.assignFocus('b')
 
+    const moveSpy = jest.fn()
+    navigation.on('move', moveSpy)
+
     navigation.handleKeyEvent({ direction: 'left' })
 
     expect(moveSpy).toHaveBeenCalledWith({
-      leave: {
-        id: 'b',
-        index: 1,
-        parent: 'root',
-        isFocusable: true
-      },
-      enter: {
-        id: 'a',
-        index: 0,
-        parent: 'root',
-        isFocusable: true
-      },
+      leave: expect.objectContaining({ id: 'b' }),
+      enter: expect.objectContaining({ id: 'a' }),
       direction: 'left',
       offset: -1
     })
   })
 
   test('standard blur and focus should fire after calling assign focus', () => {
-    const blurSpy = jest.fn()
-    const focusSpy = jest.fn()
-
     const navigation = new Lrud()
-
-    navigation.on('blur', blurSpy)
-    navigation.on('focus', focusSpy)
-
-    navigation
       .registerNode('root', { orientation: 'horizontal' })
       .registerNode('a', { isFocusable: true })
       .registerNode('b', { isFocusable: true })
       .registerNode('c', { isFocusable: true })
       .registerNode('d', { isFocusable: true })
 
+    const blurSpy = jest.fn()
+    navigation.on('blur', blurSpy)
+
+    const focusSpy = jest.fn()
+    navigation.on('focus', focusSpy)
+
     navigation.assignFocus('a')
-    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', index: 0 })
+    expect(focusSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 'a' }))
 
     navigation.assignFocus('b')
-    expect(blurSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', index: 0 })
-    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'b', parent: 'root', index: 1 })
+    expect(blurSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 'a' }))
+    expect(focusSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 'b' }))
   })
 
   test('standard blur and focus should fire after doing a move', () => {
-    const blurSpy = jest.fn()
-    const focusSpy = jest.fn()
-
     const navigation = new Lrud()
-
-    navigation.on('blur', blurSpy)
-    navigation.on('focus', focusSpy)
-
-    navigation
       .registerNode('root', { orientation: 'horizontal' })
       .registerNode('a', { isFocusable: true })
       .registerNode('b', { isFocusable: true })
       .registerNode('c', { isFocusable: true })
       .registerNode('d', { isFocusable: true })
 
+    const blurSpy = jest.fn()
+    navigation.on('blur', blurSpy)
+
+    const focusSpy = jest.fn()
+    navigation.on('focus', focusSpy)
+
     navigation.assignFocus('a')
-    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', index: 0 })
+    expect(focusSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 'a' }))
 
     navigation.handleKeyEvent({ direction: 'right' })
 
-    expect(blurSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'a', parent: 'root', index: 0 })
-    expect(focusSpy).toHaveBeenCalledWith({ isFocusable: true, id: 'b', parent: 'root', index: 1 })
+    expect(blurSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 'a' }))
+    expect(focusSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 'b' }))
   })
 
   test('`onLeave` and `onEnter` functions should fire on a node', () => {
-    const navigation = new Lrud()
-
     let hasLeft = false
     let hasEntered = false
 
-    navigation
+    const navigation = new Lrud()
       .registerNode('root', { orientation: 'horizontal' })
       .registerNode('a', {
         isFocusable: true,
@@ -322,11 +198,9 @@ describe('event scenarios', () => {
   })
 
   test('node onFocus', () => {
-    const navigation = new Lrud()
-
     let hasRun = false
 
-    navigation
+    const navigation = new Lrud()
       .registerNode('root', { orientation: 'horizontal' })
       .registerNode('a', { isFocusable: true })
       .registerNode('b', {
@@ -344,11 +218,9 @@ describe('event scenarios', () => {
   })
 
   test('node onBlur', () => {
-    const navigation = new Lrud()
-
     let hasRun = false
 
-    navigation
+    const navigation = new Lrud()
       .registerNode('root', { orientation: 'horizontal' })
       .registerNode('a', {
         isFocusable: true,
@@ -365,15 +237,13 @@ describe('event scenarios', () => {
     navigation.handleKeyEvent({ direction: 'right' })
 
     expect(hasRun).toEqual(true)
-    expect(navigation.currentFocusNodeId).toEqual('b')
+    expect(navigation.currentFocusNode.id).toEqual('b')
   })
 
   test('node onBlur - unregistering', () => {
-    const navigation = new Lrud()
-
     let hasRun = false
 
-    navigation
+    const navigation = new Lrud()
       .registerNode('root', { orientation: 'horizontal' })
       .registerNode('a', {
         isFocusable: true,
@@ -387,14 +257,13 @@ describe('event scenarios', () => {
     navigation.unregisterNode('a')
 
     expect(hasRun).toEqual(true)
-    expect(navigation.currentFocusNodeId).toBeUndefined()
+    expect(navigation.currentFocusNode).toBeUndefined()
   })
 
   test('node onActive - leaf, parent\'s activeChild not set', () => {
-    const navigation = new Lrud()
     let activeChild = null
 
-    navigation
+    const navigation = new Lrud()
       .registerNode('root', { orientation: 'horizontal' })
       .registerNode('row-a', { orientation: 'vertical' })
       .registerNode('A', { isFocusable: true, parent: 'row-a' })
@@ -410,10 +279,9 @@ describe('event scenarios', () => {
   })
 
   test('node onActive - leaf, changing current parent\'s activeChild', () => {
-    const navigation = new Lrud()
     let activeChild = null
 
-    navigation
+    const navigation = new Lrud()
       .registerNode('root', { orientation: 'horizontal' })
       .registerNode('row-a', { orientation: 'vertical' })
       .registerNode('A', { isFocusable: true, parent: 'row-a' })
@@ -430,10 +298,9 @@ describe('event scenarios', () => {
   })
 
   test('node onInActive - branch', () => {
-    const navigation = new Lrud()
     let inactiveChild = null
 
-    navigation
+    const navigation = new Lrud()
       .registerNode('root', { orientation: 'horizontal' })
       .registerNode('row-a', { orientation: 'vertical', onInactive: () => { inactiveChild = 'row-a' } })
       .registerNode('A', { isFocusable: true, parent: 'row-a' })
@@ -450,10 +317,10 @@ describe('event scenarios', () => {
   })
 
   test('node onSelect', () => {
-    const navigation = new Lrud()
     const onSelectMock = jest.fn()
 
-    navigation.registerNode('root')
+    const navigation = new Lrud()
+      .registerNode('root')
       .registerNode('a', { isFocusable: true, onSelect: onSelectMock })
 
     navigation.assignFocus('a')
@@ -467,8 +334,6 @@ describe('event scenarios', () => {
     const onMoveSpy = jest.fn()
 
     const navigation = new Lrud()
-
-    navigation
       .registerNode('root', { orientation: 'horizontal', onMove: onMoveSpy })
       .registerNode('a', { isFocusable: true })
       .registerNode('b', { isFocusable: true })
@@ -479,22 +344,9 @@ describe('event scenarios', () => {
     navigation.handleKeyEvent({ direction: 'right' })
 
     expect(onMoveSpy).toHaveBeenCalledWith({
-      node: expect.objectContaining({
-        id: 'root',
-        orientation: 'horizontal'
-      }),
-      leave: expect.objectContaining({
-        id: 'b',
-        index: 1,
-        parent: 'root',
-        isFocusable: true
-      }),
-      enter: expect.objectContaining({
-        id: 'c',
-        index: 2,
-        parent: 'root',
-        isFocusable: true
-      }),
+      node: expect.objectContaining({ id: 'root' }),
+      leave: expect.objectContaining({ id: 'b' }),
+      enter: expect.objectContaining({ id: 'c' }),
       direction: 'right',
       offset: 1
     })
@@ -504,8 +356,6 @@ describe('event scenarios', () => {
     const onMoveSpy = jest.fn()
 
     const navigation = new Lrud()
-
-    navigation
       .registerNode('root', { orientation: 'horizontal', onMove: onMoveSpy })
       .registerNode('a', { isFocusable: true })
       .registerNode('b', { isFocusable: true })
@@ -516,22 +366,9 @@ describe('event scenarios', () => {
     navigation.handleKeyEvent({ direction: 'left' })
 
     expect(onMoveSpy).toHaveBeenCalledWith({
-      node: expect.objectContaining({
-        id: 'root',
-        orientation: 'horizontal'
-      }),
-      leave: expect.objectContaining({
-        id: 'b',
-        index: 1,
-        parent: 'root',
-        isFocusable: true
-      }),
-      enter: expect.objectContaining({
-        id: 'a',
-        index: 0,
-        parent: 'root',
-        isFocusable: true
-      }),
+      node: expect.objectContaining({ id: 'root' }),
+      leave: expect.objectContaining({ id: 'b' }),
+      enter: expect.objectContaining({ id: 'a' }),
       direction: 'left',
       offset: -1
     })
@@ -539,12 +376,12 @@ describe('event scenarios', () => {
 
   test('instance emit select', () => {
     const navigation = new Lrud()
-    const onSelectMock = jest.fn()
-
-    navigation.registerNode('root')
+      .registerNode('root')
       .registerNode('a', { isFocusable: true })
 
     navigation.assignFocus('a')
+
+    const onSelectMock = jest.fn()
     navigation.on('select', onSelectMock)
 
     navigation.handleKeyEvent({ direction: 'enter' })
@@ -553,10 +390,10 @@ describe('event scenarios', () => {
   })
 
   test('node onSelect & instance emit select', () => {
-    const navigation = new Lrud()
     const onSelectMock = jest.fn()
 
-    navigation.registerNode('root')
+    const navigation = new Lrud()
+      .registerNode('root')
       .registerNode('a', { isFocusable: true, onSelect: onSelectMock })
 
     navigation.assignFocus('a')
@@ -569,12 +406,12 @@ describe('event scenarios', () => {
 
   test('select not fired on callback when removed', () => {
     const navigation = new Lrud()
-    const onSelectMock = jest.fn()
-
-    navigation.registerNode('root')
+      .registerNode('root')
       .registerNode('a', { isFocusable: true })
 
     navigation.assignFocus('a')
+
+    const onSelectMock = jest.fn()
     navigation.on('select', onSelectMock)
 
     navigation.handleKeyEvent({ direction: 'enter' })
@@ -587,16 +424,16 @@ describe('event scenarios', () => {
   })
 
   test('should do nothing on enter when there\'s no currently focused node', () => {
-    const navigation = new Lrud()
     const onSelectMock = jest.fn()
 
-    navigation.registerNode('root')
+    const navigation = new Lrud()
+      .registerNode('root')
       .registerNode('a', { isFocusable: true, onSelect: onSelectMock })
 
     const result = navigation.handleKeyEvent({ direction: 'enter' })
 
     expect(result).toBeUndefined()
     expect(onSelectMock).not.toBeCalled()
-    expect(navigation.currentFocusNodeId).toBeUndefined()
+    expect(navigation.currentFocusNode).toBeUndefined()
   })
 })

@@ -3,12 +3,13 @@ import {
   Direction,
   Directions,
   Node,
+  NodeConfig,
   NodeId,
   NodeIndex,
   NodeIndexRange,
-  NodeTree,
   Orientation,
-  Orientations
+  Orientations,
+  Tree
 } from './interfaces'
 
 /**
@@ -78,30 +79,9 @@ export const findChildWithMatchingIndexRange = (node: Node, index: NodeIndex): N
     return undefined
   }
 
-  for (const childId of Object.keys(node.children)) {
-    const child = node.children[childId]
+  for (let i = 0; i < node.children.length; i++) {
+    const child = node.children[i]
     if (child.indexRange && (child.indexRange[0] <= index && child.indexRange[1] >= index)) {
-      return child
-    }
-  }
-
-  return undefined
-}
-
-/**
- * Returns a child from the given node whose index matches the given index.
- *
- * @param {object} node - node, which children indices will be examined
- * @param {number} index - searched index value
- */
-export const findChildWithIndex = (node: Node, index: NodeIndex): Node | undefined => {
-  if (!node || !node.children) {
-    return undefined
-  }
-
-  for (const childId of Object.keys(node.children)) {
-    const child = node.children[childId]
-    if (child.index === index) {
       return child
     }
   }
@@ -126,19 +106,25 @@ export const findChildWithClosestIndex = (node: Node, index: NodeIndex, indexRan
 
   // if we have an indexRange, and the nodes active child is inside that index range,
   // just return the active child
-  const activeChild = node.children[node.activeChild]
-  if (indexRange && activeChild && activeChild.index >= indexRange[0] && activeChild.index <= indexRange[1] && isNodeFocusable(activeChild)) {
-    return activeChild
+  if (
+    indexRange && node.activeChild &&
+    node.activeChild.index >= indexRange[0] && node.activeChild.index <= indexRange[1] &&
+    isNodeFocusable(node.activeChild)
+  ) {
+    return node.activeChild
   }
 
-  const indexes = Object.keys(node.children)
-    .filter(childId => isNodeFocusable(node.children[childId]) || node.children[childId].children)
-    .map(childId => node.children[childId].index) as [number]
+  const indices = []
+  for (let i = 0; i < node.children.length; i++) {
+    if (isNodeFocusable(node.children[i]) || node.children[i].children) {
+      indices.push(i)
+    }
+  }
 
-  if (indexes.length <= 0) {
+  if (indices.length <= 0) {
     return undefined
   }
-  return findChildWithIndex(node, closestIndex(indexes, index))
+  return node.children[closestIndex(indices, index)]
 }
 
 /**
@@ -152,157 +138,51 @@ export const insertChildNode = (parent: Node, newChild: Node): void => {
     return
   }
 
-  const childrenIds = Object.keys(parent.children || {})
-  const orderedChildren = {}
-
-  newChild.parent = parent.id
-
-  if (typeof newChild.index !== 'number' || newChild.index > childrenIds.length) {
-    newChild.index = childrenIds.length
+  if (!parent.children) {
+    parent.children = []
   }
 
-  for (const childId of childrenIds) {
-    const child = parent.children[childId]
+  newChild.parent = parent
 
+  if (typeof newChild.index !== 'number' || newChild.index > parent.children.length) {
+    newChild.index = parent.children.length
+    parent.children.push(newChild)
+  } else {
     // Inserting new child, from now on all further children needs to have index value increased by one
-    if (child.index >= newChild.index) {
-      if (!orderedChildren[newChild.id]) {
-        orderedChildren[newChild.id] = newChild
-      }
-      child.index += 1
+    parent.children.splice(newChild.index, 0, newChild)
+    for (let i = newChild.index + 1; i < parent.children.length; i++) {
+      parent.children[i].index = i
     }
-
-    orderedChildren[child.id] = child
   }
-
-  if (!orderedChildren[newChild.id]) {
-    orderedChildren[newChild.id] = newChild
-  }
-
-  parent.children = orderedChildren
 }
 
 /**
  * Removes given child from the parent's children, keeping indices coherent and compact.
  *
  * @param parent - node from which children given child is about to be removed
- * @param childId - id of the node to be removed from parent's children
+ * @param child - node to be removed from parent's children
  */
-export const removeChildNode = (parent: Node, childId: NodeId): void => {
-  if (!childId || !parent || !parent.children || !parent.children[childId]) {
+export const removeChildNode = (parent: Node, child: Node): void => {
+  if (!child || !parent || !parent.children) {
     return
   }
 
-  const removedChildIndex = parent.children[childId].index
-  delete parent.children[childId]
-
-  for (const childId of Object.keys(parent.children)) {
-    const child = parent.children[childId]
-    if (child.index > removedChildIndex) {
-      child.index -= 1
+  let removedChildIndex = -1
+  for (let i = 0; i < parent.children.length; i++) {
+    if (parent.children[i] === child) {
+      removedChildIndex = i
+    } else if (removedChildIndex !== -1) {
+      parent.children[i].index = i - 1
     }
   }
-}
 
-/**
- * Returns flatten tree of nodes.
- *
- * Returned node values are kept coherent and delivers basic information about the node:
- *   - missing 'id' and 'parent' fields are filled in
- *   - children subtree is removed
- *
- * E.g.
- *   {
- *      'root': {
- *         children: {
- *           'a': { isFocusable: true },
- *           'b': {
- *             orientation: 'horizontal',
- *             children: {
- *               ba: { isFocusable: true },
- *               bb: { isFocusable: true }
- *           }
- *         }
- *       }
- *     }
- *   }
- *
- * Expect:
- *    {
- *      'root': { id: 'root' }
- *      'a': { id: 'a', parent: 'root', isFocusable: true }
- *      'b': { id: 'b', parent: 'root', orientation: 'horizontal' }
- *      'ba': { id: 'ba', parent: 'b', isFocusable: true }
- *      'bb': { id: 'bb', parent: 'b', isFocusable: true }
- *   }
- *
- * @param tree - tree to flatten
- */
-export const flattenNodeTree = (tree: NodeTree): NodeTree => {
-  const flatNodeTree = {}
-
-  if (!tree) {
-    return flatNodeTree
+  if (removedChildIndex !== -1) {
+    if (parent.children.length === 1) {
+      parent.children = undefined
+    } else {
+      parent.children.splice(removedChildIndex, 1)
+    }
   }
-
-  const _flatten = (tree: NodeTree, parent?: NodeId): void => {
-    Object.keys(tree).forEach(nodeId => {
-      flatNodeTree[nodeId] = {
-        ...tree[nodeId],
-        id: nodeId,
-        parent: tree[nodeId].parent || parent,
-        children: undefined
-      }
-
-      if (tree[nodeId].children) {
-        _flatten(tree[nodeId].children, nodeId)
-      }
-    })
-  }
-
-  _flatten(tree)
-
-  return flatNodeTree
-}
-
-/**
- * Returns flatten node's sub-tree including the given node.
- *
- * Returned node values are kept coherent and delivers basic information about the node:
- *   - missing 'id' and 'parent' fields are filled in
- *   - children subtree is removed
- *
- * E.g.
- *    {
- *      id: 'root'
- *      children: {
- *        'a': { isFocusable: true },
- *        'b': {
- *          orientation: 'horizontal',
- *          children: {
- *            ba: { isFocusable: true },
- *            bb: { isFocusable: true }
- *          }
- *        }
- *      }
- *    }
- *
- * Expect:
- *    {
- *      'root': { id: 'root' }
- *      'a': { id: 'a', parent: 'root', isFocusable: true }
- *      'b': { id: 'b', parent: 'root', orientation: 'horizontal' }
- *      'ba': { id: 'ba', parent: 'b', isFocusable: true }
- *      'bb': { id: 'bb', parent: 'b', isFocusable: true }
- *   }
- *
- * @param node - node which sub-tree is about to be flatten
- */
-export const flattenNode = (node: Node): NodeTree => {
-  if (!node) {
-    return {}
-  }
-  return flattenNodeTree({ [node.id]: node })
 }
 
 /**
@@ -343,4 +223,95 @@ export const toValidDirection = (direction: Direction): Direction | undefined =>
     }
   }
   return undefined
+}
+
+/**
+ * Creates node object from given node parameters.
+ *
+ * Node creation method is optimized for JavaScript engine.
+ * Objects created in "the same way" allows JavaScript engine reusing existing HiddenClass transition chain.
+ * Moreover most used properties are defined "at the beginning" making access to them a bit faster.
+ *
+ * @param {string} nodeId - id of the node
+ * @param {object} [nodeConfig] - node parameters
+ */
+export const prepareNode = (nodeId: NodeId, nodeConfig: NodeConfig = {}): Node => {
+  if (!nodeId) {
+    throw Error('Node ID has to be defined')
+  }
+
+  return {
+    id: nodeId,
+    parent: undefined,
+    children: undefined,
+    activeChild: undefined,
+    overrides: undefined,
+    overrideSources: undefined,
+    index: (typeof nodeConfig.index === 'number') ? nodeConfig.index : undefined,
+    orientation: nodeConfig.orientation,
+    indexRange: nodeConfig.indexRange,
+    selectAction: nodeConfig.selectAction,
+    isFocusable: nodeConfig.isFocusable,
+    isWrapping: nodeConfig.isWrapping,
+    isStopPropagate: nodeConfig.isStopPropagate,
+    isIndexAlign: nodeConfig.isIndexAlign,
+    onLeave: nodeConfig.onLeave,
+    onEnter: nodeConfig.onEnter,
+    shouldCancelLeave: nodeConfig.shouldCancelLeave,
+    onLeaveCancelled: nodeConfig.onLeaveCancelled,
+    shouldCancelEnter: nodeConfig.shouldCancelEnter,
+    onEnterCancelled: nodeConfig.onEnterCancelled,
+    onSelect: nodeConfig.onSelect,
+    onInactive: nodeConfig.onInactive,
+    onActive: nodeConfig.onActive,
+    onActiveChildChange: nodeConfig.onActiveChildChange,
+    onBlur: nodeConfig.onBlur,
+    onFocus: nodeConfig.onFocus,
+    onMove: nodeConfig.onMove
+  }
+}
+
+/**
+ * Traverses through node subtree (including the node) with iterative preorder deep first search tree traversal algorithm.
+ *
+ * DFS is implemented without recursion to avoid putting methods to the stack. This allows traversing deep trees without
+ * the need of allocating memory for recursive method calls.
+ *
+ * For some processes, when node meeting some condition is searched, there's no need to traverse through whole tree.
+ * To address that, given nodeProcessor may return boolean value. when true is returned, than traversal algorithm
+ * is interrupted immediately.
+ *
+ * E.g. Given tree:
+ *        root
+ *        / \
+ *       A   B
+ *      /     \
+ *     AA      BA
+ *    /  \
+ *  AAA  AAB
+ *
+ *  Traversal path: root -> A -> AA -> AAA -> AAB -> B -> BA
+ *
+ * @param {object} startNode - node that is the root of traversed subtree
+ * @param {function} nodeProcessor - callback executed for traversed node, if true is returned then subtree traversal is interrupted
+ */
+export const traverseNodeSubtree = <NodeType extends Tree<NodeType>>(startNode: NodeType, nodeProcessor: (node: NodeType) => boolean | void): void => {
+  const stack: NodeType[] = [startNode]
+  const dummyThis = Object.create(null)
+
+  let traversedNode: NodeType
+
+  while (stack.length > 0) {
+    traversedNode = stack.pop()
+
+    if (nodeProcessor.call(dummyThis, traversedNode)) {
+      return
+    }
+
+    if (traversedNode.children) {
+      for (let i = traversedNode.children.length - 1; i >= 0; i--) {
+        stack.push(traversedNode.children[i])
+      }
+    }
+  }
 }

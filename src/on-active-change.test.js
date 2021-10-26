@@ -4,23 +4,23 @@ const { Lrud } = require('./index')
 
 describe('onActiveChildChange() tests', () => {
   test('horizontal list, active changes are on leaves', () => {
-    const navigation = new Lrud()
-
     let moveObject
     const onActiveChildChange = (changeData) => {
       moveObject = changeData
     }
 
-    navigation.registerNode('root', { orientation: 'horizontal', onActiveChildChange })
-    navigation.registerNode('a', { isFocusable: true })
-    navigation.registerNode('b', { isFocusable: true })
-    navigation.registerNode('c', { isFocusable: true })
-    navigation.registerNode('d', { isFocusable: true })
+    const navigation = new Lrud()
+      .registerNode('root', { orientation: 'horizontal', onActiveChildChange })
+      .registerNode('a', { isFocusable: true })
+      .registerNode('b', { isFocusable: true })
+      .registerNode('c', { isFocusable: true })
+      .registerNode('d', { isFocusable: true })
+
     navigation.assignFocus('b')
 
     navigation.handleKeyEvent({ direction: 'right' })
 
-    expect(navigation.currentFocusNodeId).toEqual('c')
+    expect(navigation.currentFocusNode.id).toEqual('c')
 
     expect(moveObject.node.id).toEqual('root')
     expect(moveObject.leave.id).toEqual('b')
@@ -28,18 +28,14 @@ describe('onActiveChildChange() tests', () => {
   })
 
   test('nested changes', () => {
-    const navigation = new Lrud()
-
     const spy = jest.fn()
 
-    navigation.registerNode('root', { orientation: 'horizontal', onActiveChildChange: spy })
-    navigation
+    const navigation = new Lrud()
+      .registerNode('root', { orientation: 'horizontal', onActiveChildChange: spy })
       .registerNode('left-col', { parent: 'root', orientation: 'vertical', onActiveChildChange: spy })
       .registerNode('a', { isFocusable: true, parent: 'left-col' })
       .registerNode('b', { isFocusable: true, parent: 'left-col' })
       .registerNode('c', { isFocusable: true, parent: 'left-col' })
-
-    navigation
       .registerNode('right-col', { parent: 'root', orientation: 'vertical', onActiveChildChange: spy })
       .registerNode('d', { isFocusable: true, parent: 'right-col' })
       .registerNode('e', { isFocusable: true, parent: 'right-col' })

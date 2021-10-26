@@ -9,11 +9,11 @@ Index alignment is used to replicate the behaviour of a "grid" - consider the fo
 - when they press "down", the typical behaviour would be to go to the 1st item of the 2nd row
     - This is because row 2 has never been focused before, and thus its `activeChild` is its first child.
 
-In this scenario, we want the focus to _actually_ go to the **2nd** item of the 2nd row. e.g we want the **indexes to be aligned between the rows**.
+In this scenario, we want the focus to _actually_ go to the **2nd** item of the 2nd row. e.g. we want the **indexes to be aligned between the rows**.
 
 ## How?
 
-Registering the scenario above as an Lrud tree would look like the following:
+Registering the scenario above as a Lrud tree would look like the following:
 
 ```js
 const { Lrud } = require('lrud');
@@ -121,7 +121,7 @@ navigation
 
 We have 2 "grids", each with 2 rows and 3 items per row. As the `root` node is `orientation: 'horizontal'`, these 2 grids would be sat next to each other horizontally.
 
-If the user was focused on `grid1_item6` (the last item of the 2nd row of the grid on the left) and the user pressed `right`, ordinally, LRUD would then put your focus onto `grid2_item1` (the first focussable `activeChild` of the grid on the right).
+If the user was focused on `grid1_item6` (the last item of the 2nd row of the grid on the left) and the user pressed `right`, ordinally, LRUD would then put your focus onto `grid2_item1` (the first focusable `activeChild` of the grid on the right).
 
 But what if we wanted the grids themselves to be index aligned between each other?
 

@@ -320,20 +320,21 @@ navigation.off('focus', function);
 
 LRUD supports an override system, for times when correct product/UX behaviour requires focus to change in a way that is not strictly in accordance with the structure of the navigation tree.
 
-New overrides can be registered with `navigation.registerOverride(<overrideId>, <overrideOptions>)`.
+New overrides can be registered with `navigation.registerOverride(<sourceNodeId>, <targetNodeId>, <direction>, <registerOverrideOptions>)`, where options may contain parameters:
 
-`navigation.overrides` is an object, each key representing an override object.
+- `forceOverride:boolean` When `true`, the existing override from source node in given direction will be overwritten.
 
-The override object below represents that when LRUD is bubbling its key event, when it hits the `box-1` node, and direction of travel is `DOWN`, STOP the propagation of the bubble event and focus directly on `box-2`.
+
+To unregister override its enough to call `navigation.unregisterOverride(<sourceNodeId>, <direction>)`.
+
+The override below represents that, when LRUD is bubbling its key event and when it hits the `box-1` node, and direction of travel is `down`, STOP the propagation of the bubble event and focus directly on `box-2`.
 
 ```js
-navigation.overrides = {
-  'override-1': {           // the name of the override
-    'id': 'box-1',          // the ID to trigger the override on
-    'direction': 'DOWN',    // the direction of travel in order for the override to trigger
-    'target': 'box-2'       // the ID of the node we want to focus on
-  }
-}
+navigation.registerOverride(
+  'box-1',   // the ID to trigger the override on
+  'box-2',   // the ID of the node we want to focus on
+  'down'     // the direction of travel in order for the override to trigger
+)
 ```
 
 ## Modifying Node Focusability
@@ -352,14 +353,13 @@ LRUD supports the ability to register an entire tree at once.
 ```js
 const instance = new Lrud();
 const tree = {
-  root: {
-    orientation: 'horizontal',
-    children: {
-      alpha: { isFocusable: true },
-      beta: { isFocusable: true },
-      charlie: { isFocusable: true },
-    }
-  }
+  id: 'root',
+  orientation: 'horizontal',
+  children: [
+    { id: 'alpha', isFocusable: true },
+    { id: 'beta', isFocusable: true },
+    { id: 'charlie', isFocusable: true },
+  ]
 }
 
 instance.registerTree(tree);
@@ -383,32 +383,31 @@ instance
   .registerNode('beta', { isFocusable: true })
 
 const tree = {
-  charlie: {
-    orientation: 'vertical',
-    children: {
-      charlie_1: { isFocusable: true },
-      charlie_2: { isFocusable: true },
-    }
-  }
+  id: 'charlie',
+  orientation: 'vertical',
+  children: [
+    { id: 'charlie_1', isFocusable: true },
+    { id: 'charlie_2', isFocusable: true },
+  ]
 }
 instance.registerTree(tree);
 /*
 the full tree of `instance` now looks like:
 {
-  root: {
-    orientation: 'horizontal',
-    children: {
-      alpha: { isFocusable: true }
-      beta: { isFocusable: true }
-      charlie: {
-        orientation: 'vertical'
-        children: {
-          charlie_1: { isFocusable: true }
-          charlie_2: { isFocusable: true }
-        }
-      }
+  id: 'root',
+  orientation: 'horizontal',
+  children: [
+    { id: 'alpha', isFocusable: true }
+    { id: 'beta', isFocusable: true }
+    {
+      id: 'charlie',
+      orientation: 'vertical'
+      children: [
+        { id: 'charlie_1', isFocusable: true }
+        { id: 'charlie_2', isFocusable: true }
+      ]
     }
-  }
+  ]
 }
 */
 ```
@@ -423,37 +422,37 @@ instance
   .registerNode('beta', { orientation: 'vertical' })
 
 const tree = {
-  charlie: {
-    orientation: 'vertical',
-    parent: 'beta',
-    children: {
-      charlie_1: { isFocusable: true },
-      charlie_2: { isFocusable: true },
-    }
-  }
+  id: 'charlie',
+  orientation: 'vertical',
+  parent: 'beta',
+  children: [
+    { id: 'charlie_1', isFocusable: true },
+    { id: 'charlie_2', isFocusable: true },
+  ]
 }
 instance.registerTree(tree);
 /*
 the full tree of `instance` now looks like:
 {
-  root: {
-    orientation: 'horizontal',
-    children: {
-      alpha: { isFocusable: true }
-      beta: {
-        orientation: 'vertical',
-        children: {
-          charlie: {
-            orientation: 'vertical'
-            children: {
-              charlie_1: { isFocusable: true }
-              charlie_2: { isFocusable: true }
-            }
-          }
+  id: 'root',
+  orientation: 'horizontal',
+  children: [
+    { id: 'alpha', isFocusable: true }
+    {
+      id: 'beta',
+      orientation: 'vertical',
+      children: [
+        {
+          id: 'charlie',
+          orientation: 'vertical'
+          children: [
+            { id: 'charlie_1', isFocusable: true }
+            { id: 'charlie_2', isFocusable: true }
+          ]
         }
-      }
+      ]
     }
-  }
+  ]
 }
 */
 ```
