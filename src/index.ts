@@ -24,7 +24,8 @@ import {
   prepareNode,
   removeChildNode,
   toValidDirection,
-  toValidOrientation
+  toValidOrientation,
+  traverseNodeSubtree
 } from './utils'
 
 import mitt from 'mitt'
@@ -242,34 +243,22 @@ export class Lrud {
     // delete the node itself (delete from the parent and re-set the parent later)
     removeChildNode(parentNode, node)
 
-    let currentFocusIsLost = false
     // releasing memory references for node and all it's children all node's children
-    // in this scenario the type of tree traversal algorithm doesn't make a difference, we have to go through every node anyway
-    // preorder deep first search is chosen
-    const stack = [node]
-    let traversedNode: Node
-    while (stack.length > 0) {
-      traversedNode = stack.pop()
-
+    let currentFocusIsLost = false
+    traverseNodeSubtree(node, traversedNode => {
       delete this.nodes[traversedNode.id]
       // Unregistering overrides
       this.unregisterOverride(traversedNode)
       // Unregistering overrides which pointed to unregistered node
-      for (let i = 0, overriddenForm = traversedNode.overrideSources || []; i < overriddenForm.length; i++) {
-        this.unregisterOverride(overriddenForm[i].node, overriddenForm[i].direction)
+      for (let i = 0, overrideSources = traversedNode.overrideSources || []; i < overrideSources.length; i++) {
+        this.unregisterOverride(overrideSources[i].node, overrideSources[i].direction)
       }
       // Unregistering currently focused node
       if (traversedNode === this.currentFocusNode) {
         this.currentFocusNode = undefined
         currentFocusIsLost = true
       }
-
-      if (traversedNode.children) {
-        for (let i = traversedNode.children.length - 1; i >= 0; i--) {
-          stack.push(traversedNode.children[i])
-        }
-      }
-    }
+    })
 
     // blur on the nodeClone
     this.emitter.emit('blur', node)
@@ -1024,22 +1013,14 @@ export class Lrud {
       return
     }
 
-    // in this scenario preorder deep first search tree traversal algorithm has the most sense
-    // first registering parent node and than it's children
-    const stack = [subTreeRootNodeConfig]
-    let traversedNodeConfig: NodeConfig
-    while (stack.length > 0) {
-      traversedNodeConfig = stack.pop()
-
+    traverseNodeSubtree(subTreeRootNodeConfig, traversedNodeConfig => {
       this.registerNode(traversedNodeConfig.id, traversedNodeConfig)
-
       if (traversedNodeConfig.children) {
-        for (let i = traversedNodeConfig.children.length - 1; i >= 0; i--) {
+        for (let i = 0; i < traversedNodeConfig.children.length; i++) {
           traversedNodeConfig.children[i].parent = traversedNodeConfig.id
-          stack.push(traversedNodeConfig.children[i])
         }
       }
-    }
+    })
   }
 
   /**
@@ -1083,30 +1064,16 @@ export class Lrud {
       return false
     }
 
-    // in this scenario preorder deep first search tree traversal algorithm has the most sense
-    // first checking if child itself is focusable, if not than going deeper to its children
-    // stack initiated with reversed children to start with the most left child
-    const stack = []
-    for (let i = node.children.length - 1; i >= 0; i--) {
-      stack.push(node.children[i])
-    }
-
-    let traversedNode: Node
-    while (stack.length > 0) {
-      traversedNode = stack.pop()
-
-      if (isNodeFocusable(traversedNode)) {
-        return true
+    let nodeHaveFocusableChildren = false
+    traverseNodeSubtree(node, traversedNode => {
+      // ignoring when subtree root, we are only interested in children focusability
+      if (traversedNode !== node) {
+        nodeHaveFocusableChildren = nodeHaveFocusableChildren || isNodeFocusable(traversedNode)
       }
+      return nodeHaveFocusableChildren
+    })
 
-      if (traversedNode.children) {
-        for (let i = traversedNode.children.length - 1; i >= 0; i--) {
-          stack.push(traversedNode.children[i])
-        }
-      }
-    }
-
-    return false
+    return nodeHaveFocusableChildren
   }
 
   /**

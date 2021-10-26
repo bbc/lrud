@@ -24,11 +24,14 @@ export type NodeIndex = number
 
 export type NodeIndexRange = [NodeIndex, NodeIndex]
 
-export interface Node {
+export interface Tree<NodeType> {
+  children? :NodeType[]
+}
+
+export interface Node extends Tree<Node> {
   id: NodeId
   parent?: Node
   index?: NodeIndex
-  children?: Node[]
   activeChild?: Node
   indexRange?: NodeIndexRange
   selectAction?: any
@@ -54,10 +57,9 @@ export interface Node {
   onMove?: (event: { node: Node, leave: Node, enter: Node, direction: Direction, offset: -1 | 1 }) => void
 }
 
-export interface NodeConfig extends Omit<Node, 'id'|'parent'|'activeChild'|'children'|'overrides'|'overrideSources'> {
+export interface NodeConfig extends Tree<NodeConfig>, Omit<Node, 'id'|'parent'|'activeChild'|'children'|'overrides'|'overrideSources'> {
   id?: NodeId
   parent?: NodeId
-  children?: NodeConfig[]
 }
 
 export type NodesBag = { [id in NodeId]: Node }

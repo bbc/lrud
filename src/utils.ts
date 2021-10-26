@@ -8,7 +8,8 @@ import {
   NodeIndex,
   NodeIndexRange,
   Orientation,
-  Orientations
+  Orientations,
+  Tree
 } from './interfaces'
 
 /**
@@ -234,86 +235,83 @@ export const toValidDirection = (direction: Direction): Direction | undefined =>
  * @param {string} nodeId - id of the node
  * @param {object} [nodeConfig] - node parameters
  */
-export const prepareNode = (nodeId: NodeId, nodeConfig?: NodeConfig): Node => {
+export const prepareNode = (nodeId: NodeId, nodeConfig: NodeConfig = {}): Node => {
   if (!nodeId) {
     throw Error('Node ID has to be defined')
   }
 
-  const node: Node = {
+  return {
     id: nodeId,
     parent: undefined,
-    index: undefined,
     children: undefined,
-    activeChild: undefined
+    activeChild: undefined,
+    overrides: undefined,
+    overrideSources: undefined,
+    index: (typeof nodeConfig.index === 'number') ? nodeConfig.index : undefined,
+    orientation: nodeConfig.orientation,
+    indexRange: nodeConfig.indexRange,
+    selectAction: nodeConfig.selectAction,
+    isFocusable: nodeConfig.isFocusable,
+    isWrapping: nodeConfig.isWrapping,
+    isStopPropagate: nodeConfig.isStopPropagate,
+    isIndexAlign: nodeConfig.isIndexAlign,
+    onLeave: nodeConfig.onLeave,
+    onEnter: nodeConfig.onEnter,
+    shouldCancelLeave: nodeConfig.shouldCancelLeave,
+    onLeaveCancelled: nodeConfig.onLeaveCancelled,
+    shouldCancelEnter: nodeConfig.shouldCancelEnter,
+    onEnterCancelled: nodeConfig.onEnterCancelled,
+    onSelect: nodeConfig.onSelect,
+    onInactive: nodeConfig.onInactive,
+    onActive: nodeConfig.onActive,
+    onActiveChildChange: nodeConfig.onActiveChildChange,
+    onBlur: nodeConfig.onBlur,
+    onFocus: nodeConfig.onFocus,
+    onMove: nodeConfig.onMove
   }
+}
 
-  if (!nodeConfig) {
-    return node
-  }
+/**
+ * Traverses through node subtree (including the node) with iterative preorder deep first search tree traversal algorithm.
+ *
+ * DFS is implemented without recursion to avoid putting methods to the stack. This allows traversing deep trees without
+ * the need of allocating memory for recursive method calls.
+ *
+ * For some processes, when node meeting some condition is searched, there's no need to traverse through whole tree.
+ * To address that, given nodeProcessor may return boolean value. when true is returned, than traversal algorithm
+ * is interrupted immediately.
+ *
+ * E.g. Given tree:
+ *        root
+ *        / \
+ *       A   B
+ *      /     \
+ *     AA      BA
+ *    /  \
+ *  AAA  AAB
+ *
+ *  Traversal path: root -> A -> AA -> AAA -> AAB -> B -> BA
+ *
+ * @param {object} startNode - node that is the root of traversed subtree
+ * @param {function} nodeProcessor - callback executed for traversed node, if true is returned then subtree traversal is interrupted
+ */
+export const traverseNodeSubtree = <NodeType extends Tree<NodeType>>(startNode: NodeType, nodeProcessor: (node: NodeType) => boolean | void): void => {
+  const stack: NodeType[] = [startNode]
+  const dummyThis = Object.create(null)
 
-  if (typeof nodeConfig.index === 'number') {
-    node.index = nodeConfig.index
-  }
-  if (nodeConfig.orientation) {
-    node.orientation = nodeConfig.orientation
-  }
-  if (nodeConfig.indexRange) {
-    node.indexRange = nodeConfig.indexRange
-  }
-  if (nodeConfig.selectAction) {
-    node.selectAction = nodeConfig.selectAction
-  }
-  if (nodeConfig.isFocusable) {
-    node.isFocusable = nodeConfig.isFocusable
-  }
-  if (nodeConfig.isWrapping) {
-    node.isWrapping = nodeConfig.isWrapping
-  }
-  if (nodeConfig.isStopPropagate) {
-    node.isStopPropagate = nodeConfig.isStopPropagate
-  }
-  if (nodeConfig.isIndexAlign) {
-    node.isIndexAlign = nodeConfig.isIndexAlign
-  }
-  if (nodeConfig.onLeave) {
-    node.onLeave = nodeConfig.onLeave
-  }
-  if (nodeConfig.onEnter) {
-    node.onEnter = nodeConfig.onEnter
-  }
-  if (nodeConfig.shouldCancelLeave) {
-    node.shouldCancelLeave = nodeConfig.shouldCancelLeave
-  }
-  if (nodeConfig.onLeaveCancelled) {
-    node.onLeaveCancelled = nodeConfig.onLeaveCancelled
-  }
-  if (nodeConfig.shouldCancelEnter) {
-    node.shouldCancelEnter = nodeConfig.shouldCancelEnter
-  }
-  if (nodeConfig.onEnterCancelled) {
-    node.onEnterCancelled = nodeConfig.onEnterCancelled
-  }
-  if (nodeConfig.onSelect) {
-    node.onSelect = nodeConfig.onSelect
-  }
-  if (nodeConfig.onInactive) {
-    node.onInactive = nodeConfig.onInactive
-  }
-  if (nodeConfig.onActive) {
-    node.onActive = nodeConfig.onActive
-  }
-  if (nodeConfig.onActiveChildChange) {
-    node.onActiveChildChange = nodeConfig.onActiveChildChange
-  }
-  if (nodeConfig.onBlur) {
-    node.onBlur = nodeConfig.onBlur
-  }
-  if (nodeConfig.onFocus) {
-    node.onFocus = nodeConfig.onFocus
-  }
-  if (nodeConfig.onMove) {
-    node.onMove = nodeConfig.onMove
-  }
+  let traversedNode: NodeType
 
-  return node
+  while (stack.length > 0) {
+    traversedNode = stack.pop()
+
+    if (nodeProcessor.call(dummyThis, traversedNode)) {
+      return
+    }
+
+    if (traversedNode.children) {
+      for (let i = traversedNode.children.length - 1; i >= 0; i--) {
+        stack.push(traversedNode.children[i])
+      }
+    }
+  }
 }

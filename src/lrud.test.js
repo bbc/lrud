@@ -1089,6 +1089,16 @@ describe('lrud', () => {
   })
 
   describe('setNodeFocusable()', () => {
+    test('changing the node focusability should change the property', () => {
+      const navigation = new Lrud()
+        .registerNode('root')
+        .registerNode('a', { isFocusable: true })
+
+      navigation.setNodeFocusable(navigation.nodes.a, false)
+
+      expect(navigation.nodes.a.isFocusable).toEqual(false)
+    })
+
     test('calling with the same focusability should do nothing', () => {
       const navigation = new Lrud()
         .registerNode('root')

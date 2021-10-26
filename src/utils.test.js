@@ -11,8 +11,10 @@ const {
   prepareNode,
   removeChildNode,
   toValidDirection,
-  toValidOrientation
+  toValidOrientation,
+  traverseNodeSubtree
 } = require('./utils')
+const { Lrud } = require('./index')
 
 describe('closestIndex()', () => {
   it('find the closest when number exists in array as first value', () => {
@@ -617,5 +619,59 @@ describe('prepareNode()', () => {
     expect(prepareNode('node', { onBlur: mock })).toEqual({ ...baseNode, onBlur: mock })
     expect(prepareNode('node', { onFocus: mock })).toEqual({ ...baseNode, onFocus: mock })
     expect(prepareNode('node', { onMove: mock })).toEqual({ ...baseNode, onMove: mock })
+  })
+})
+
+describe('traverseNodeSubtree()', () => {
+  test('should correctly traverse tree using preorder DFS', () => {
+    const navigation = new Lrud()
+      .registerNode('root', { orientation: 'vertical' })
+      .registerNode('a', { parent: 'root', orientation: 'horizontal' })
+      .registerNode('aa', { parent: 'a', orientation: 'horizontal' })
+      .registerNode('aaa', { parent: 'aa' })
+      .registerNode('aab', { parent: 'aa' })
+      .registerNode('b', { parent: 'root', orientation: 'vertical' })
+      .registerNode('ba', { parent: 'b' })
+      .registerNode('bb', { parent: 'b' })
+      .registerNode('c', { parent: 'root' })
+
+    const nodeProcessor = jest.fn()
+
+    traverseNodeSubtree(navigation.rootNode, nodeProcessor)
+
+    expect(nodeProcessor).toHaveBeenCalledTimes(9)
+    expect(nodeProcessor).toHaveBeenNthCalledWith(1, expect.objectContaining({ id: 'root' }))
+    expect(nodeProcessor).toHaveBeenNthCalledWith(2, expect.objectContaining({ id: 'a' }))
+    expect(nodeProcessor).toHaveBeenNthCalledWith(3, expect.objectContaining({ id: 'aa' }))
+    expect(nodeProcessor).toHaveBeenNthCalledWith(4, expect.objectContaining({ id: 'aaa' }))
+    expect(nodeProcessor).toHaveBeenNthCalledWith(5, expect.objectContaining({ id: 'aab' }))
+    expect(nodeProcessor).toHaveBeenNthCalledWith(6, expect.objectContaining({ id: 'b' }))
+    expect(nodeProcessor).toHaveBeenNthCalledWith(7, expect.objectContaining({ id: 'ba' }))
+    expect(nodeProcessor).toHaveBeenNthCalledWith(8, expect.objectContaining({ id: 'bb' }))
+    expect(nodeProcessor).toHaveBeenNthCalledWith(9, expect.objectContaining({ id: 'c' }))
+  })
+
+  test('should interrupt traversing tree on node processor result', () => {
+    const navigation = new Lrud()
+      .registerNode('root', { orientation: 'vertical' })
+      .registerNode('a', { parent: 'root', orientation: 'horizontal' })
+      .registerNode('aa', { parent: 'a', orientation: 'horizontal' })
+      .registerNode('aaa', { parent: 'aa' })
+      .registerNode('aab', { parent: 'aa' })
+      .registerNode('b', { parent: 'root', orientation: 'vertical' })
+      .registerNode('ba', { parent: 'b' })
+      .registerNode('bb', { parent: 'b' })
+      .registerNode('c', { parent: 'root' })
+
+    // Interrupt when reaching node 'aaa'
+    const nodeProcessor = jest.fn().mockImplementation(node => node.id === 'aaa')
+
+    traverseNodeSubtree(navigation.rootNode, nodeProcessor)
+
+    expect(nodeProcessor).toHaveBeenCalledTimes(4)
+    expect(nodeProcessor).toHaveBeenNthCalledWith(1, expect.objectContaining({ id: 'root' }))
+    expect(nodeProcessor).toHaveBeenNthCalledWith(2, expect.objectContaining({ id: 'a' }))
+    expect(nodeProcessor).toHaveBeenNthCalledWith(3, expect.objectContaining({ id: 'aa' }))
+    expect(nodeProcessor).toHaveBeenNthCalledWith(4, expect.objectContaining({ id: 'aaa' }))
   })
 })
