@@ -58,6 +58,8 @@ navigation
 
 If focus was on `item-2`, a `left` keypress will put focus to `item-1`, and `right` keypress will put focus to `item-3`. This is because the `row` is set to `orientation: horizontal`. If the `row` was set to `orientation: vertical`, it would respond to key presses of `up` and `down`, respectively.
 
+If `orientation` is not defined than focus can not be moved within that node. This is a very powerful feature, that allows creating closed boxes, from which focus can not "jump out". It's the best to think about modal popups with semi transparent overlay here. It may contain Ok/Cancel buttons and focus must be moved only around those buttons. The rest of the page is still visible in the background and LRUD navigation tree may stay untouched. See the [Recipe 5 - Error Modal Popup](./recipes.md#recipe-5---error-modal-popup).
+
 ### `isWrapping`
 
 `boolean`
@@ -78,20 +80,23 @@ In the above example, if the user was focused on `item-3`, and LRUD handled an e
 
 `number`
 
-The zero-based index of the node, relative to its siblings. If no idex is given, it will be set as the _next_ index under its parent.
+The zero-based index of the node, relative to its siblings. Index is kept coherent and compact. If `index` value is provided, then the child is inserted at that position and all other children indices, that are greater or equal to provided index, are shifted up by one. If `index` of the registering child is greater that current size of children list or is not given at all, it will be set as the _next_ index under its parent.
 
 ```js
 navigation
-    .registerNode('X', { parent: 'root' })
-    .registerNode('Y', { parent: 'root' })
-    .registerNode('Z', { parent: 'root' })
+    .registerNode('root', { isIndexCoherent: true })
+    .registerNode('A', { parent: 'root' }) // order: |A|
+    .registerNode('B', { parent: 'root' }) // order: A, |B|
+    .registerNode('C', { parent: 'root' }) // order: A, B, |C|
+    .registerNode('D', { parent: 'root' }) // order: A, B, C, |D|
 
-// ...is the same as
+// ...gives the same result as
 
 navigation
-    .registerNode('X', { parent: 'root', index: 0 })
-    .registerNode('Y', { parent: 'root', index: 1 })
-    .registerNode('Z', { parent: 'root', index: 2 })
+    .registerNode('A', { parent: 'root', index: 0 }) // order: |A|
+    .registerNode('C', { parent: 'root', index: 1 }) // order: A, |C|
+    .registerNode('B', { parent: 'root', index: 1 }) // order: A, |B|, C
+    .registerNode('D', { parent: 'root', index: 9 }) // order: A, B, C, |D|
 ```
 
 `index` is used when calculating the "next" or "previous" node in a list.
@@ -112,9 +117,28 @@ For further details, see the [docs on index alignment](./index-align.md).
 
 An array with 2 elements. Value `[0]` is the lower bound of matching indexes, `[1]` is the upper bound.
 
-Used in conjuction with `isIndexAlign` behaviour, allows a node to replicate the effects of a "column span" by assuming the role of multiple indexes relative to its siblings.
+Used in conjunction with `isIndexAlign` behaviour, allows a node to replicate the effects of a "column span" by assuming the role of multiple indexes relative to its siblings.
 
 For further details, see the [docs on index alignment](./index-align.md).
+
+### `isStopPropagate`
+
+`boolean`
+
+Allows dealing with a situation when focusable parent contains focusable children.
+
+By default, the leaf is picked to be focused, "the deepest" focusable candidate. In such case parent node is simply not a hindrance. Setting `isStopPropagate` to `true` inverts this behaviour. Parent node grabs focus instead of passing it to the children.
+
+```js
+navigation
+    .registerNode('row-1', { orientation: 'horizontal', isFocusable: true })
+    .registerNode('row-2', { orientation: 'horizontal', isFocusable: true })
+    .registerNode('row-2-item-1', { parent: 'row-2', isFocusable: true })
+    .registerNode('row-3', { orientation: 'horizontal', isFocusable: true, isStopPropagate: true })
+    .registerNode('row-3-item-2', { parent: 'row-3', isFocusable: true })
+```
+
+In the above example, if the user was focused on `row-1`, and LRUD handled an event with a direction of `down`, than `row-2-item-1` will be focused, because by default `row-2` passes focus to the children. Next event with a direction of `down` will move focus to `row-3`. This is because, `row-3` has `isStopPropagate` set to `true` which allowed him to grab the focus instead of passing it to the `row-3-item-2`, even if it's a focusable leaf.
 
 ---
 
@@ -188,9 +212,9 @@ If given, the `onEnterCancelled` function will be called if this node has a matc
 
 ## Unregistering a node
 
-A node can be removed from the navigation tree by calling `navigation.unregisterNode()` with the id of the node
+A node can be removed from the navigation tree by calling `navigation.unregisterNode()` with the id of the node.
 
-Unregistering a node will also remove all of its children and trigger events correctly.
+Unregistering a node will also remove all of its children and trigger events correctly. Overrides pointing to the removed node (and any of its direct and indirect children) will be removed as well.
 
 If an unregister causes the current focused node to be removed, focus will be moved to the _last_ node that could be focused. This also works when unregistering a branch.
 
@@ -203,6 +227,22 @@ A config object can be given to `unregisterNode(<nodeId>, <unregisterOptions>)` 
 - `forceRefocus:boolean` When `true`, the default behaviour of finding a new node to focus on if unregistering the current
   focused node will continue to work as normal. This value also defaults to `true`. Pass as `false` to stop the auto-refocus
   behaviour. Remember, if you are unregistering the current focused node, and passing `forceRefocus` as `false`, you need to manually call `assignFocus()` afterwards or the user will be left in limbo!
+
+## Moving a node
+
+A node can be moved from its current parent to the new parent by calling `navigation.moveNode()` with the id of the node to be moved and the id of the new parent node.
+
+This method has few advantages over regular unregisterNode/registerNode operation:
+
+ * It maintains the currently focused node. If moved node (or its direct or indirect child) is a currently focused node, then it will stay focused.
+ * It maintains overrides pointing to the moved node or its direct and indirect children.
+
+### Moving Options
+
+A config object can be given to `moveNode(<nodeId>, <newParentId>, <moveNodeOptions>)` to force specific behaviour.
+
+- `index:number` Defines position at which node should be inserted into new parent's children list. Despite the given value, index  of new parent's children is kept coherent and compact.
+- `maintainIndex:boolean` When `true`, the node will be inserted into new parent's children list at the same position as it was under old parent, if possible. Otherwise, the node will be appended to new parent's children list. Despite the node's current index value, index of new parent's children is kept coherent and compact. If `index` value is specified in options, the `maintainIndex` takes no effect, it's ignored. 
 
 ## Assigning Focus
 
@@ -224,10 +264,15 @@ You can pass key events into LRUD using the `navigation.handleKeyEvent` function
 
 ```js
 document.onkeydown = function (event) {
-    navigation.handleKeyEvent(event)
-  }
+  navigation.handleKeyEvent(event)
 }
 ```
+
+### Handling Key Events Options
+
+A config object can be given to `handleKeyEvent(<event>, <handleKeyEventOptions>)` to force specific behaviour.
+
+- `forceFocus:boolean` When `true`, if there's no focused node, then LRUD will attempt to find a first focusable candidate (the node that is focusable or contains at least one child that is a focusable candidate). Such node, when found, will be automatically focused and focus state of navigation tree is auto-initialized. The default value is `false`.
 
 ## Events
 
@@ -275,20 +320,21 @@ navigation.off('focus', function);
 
 LRUD supports an override system, for times when correct product/UX behaviour requires focus to change in a way that is not strictly in accordance with the structure of the navigation tree.
 
-New overrides can be registered with `navigation.registerOverride(<overrideId>, <overrideOptions>)`.
+New overrides can be registered with `navigation.registerOverride(<sourceNodeId>, <targetNodeId>, <direction>, <registerOverrideOptions>)`, where options may contain parameters:
 
-`navigation.overrides` is an object, each key representing an override object.
+- `forceOverride:boolean` When `true`, the existing override from source node in given direction will be overwritten.
 
-The override object below represents that when LRUD is bubbling its key event, when it hits the `box-1` node, and direction of travel is `DOWN`, STOP the propogation of the bubble event and focus directly on `box-2`.
+
+To unregister override its enough to call `navigation.unregisterOverride(<sourceNodeId>, <direction>)`.
+
+The override below represents that, when LRUD is bubbling its key event and when it hits the `box-1` node, and direction of travel is `down`, STOP the propagation of the bubble event and focus directly on `box-2`.
 
 ```js
-navigation.overrides = {
-  'override-1': {           // the name of the override
-    'id': 'box-1',          // the ID to trigger the override on
-    'direction': 'DOWN',    // the direction of travel in order for the override to trigger
-    'target': 'box-2'       // the ID of the node we want to focus on
-  }
-}
+navigation.registerOverride(
+  'box-1',   // the ID to trigger the override on
+  'box-2',   // the ID of the node we want to focus on
+  'down'     // the direction of travel in order for the override to trigger
+)
 ```
 
 ## Modifying Node Focusability
@@ -307,14 +353,13 @@ LRUD supports the ability to register an entire tree at once.
 ```js
 const instance = new Lrud();
 const tree = {
-  root: {
-    orientation: 'horizontal',
-    children: {
-      alpha: { isFocusable: true },
-      beta: { isFocusable: true },
-      charlie: { isFocusable: true },
-    }
-  }
+  id: 'root',
+  orientation: 'horizontal',
+  children: [
+    { id: 'alpha', isFocusable: true },
+    { id: 'beta', isFocusable: true },
+    { id: 'charlie', isFocusable: true },
+  ]
 }
 
 instance.registerTree(tree);
@@ -338,32 +383,31 @@ instance
   .registerNode('beta', { isFocusable: true })
 
 const tree = {
-  charlie: {
-    orientation: 'vertical',
-    children: {
-      charlie_1: { isFocusable: true },
-      charlie_2: { isFocusable: true },
-    }
-  }
+  id: 'charlie',
+  orientation: 'vertical',
+  children: [
+    { id: 'charlie_1', isFocusable: true },
+    { id: 'charlie_2', isFocusable: true },
+  ]
 }
 instance.registerTree(tree);
 /*
 the full tree of `instance` now looks like:
 {
-  root: {
-    orientation: 'horizontal',
-    children: {
-      alpha: { isFocusable: true }
-      beta: { isFocusable: true }
-      charlie: {
-        orientation: 'vertical'
-        children: {
-          charlie_1: { isFocusable: true }
-          charlie_2: { isFocusable: true }
-        }
-      }
+  id: 'root',
+  orientation: 'horizontal',
+  children: [
+    { id: 'alpha', isFocusable: true }
+    { id: 'beta', isFocusable: true }
+    {
+      id: 'charlie',
+      orientation: 'vertical'
+      children: [
+        { id: 'charlie_1', isFocusable: true }
+        { id: 'charlie_2', isFocusable: true }
+      ]
     }
-  }
+  ]
 }
 */
 ```
@@ -378,37 +422,37 @@ instance
   .registerNode('beta', { orientation: 'vertical' })
 
 const tree = {
-  charlie: {
-    orientation: 'vertical',
-    parent: 'beta',
-    children: {
-      charlie_1: { isFocusable: true },
-      charlie_2: { isFocusable: true },
-    }
-  }
+  id: 'charlie',
+  orientation: 'vertical',
+  parent: 'beta',
+  children: [
+    { id: 'charlie_1', isFocusable: true },
+    { id: 'charlie_2', isFocusable: true },
+  ]
 }
 instance.registerTree(tree);
 /*
 the full tree of `instance` now looks like:
 {
-  root: {
-    orientation: 'horizontal',
-    children: {
-      alpha: { isFocusable: true }
-      beta: {
-        orientation: 'vertical',
-        children: {
-          charlie: {
-            orientation: 'vertical'
-            children: {
-              charlie_1: { isFocusable: true }
-              charlie_2: { isFocusable: true }
-            }
-          }
+  id: 'root',
+  orientation: 'horizontal',
+  children: [
+    { id: 'alpha', isFocusable: true }
+    {
+      id: 'beta',
+      orientation: 'vertical',
+      children: [
+        {
+          id: 'charlie',
+          orientation: 'vertical'
+          children: [
+            { id: 'charlie_1', isFocusable: true }
+            { id: 'charlie_2', isFocusable: true }
+          ]
         }
-      }
+      ]
     }
-  }
+  ]
 }
 */
 ```

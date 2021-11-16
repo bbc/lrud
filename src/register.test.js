@@ -5,84 +5,87 @@ const { Lrud } = require('./index')
 describe('registerNode()', () => {
   test('registering the very first registered node sets it to the root node', () => {
     const navigation = new Lrud()
+      .registerNode('root', { selectAction: true })
 
-    navigation.registerNode('root', {
-      selectAction: true
-    })
+    expect(navigation.rootNode.id).toEqual('root')
 
-    expect(navigation.rootNodeId).toEqual('root')
-
-    expect(navigation.tree.root.selectAction).toEqual(true)
+    expect(navigation.nodes.root.selectAction).toEqual(true)
   })
 
   test('registering a node (after the root node) without a parent puts it under the root node', () => {
     const navigation = new Lrud()
+      .registerNode('alpha', { selectAction: 1 })
+      .registerNode('beta', { selectAction: 1 })
+      .registerNode('charlie', { selectAction: 2 })
 
-    navigation.registerNode('alpha', { z: 1 })
-    navigation.registerNode('beta', { x: 1 })
-    navigation.registerNode('charlie', { x: 2 })
-
-    expect(navigation.tree.alpha.z).toEqual(1)
-    expect(navigation.tree.alpha.children.beta).not.toBeUndefined()
-    expect(navigation.tree.alpha.children.charlie).not.toBeUndefined()
+    const root = navigation.rootNode
+    expect(root.id).toEqual('alpha')
+    expect(root.children[0].id).toEqual('beta')
+    expect(root.children[1].id).toEqual('charlie')
   })
 
   test('registering a node with a nested parent', () => {
     const navigation = new Lrud()
+      .registerNode('alpha', { selectAction: 1 })
+      .registerNode('beta', { selectAction: 2 })
+      .registerNode('charlie', { selectAction: 3, parent: 'beta' })
 
-    navigation.registerNode('alpha', { a: 1 })
-    navigation.registerNode('beta', { b: 2 })
-    navigation.registerNode('charlie', { c: 3, parent: 'beta' })
+    const root = navigation.rootNode
+    expect(root.id).toEqual('alpha')
+    expect(root.children[0].children[0].parent.id).toEqual('beta')
+  })
 
-    expect(navigation.tree.alpha.children.beta.children.charlie.parent).toEqual('beta')
+  test('registering a node with a nested parent where the previous node have the same ending', () => {
+    const navigation = new Lrud()
+      .registerNode('alpha', { selectAction: 1 })
+      .registerNode('beta_beta', { selectAction: 3 })
+      .registerNode('beta', { selectAction: 2 })
+      .registerNode('charlie', { selectAction: 4, parent: 'beta' })
+
+    const root = navigation.rootNode
+    expect(root.id).toEqual('alpha')
+    expect(root.children[1].id).toEqual('beta')
+    expect(root.children[1].children[0].id).toEqual('charlie')
   })
 
   test('registering a node with a deeply nested parent', () => {
     const navigation = new Lrud()
+      .registerNode('root')
+      .registerNode('region-a', { parent: 'root' })
+      .registerNode('region-b', { parent: 'root' })
+      .registerNode('content-grid', { parent: 'region-b' })
+      .registerNode('PID-X', { parent: 'content-grid' })
+      .registerNode('PID-Y', { parent: 'content-grid' })
+      .registerNode('PID-Z', { parent: 'content-grid' })
 
-    navigation.registerNode('root')
-    navigation.registerNode('region-a', { parent: 'root' })
-    navigation.registerNode('region-b', { parent: 'root' })
-    navigation.registerNode('content-grid', { parent: 'region-b' })
-    navigation.registerNode('PID-X', { parent: 'content-grid' })
-    navigation.registerNode('PID-Y', { parent: 'content-grid' })
-    navigation.registerNode('PID-Z', { parent: 'content-grid' })
-
-    expect(navigation.tree.root.children['region-a']).not.toBeUndefined()
-    expect(navigation.tree.root.children['region-b']).not.toBeUndefined()
+    const root = navigation.rootNode
+    expect(root.children[0].id).toEqual('region-a')
+    expect(root.children[1].id).toEqual('region-b')
   })
 
   // reword this
-  test('registering a new node with a parent that has no children sets its parent.activeChild to itself', () => {
+  test('registering a new node with a parent that has no children should not set parent.activeChild to itself', () => {
     const navigation = new Lrud()
+      .registerNode('root')
+      .registerNode('alpha', { parent: 'root' })
+      .registerNode('beta', { parent: 'root' })
+      .registerNode('charlie', { parent: 'alpha' })
+      .registerNode('delta', { parent: 'charlie' })
+      .registerNode('echo', { parent: 'root' })
 
-    navigation.registerNode('root')
-    navigation.registerNode('alpha', { parent: 'root' })
-    navigation.registerNode('beta', { parent: 'root' })
-    navigation.registerNode('charlie', { parent: 'alpha' })
-    navigation.registerNode('delta', { parent: 'charlie' })
-    navigation.registerNode('echo', { parent: 'root' })
-
-    // 'root' should have 3 children and its activeChild should be 'alpha'
-    // 'alpha' should have 1 children and its activeChild should be 'charlie'
-    // 'charlie' should have 1 children and its activeChild should be 'delta'
-
-    expect(navigation.getNode('root').activeChild).toEqual('alpha')
-    expect(navigation.getNode('alpha').activeChild).toEqual('charlie')
-    expect(navigation.getNode('charlie').activeChild).toEqual('delta')
+    expect(navigation.getNode('root').activeChild).toBeUndefined()
+    expect(navigation.getNode('alpha').activeChild).toBeUndefined()
+    expect(navigation.getNode('charlie').activeChild).toBeUndefined()
   })
 
   test('registering a node should add the index to the node', () => {
     const navigation = new Lrud()
-
-    navigation.registerNode('root')
-    navigation.registerNode('a')
-
-    navigation.registerNode('b')
-    navigation.registerNode('b-1', { parent: 'b' })
-    navigation.registerNode('b-2', { parent: 'b' })
-
-    navigation.registerNode('c')
+      .registerNode('root')
+      .registerNode('a')
+      .registerNode('b')
+      .registerNode('b-1', { parent: 'b' })
+      .registerNode('b-2', { parent: 'b' })
+      .registerNode('c')
 
     expect(navigation.getNode('a').index).toEqual(0)
     expect(navigation.getNode('b').index).toEqual(1)
@@ -93,22 +96,20 @@ describe('registerNode()', () => {
 
   test('can chain registers together', () => {
     const navigation = new Lrud()
-
-    navigation
       .registerNode('root')
       .registerNode('a')
       .registerNode('b')
       .registerNode('c')
 
-    expect(navigation.tree.root.children.a).not.toBeUndefined()
-    expect(navigation.tree.root.children.b).not.toBeUndefined()
-    expect(navigation.tree.root.children.c).not.toBeUndefined()
+    const root = navigation.rootNode
+    expect(root.children[0].id).toEqual('a')
+    expect(root.children[1].id).toEqual('b')
+    expect(root.children[2].id).toEqual('c')
   })
 
   test('registering a node that already exists should throw an error', () => {
     const navigation = new Lrud()
-
-    navigation.registerNode('root')
+      .registerNode('root')
 
     const node = navigation.getNode('root')
 
@@ -117,5 +118,70 @@ describe('registerNode()', () => {
     expect(() => {
       navigation.registerNode('root')
     }).toThrow()
+  })
+
+  test('coherent index, should assign last index value if no index value provided', () => {
+    const navigation = new Lrud()
+      .registerNode('root')
+      .registerNode('a')
+      .registerNode('b')
+      .registerNode('c')
+
+    expect(navigation.getNode('c').index).toEqual(2)
+  })
+
+  test('coherent index, should assign last index value even if given index is greater than children size', () => {
+    const navigation = new Lrud()
+      .registerNode('root')
+      .registerNode('a')
+      .registerNode('b')
+      .registerNode('c', { index: 3 })
+
+    expect(navigation.getNode('c').index).toEqual(2)
+  })
+
+  test('coherent index, should insert node at a given position', () => {
+    const navigation = new Lrud()
+      .registerNode('root')
+      .registerNode('a')
+      .registerNode('b')
+      .registerNode('c', { index: 1 })
+
+    expect(navigation.getNode('c').index).toEqual(1)
+    expect(navigation.getNode('b').index).toEqual(2)
+  })
+
+  test('should force using id given as a method parameter', () => {
+    const navigation = new Lrud()
+      .registerNode('root')
+      .registerNode('a', { id: 'b', parent: 'root' })
+
+    expect(navigation.getNode('a')).toBeDefined()
+    expect(navigation.getNode('b')).toBeUndefined()
+  })
+
+  test('should ignore children provided in node configuration', () => {
+    const navigation = new Lrud()
+      .registerNode('root')
+      .registerNode('a', {
+        parent: 'root',
+        children: { aa: { isFocusable: true } }
+      })
+
+    expect(navigation.getNode('a').children).toBeUndefined()
+  })
+
+  test('should do nothing when registering node under not existing parent', () => {
+    const navigation = new Lrud()
+      .registerNode('root')
+      .registerNode('a')
+      .registerNode('b')
+
+    let result
+    expect(() => {
+      result = navigation.registerNode('c', { index: 1, parent: 'd' })
+    }).not.toThrow()
+
+    expect(result).toEqual(navigation)
   })
 })

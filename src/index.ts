@@ -1,688 +1,783 @@
-import { Get } from './get'
-import { Set } from './set'
-import { Node, Override, KeyEvent, InsertTreeOptions, UnregisterNodeOptions } from './interfaces'
+import {
+  Direction,
+  Directions,
+  HandleKeyEventOptions,
+  InsertTreeOptions,
+  KeyEvent,
+  MoveNodeOptions,
+  Node,
+  NodeConfig,
+  NodeId,
+  NodesBag,
+  Orientations,
+  RegisterOverrideOptions,
+  UnregisterNodeOptions
+} from './interfaces'
 
 import {
-  isNodeFocusable,
+  findChildWithClosestIndex,
+  findChildWithMatchingIndexRange,
   getDirectionForKeyCode,
+  insertChildNode,
   isDirectionAndOrientationMatching,
-  isNodeInPaths,
-  _findChildWithMatchingIndexRange,
-  _findChildWithClosestIndex,
-  _findChildWithIndex,
-  getNodesFromTree,
-  endsWith,
-  arrayFind
+  isNodeFocusable,
+  prepareNode,
+  removeChildNode,
+  toValidDirection,
+  toValidOrientation,
+  traverseNodeSubtree
 } from './utils'
 
 import mitt from 'mitt'
 
+export * from './interfaces'
+
 export class Lrud {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tree: any;
-  nodePathList: string[];
-  focusableNodePathList: string[];
-  rootNodeId: string;
-  currentFocusNode?: Node;
-  currentFocusNodeId: string;
-  currentFocusNodeIndex: number;
-  currentFocusNodeIndexRange: number[];
-  currentFocusNodeIndexRangeLowerBound: number;
-  currentFocusNodeIndexRangeUpperBound: number;
-  isIndexAlignMode: boolean;
+  nodes: NodesBag
+  rootNode: Node
+  currentFocusNode?: Node
+  isIndexAlignMode: boolean
   emitter: mitt.Emitter
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  overrides: any;
 
   constructor () {
-    this.tree = {}
-    this.nodePathList = []
-    this.focusableNodePathList = []
-    this.rootNodeId = null
-    this.currentFocusNode = null
-    this.currentFocusNodeId = null
-    this.currentFocusNodeIndex = null
-    this.currentFocusNodeIndexRange = null
+    this.nodes = {}
+    this.rootNode = undefined
+    this.currentFocusNode = undefined
     this.isIndexAlignMode = false
     this.emitter = mitt()
-    this.overrides = {}
   }
 
   /**
-   * reindex all the children of the node, assigning indexes numerically from 0. maintains
-   * original order of indexes, but normalises them all to be 0 based
+   * Registers a callback for an LRUD event.
    *
-   * @param {object} node
+   * @param {string} eventName - event to subscribe to
+   * @param {function} callback - function to call on event
    */
-  reindexChildrenOfNode (node: Node): Node | void {
-    if (!node) {
-      return
-    }
-
-    if (!node.children) {
-      return
-    }
-
-    const children = Object.keys(node.children).map(childId => node.children[childId])
-
-    children.sort((a, b) => a.index - b.index)
-
-    node.children = {}
-
-    children.forEach((child, index) => {
-      child.index = index
-      node.children[child.id] = child
-    })
-
-    Set(this.tree, this.getPathForNodeId(node.id), node)
-
-    return node
-  }
-
-  /**
-   * register a callback for an LRUD event
-   *
-   * @param {string} eventName event to subscribe to
-   * @param {function} callback function to call on event
-   */
-  on (eventName, callback): void {
+  on (eventName: string, callback: mitt.Handler): void {
     this.emitter.on(eventName, callback)
   }
 
   /**
-   * unregister a callback for an LRUD event
+   * Unregisters a callback for an LRUD event.
    *
-   * @param {string} eventName event to unsubscribe from 
-   * @param {function} callback function that was added using .on() 
+   * @param {string} eventName - event to unsubscribe from
+   * @param {function} callback - function that was added using .on()
    */
-  off(eventName, callback): void {
+  off (eventName: string, callback: mitt.Handler): void {
     this.emitter.off(eventName, callback)
   }
 
   /**
-   * return the root node
+   * Returns the root node.
    */
   getRootNode (): Node {
-    const node = this.getNode(this.rootNodeId)
-
-    if (!node) {
+    if (!this.rootNode) {
       throw new Error('no root node')
     }
-
-    return node
+    return this.rootNode
   }
 
   /**
-   * given a node id, return the full path for it
-   *
-   * @param {string} nodeId
+   * Returns the current focused node.
    */
-  getPathForNodeId (nodeId: string): string {
-    if (nodeId === this.rootNodeId) {
-      return this.rootNodeId
-    }
-    return arrayFind(this.nodePathList, path => endsWith(path, '.' + nodeId))
+  getCurrentFocusNode (): Node | undefined {
+    return this.currentFocusNode
   }
 
   /**
-   * register a new node into the LRUD tree
+   * Registers a new node into the LRUD tree.
    *
-   * @param {string} nodeId
-   * @param {object} node
-   * @param {string} [node.id] if null, `nodeId` is used
-   * @param {string} [node.parent] if null, value of `this.rootNodeId` is used
-   * @param {number} [node.index] if null, index is 1 more than the index of the last sibling. if no previous siblings, index is 1
-   * @param {number[]} [node.indexRange] defaults to null. acts as a colspan, value [0] is lower bound, value [1] is upper bound
-   * @param {object} [node.selectAction] if a node has a selectAction, it is focusable
-   * @param {boolean} [node.isFocusable] if a node is explicitly set as isFocusable, it is focusable
-   * @param {boolean} [node.isWrapping] if true, when asking for the next child at the end or start of the node, the will "wrap around" and return the first/last (when asking for the last/first)
-   * @param {string} [node.orientation] can be "vertical" or "horizontal". is used in conjuction when handling direction of key press, to determine which child is "next"
-   * @param {boolean} [node.isIndexAlign] if a node is index aligned, its descendents should jump to nodes based on index instead of activeChild
-   * @param {function} [node.onLeave] if a node has an `onLeave` function, it will be run when a move event leaves this node
-   * @param {function} [node.onEnter] if a node has an `onEnter` function, it will be run when a move event enters this node
+   * @param {string} nodeId - id of the node to register
+   * @param {object} [nodeConfig] - registered node parameters
+   * @param {string} [nodeConfig.parent] - parent node id, if null, default root node is used
+   * @param {number} [nodeConfig.index] - if null, index is 1 more than the index of the last sibling. if no previous siblings, index is 1
+   * @param {number[]} [nodeConfig.indexRange] - defaults to null. acts as a colspan, value [0] is lower bound, value [1] is upper bound
+   * @param {object} [nodeConfig.selectAction] - if a node has a selectAction, it is focusable
+   * @param {boolean} [nodeConfig.isFocusable] - if a node is explicitly set as isFocusable, it is focusable
+   * @param {boolean} [nodeConfig.isWrapping] - if true, when asking for the next child at the end or start of the node, the will "wrap around" and return the first/last (when asking for the last/first)
+   * @param {string} [nodeConfig.orientation] - can be "vertical" or "horizontal". is used in conjunction when handling direction of key press, to determine which child is "next"
+   * @param {boolean} [nodeConfig.isIndexAlign]  -if a node is index aligned, its descendents should jump to nodes based on index instead of activeChild
+   * @param {function} [nodeConfig.onLeave] - if a node has an `onLeave` function, it will be run when a move event leaves this node
+   * @param {function} [nodeConfig.onEnter] - if a node has an `onEnter` function, it will be run when a move event enters this node
    */
-  registerNode (nodeId: string, node: Node = {}): Lrud {
-    if (!node.id) {
-      node.id = nodeId
-    }
-
+  registerNode (nodeId: NodeId, nodeConfig: NodeConfig = {}): Lrud {
     if (this.getNode(nodeId)) {
       throw Error(`Node with an ID of ${nodeId} has already been registered`)
     }
 
+    // It is not allowed to register node directly with children, for such purposes registerTree should be used
+    const node = prepareNode(nodeId, nodeConfig)
+
     // if this is the very first node, set it as root and return...
-    if (Object.keys(this.tree).length <= 0) {
-      this.rootNodeId = nodeId
-      this.tree[nodeId] = node
-      this.nodePathList.push(nodeId)
+    if (!this.rootNode) {
+      this.rootNode = node
+      this.nodes = { [nodeId]: node }
       return this
     }
 
-    // if this node has no parent, assume its parent is root
-    if (node.parent == null && nodeId !== this.rootNodeId) {
-      node.parent = this.rootNodeId
-    }
+    // if this node config has no parent, assume its parent is root
+    const parentNode = nodeConfig.parent ? this.getNode(nodeConfig.parent) : this.rootNode
 
-    // if this node is the first child of its parent, we need to set its parent's `activeChild`
-    // to it so that the parent always has an `activeChild` value
-    // we can tell if its parent has any children by checking the nodePathList for
-    // entries containing '<parent>.children'
-    const parentsChildPaths = arrayFind(this.nodePathList, path => path.indexOf(node.parent + '.children') > -1)
-    if (parentsChildPaths == null) {
-      const parentPath = this.getPathForNodeId(node.parent)
-      Set(this.tree, parentPath + '.activeChild', nodeId)
-
-      this.emitter.emit('active', node)
-      if (node.onActive) {
-        node.onActive(node)
-      }
-    }
-
-    // if no `index` set, calculate it
-    if (!node.index) {
-      const parentNode = this.getNode(node.parent)
-      if (parentNode) {
-        const parentsChildren = this.getNode(node.parent).children
-        if (!parentsChildren) {
-          node.index = 0
-        } else {
-          node.index = (Object.keys(parentsChildren).length)
-        }
-      }
+    // to keep tree coherent, nodes that are about to be added to not existing parent are ignored
+    if (!parentNode) {
+      return this
     }
 
     // add the node into the tree
-    // path is the node's parent plus 'children' plus itself
-    const path = arrayFind(this.nodePathList, path => endsWith(path, node.parent)) + '.children.' + nodeId
-    Set(this.tree, path, node)
-    this.nodePathList.push(path)
-
-    // if the node is focusable, we want to add its path to our focusableNodePathList
-    if (isNodeFocusable(node)) {
-      this.focusableNodePathList.push(path)
-    }
+    this.nodes[nodeId] = node
+    insertChildNode(parentNode, node)
 
     return this
   }
 
   /**
-   * maintained for legacy API reasons
-   */
-  register (nodeId: string, node: Node = {}): Lrud {
-    return this.registerNode(nodeId, node)
-  }
-
-  /**
-   * unregister a node from the navigation tree
-   * kept for backwards compatibility reasons
+   * Allows to change node's parent by moving it's whole sub-tree.
    *
-   * @param {string} nodeId
+   * @param {string|object} node - node or id of the node that is about to change parent
+   * @param {string|object} newParentNode - node or id of the node that became a new parent for nodeId
+   * @param {object} [options]
+   * @param {number} [options.index] - index at which nodeId should be inserted as a child of newParentNodeId
+   * @param {boolean} [options.maintainIndex] - applies only if index is not defined; if true, node will be inserted at
+   *                                           it's current position if possible; otherwise node will be appended; default: false
    */
-  unregister (nodeId: string, unregisterOptions?: UnregisterNodeOptions): void {
-    this.unregisterNode(nodeId, unregisterOptions)
-  }
+  moveNode (node: NodeId | Node, newParentNode: NodeId | Node, options: MoveNodeOptions = { maintainIndex: false }): void {
+    node = typeof node === 'string' ? this.getNode(node) : node as Node
+    newParentNode = typeof newParentNode === 'string' ? this.getNode(newParentNode) : newParentNode as Node
 
-  /**
-   * unregister a node from the navigation tree
-   *
-   * @param {string} nodeId
-   * @param {object} unregisterOptions
-   * @param {boolean} unregisterOptions.forceRefocus if true, LRUD will attempt to re-focus on a new node if the currently focused node becomes unregistered due to the given node ID being unregistered
-   */
-  unregisterNode (nodeId: string, unregisterOptions: UnregisterNodeOptions = { forceRefocus: true }): Lrud {
-    if (nodeId === this.rootNodeId) {
-      this.tree = {}
-      this.nodePathList = []
-      this.focusableNodePathList = []
-      this.rootNodeId = null
-      this.currentFocusNode = null
-      this.currentFocusNodeId = null
-      this.currentFocusNodeIndex = null
-      this.currentFocusNodeIndexRange = null
-      this.isIndexAlignMode = false
-      this.emitter = mitt()
-      this.overrides = {}
+    if (!node || !newParentNode) {
       return
     }
 
-    const path = this.getPathForNodeId(nodeId)
+    // It's not possible to move root node
+    if (node === this.rootNode) {
+      return
+    }
+
+    // There's no need to change the parent
+    if (node.parent === newParentNode) {
+      return
+    }
+
+    const oldParentNode = node.parent
+
+    // Removing node from old parent
+    removeChildNode(oldParentNode, node)
+
+    // Changing parent of a node
+    if (typeof options.index === 'number') {
+      node.index = options.index
+    } else if (!options.maintainIndex) {
+      node.index = undefined
+    }
+    insertChildNode(newParentNode, node)
+
+    // If moved node was an active child of the old parent, it needs to be cleaned out as well
+    this.unsetActiveChild(oldParentNode, node)
+
+    // If moved node which is (or it's subtree contains) currently focused node, then parent's active child needs to be adjusted
+    if (this.isSameOrParentForChild(node, this.currentFocusNode)) {
+      this.setActiveChildRecursive(newParentNode, node)
+    }
+  }
+
+  /**
+   * Registers a new node into the LRUD tree.
+   *
+   * Kept for backwards compatibility reasons.
+   *
+   * @param {string} nodeId - id of the node to register
+   * @param {object} [nodeConfig] - registered node parameters
+   */
+  register (nodeId: NodeId, nodeConfig?: NodeConfig): Lrud {
+    return this.registerNode(nodeId, nodeConfig)
+  }
+
+  /**
+   * Unregisters a node from the navigation tree.
+   *
+   * Kept for backwards compatibility reasons.
+   *
+   * @param {string|object} node - node or id of the node to unregister
+   * @param {object} [unregisterOptions]
+   */
+  unregister (node: NodeId | Node, unregisterOptions?: UnregisterNodeOptions): void {
+    this.unregisterNode(node, unregisterOptions)
+  }
+
+  /**
+   * Unregisters a node from the navigation tree.
+   *
+   * @param {string|object} node - node or id of the node to unregister
+   * @param {object} [unregisterOptions]
+   * @param {boolean} [unregisterOptions.forceRefocus] if true, LRUD will attempt to re-focus on a new node if the currently focused
+   *                                                   node becomes unregistered due to the given node ID being unregistered
+   */
+  unregisterNode (node: NodeId | Node, unregisterOptions: UnregisterNodeOptions = { forceRefocus: true }): Lrud {
+    node = typeof node === 'string' ? this.getNode(node) : node as Node
 
     // if we're trying to unregister a node that doesn't exist, exit out
-    if (!path) {
-      return
+    if (!node) {
+      return this
+    }
+
+    if (node === this.rootNode) {
+      this.nodes = {}
+      this.rootNode = undefined
+      this.currentFocusNode = undefined
+      this.isIndexAlignMode = false
+      this.emitter = mitt()
+      return this
     }
 
     // get a copy of the node to pass to the blur event, and grab the parent to work with it
-    const nodeClone = Get(this.tree, path)
-    const parentNode = this.getNode(nodeClone.parent)
-
-    // delete the node itself (delete from the parent and re-set the parent later)
-    delete parentNode.children[nodeId]
-
-    // ...remove the relevant entry from the node id list
-    this.nodePathList.splice(this.nodePathList.indexOf(path), 1)
-
-    // ...remove all its children from both path lists
-    this.nodePathList = this.nodePathList.filter(nodeIdPath => {
-      return nodeIdPath.indexOf(path + '.children.') === -1
-    })
-    this.focusableNodePathList = this.focusableNodePathList.filter(nodeIdPath => {
-      return nodeIdPath.indexOf(path + '.children.') === -1
-    })
-
-    // if the node is focusable, remove it from the focusable node path list
-    if (isNodeFocusable(nodeClone)) {
-      this.focusableNodePathList.splice(this.focusableNodePathList.indexOf(path), 1)
-    }
+    const parentNode = node.parent
 
     // ...if we're unregistering the activeChild of our parent (could be a leaf OR branch)
     // we might need to recalculate the focus...
-    if (parentNode.activeChild && parentNode.activeChild === nodeId) {
+    if (parentNode.activeChild && parentNode.activeChild === node) {
       this.isIndexAlignMode = false
-      delete parentNode.activeChild
 
-      // check if the current focus node was removed
-      const isCurrentFocusNodeRemoved = !this.focusableNodePathList.some(nodeIdPath => {
-        return nodeIdPath.indexOf(this.currentFocusNodeId) > -1
-      })
+      this.unsetActiveChild(parentNode, node)
+    }
 
-      if (unregisterOptions.forceRefocus && isCurrentFocusNodeRemoved) {
-        this.recalculateFocus(nodeClone)
-      } else if (isCurrentFocusNodeRemoved) {
-        this.currentFocusNode = undefined
-        this.currentFocusNodeId = undefined
-        this.currentFocusNodeIndex = undefined
+    // delete the node itself (delete from the parent and re-set the parent later)
+    removeChildNode(parentNode, node)
+
+    // releasing memory references for node and all it's children all node's children
+    let currentFocusIsLost = false
+    traverseNodeSubtree(node, traversedNode => {
+      delete this.nodes[traversedNode.id]
+      // Unregistering overrides
+      this.unregisterOverride(traversedNode)
+      // Unregistering overrides which pointed to unregistered node
+      for (let i = 0, overrideSources = traversedNode.overrideSources || []; i < overrideSources.length; i++) {
+        this.unregisterOverride(overrideSources[i].node, overrideSources[i].direction)
       }
-    }
-
-    // ...we need to recalculate the indexes of all the parents children
-    this.reindexChildrenOfNode(parentNode)
-
-    // re-set the parent after we've deleted the node itself and amended the parents active child, etc.
-    Set(this.tree, this.getPathForNodeId(parentNode.id), parentNode)
-
-    // blur on the nodeClone
-    this.emitter.emit('blur', nodeClone)
-    if (nodeClone.onBlur) {
-      nodeClone.onBlur(nodeClone)
-    }
-
-    // if we have any overrides whose target or ID is the node we just unregistered, we should unregister
-    // those overrides (thus keeping state clean)
-    Object.keys(this.overrides).forEach(overrideId => {
-      const override = this.overrides[overrideId]
-      if (override.target === nodeClone.id || override.id === nodeClone.id) {
-        this.unregisterOverride(overrideId)
+      // Unregistering currently focused node
+      if (traversedNode === this.currentFocusNode) {
+        this.currentFocusNode = undefined
+        currentFocusIsLost = true
       }
     })
 
-    return this
-  }
+    // blur on the nodeClone
+    this.emitter.emit('blur', node)
+    if (node.onBlur) {
+      node.onBlur(node)
+    }
 
-  /**
-   * register a new override onto the LRUD instance
-   *
-   * @param {string} overrideId
-   * @param {object} override
-   * @param {string} override.id
-   * @param {string} override.direction
-   * @param {string} override.target
-   */
-  registerOverride (overrideId: string, override: Override): Lrud {
-    if (!overrideId) {
-      throw new Error('need an ID to register an override')
+    // check if the current focus node was removed, if so focus needs to be recalculated
+    if (currentFocusIsLost && unregisterOptions.forceRefocus) {
+      this.recalculateFocus(parentNode)
     }
-    if (this.overrides[overrideId]) {
-      throw new Error(`override with ID of ${overrideId} already exists`)
-    }
-    if (!override.id) {
-      throw new Error(`registering override: ${overrideId} - missing internal id`)
-    }
-    if (!override.direction) {
-      throw new Error(`registering override: ${overrideId} - missing internal direction`)
-    }
-    if (!override.target) {
-      throw new Error(`registering override: ${overrideId} - missing internal target`)
-    }
-    this.overrides[overrideId] = override
 
     return this
   }
 
   /**
-   * unregister an override from the LRUD instance
+   * Registers a new override onto the LRUD instance.
    *
-   * @param {string} overrideId
+   * @param {string|object} source - node or id of the node for which override should be triggered
+   * @param {string|object} target - node or id of the node to which this overrides points
+   * @param {string} direction - traversal direction, for which this override should be triggered
+   * @param {object} [options]
+   * @param {boolean} [options.forceOverride] if true, existing override from source node in direction will be overwritten.
    */
-  unregisterOverride (overrideId: string): Lrud {
-    delete this.overrides[overrideId]
+  registerOverride (source: NodeId | Node, target: NodeId | Node, direction: Direction, options: RegisterOverrideOptions = {}): Lrud {
+    source = typeof source === 'string' ? this.getNode(source) : source as Node
+    if (!source) {
+      throw new Error('registering override: missing source node')
+    }
+
+    target = typeof target === 'string' ? this.getNode(target) : target as Node
+    if (!target) {
+      throw new Error('registering override: missing target node')
+    }
+
+    direction = toValidDirection(direction)
+    if (!direction) {
+      throw new Error('registering override: missing direction')
+    }
+
+    if (source.overrides && source.overrides[direction]) {
+      if (options.forceOverride) {
+        this.unregisterOverride(source, direction)
+      } else {
+        throw new Error(`registering override: override from ${source.id} to ${target.id} in direction ${direction} already exist`)
+      }
+    }
+
+    source.overrides = source.overrides || {}
+    source.overrides[direction] = target
+
+    target.overrideSources = target.overrideSources || []
+    target.overrideSources.push({ direction: direction, node: source })
 
     return this
   }
 
   /**
-   * return a node for an ID
+   * Unregisters an override from the LRUD instance.
    *
-   * @param {string} nodeId node id
+   * @param {string|object} source - node or id of the node for which override should be unregistered
+   * @param {string} [direction] - traversal direction, in which override should be unregistered
    */
-  getNode (nodeId: string): Node {
-    return Get(this.tree, (this.getPathForNodeId(nodeId)))
+  unregisterOverride (source: NodeId | Node, direction?: Direction): Lrud {
+    source = typeof source === 'string' ? this.getNode(source) : source as Node
+    if (!source || !source.overrides) {
+      return
+    }
+
+    // if no direction provided, than removing all overrides
+    // if unknown direction provided, then aborting
+    if (direction) {
+      direction = toValidDirection(direction)
+      if (!direction) {
+        return
+      }
+    }
+
+    let overridesToAreEmpty = true
+
+    for (const directionKey of Object.keys(Directions)) {
+      const directionToRemove = Directions[directionKey]
+      if (direction && direction !== directionToRemove) {
+        overridesToAreEmpty = overridesToAreEmpty && !(source.overrides && source.overrides[directionToRemove])
+        continue
+      }
+
+      // removing reference to source node in target overridden in direction
+      const target = source.overrides[directionToRemove]
+      if (target && target.overrideSources) {
+        for (let i = 0; i < target.overrideSources.length; i++) {
+          if (target.overrideSources[i].direction === directionToRemove && target.overrideSources[i].node === source) {
+            if (target.overrideSources.length === 1) {
+              target.overrideSources = undefined
+            } else {
+              // The fastest way of removing element from array without maintaining the order:
+              // put last element into removed one slot and make array shorter
+              target.overrideSources[i] = target.overrideSources[target.overrideSources.length - 1]
+              target.overrideSources.length = target.overrideSources.length - 1
+            }
+            break
+          }
+        }
+      }
+
+      // removing override
+      source.overrides[directionToRemove] = undefined
+    }
+
+    // cleaning if no overrides defined
+    if (overridesToAreEmpty) {
+      source.overrides = undefined
+    }
+    return this
   }
 
   /**
-   * get a node by ID and then unregister it from the instance
+   * Returns a node for an ID.
    *
-   * @param {string} nodeId node id
+   * @param {string} nodeId - id of the node to be returned
    */
-  pickNode (nodeId: string): Node {
+  getNode (nodeId: NodeId): Node | undefined {
+    if (!nodeId) {
+      return undefined
+    }
+    return this.nodes[nodeId]
+  }
+
+  /**
+   * Gets a node by ID and then unregisters it from the instance.
+   *
+   * @param {string} nodeId - id of the node to be picked
+   */
+  pickNode (nodeId: NodeId): Node | undefined {
     const node = this.getNode(nodeId)
 
     if (!node) {
-      return
+      return undefined
     }
 
-    this.unregisterNode(nodeId)
+    this.unregisterNode(node)
     return node
   }
 
   /**
-   * starting from a node, climb up the navigation tree until we find a node that can be
-   * actioned, based on the given direction. an actionable node is one whose orientation is valid
+   * Starting from a node, climb up the navigation tree until we find a node that can be
+   * actioned, based on the given direction. An actionable node is one whose orientation is valid
    * for the given direction, has focusable children and whose activeChild isn't a leaf that is
-   * also its current activeChild
+   * also its current activeChild.
    *
-   * @param {object} node
-   * @param {string} direction
+   * @param {object} node - node from which climbing up starts
+   * @param {string} direction - direction in which to traverse while climbing up
    */
-  climbUp (node: Node, direction: string): Node {
-    if (!node) {
-      return null
-    }
+  climbUp (node: Node, direction: Direction): Node | undefined {
+    while (node) {
+      // if we have a matching override at this point in the climb, return that target node
+      if (node.overrides && node.overrides[direction]) {
+        return node.overrides[direction]
+      }
 
-    // if we have a matching override at this point in the climb, return that target node
-    const matchingOverrideId = arrayFind(Object.keys(this.overrides), overrideId => {
-      const override = this.overrides[overrideId]
-      return override.id === node.id && override.direction.toUpperCase() === direction.toUpperCase()
-    })
+      // if we're on a currently focused node, climb up, definitely we are looking for some other node
+      if (node === this.currentFocusNode) {
+        // climb up
+        node = node.parent
+        continue
+      }
 
-    if (matchingOverrideId) {
-      return this.getNode(this.overrides[matchingOverrideId].target)
-    }
+      // we have children, but the orientation doesn't match, so try our parent
+      if (!isDirectionAndOrientationMatching(node.orientation, direction)) {
+        // climb up
+        node = node.parent
+        continue
+      }
 
-    // if we're on a leaf, climb up
-    if (isNodeFocusable(node)) {
-      return this.climbUp(this.getNode(node.parent), direction)
-    }
+      // if we couldn't find any focusable candidate within children or we get currently
+      // activeChild, we have to look for other focusable candidate, climb up
+      if (!this.getNextFocusableChildInDirection(node, direction)) {
+        // climb up
+        node = node.parent
+        continue
+      }
 
-    // if the node we're on contains no focusable children, climb up
-    if (!isNodeInPaths(this.focusableNodePathList, node)) {
-      return this.climbUp(this.getNode(node.parent), direction)
-    }
-
-    // we have children, but the orientation doesn't match, so try our parent
-    if (!isDirectionAndOrientationMatching(node.orientation, direction)) {
-      return this.climbUp(this.getNode(node.parent), direction)
-    }
-
-    const nextChildInDirection = this.getNextChildInDirection(node, direction)
-
-    // if we dont have a next child, just return the node. this is primarily for use during unregistering
-    if (!nextChildInDirection) {
       return node
     }
 
-    // if the next child in the direction is both the same as this node's activeChild
-    // AND a leaf, bubble up too - handles nested wrappers, like docs/test-diagrams/fig-3.png
-    const isNextChildCurrentActiveChild = (nextChildInDirection && nextChildInDirection.id === node.activeChild)
-    const isNextChildFocusable = isNodeFocusable(this.getNode(node.activeChild))
-    const isNodeInFocusablePath = isNodeInPaths(this.focusableNodePathList, node)
-    if (isNextChildCurrentActiveChild && (isNextChildFocusable || isNodeInFocusablePath)) {
-      return this.climbUp(this.getNode(node.parent), direction)
-    }
-
-    return node
+    return undefined
   }
 
   /**
-   * starting from the given node, dig down the navigation tree until we find a focusable
+   * Starting from the given node, dig down the navigation tree until we find a focusable
    * leaf, and return it. dig "direction" priority:
    * - index align mode
    * - active child
-   * - first child
+   * - first focusable child
    *
-   * @param {object} node
+   * @param {object} node - node, from which digging down starts
+   * @param {string} [direction] - direction in which to traverse while digging down
    */
-  digDown (node: Node, direction: string = null): Node {
-    // if the active child is focusable, return it
-    if (isNodeFocusable(node)) {
-      return node
-    }
+  digDown (node: Node, direction: Direction = Directions.UNSPECIFIED): Node | undefined {
+    while (node) {
+      // If the node is focusable, then return it, but only when it doesn't contain focusable children.
+      // Otherwise, digging down to "the deepest" focusable node.
+      // Focusable "leaf" has a higher priority than focusable "container".
+      if (isNodeFocusable(node) && (node.isStopPropagate || !this.doesNodeHaveFocusableChildren(node))) {
+        return node
+      }
 
-    /*
-    if we're in a nested grid
-      if we're going VERTICAL DOWN
-        take the first child, and then match the index
-      if we're going VERTICAL UP
-        take the last child, and then match the index
+      /*
+      if we're in a nested grid
+        if we're going VERTICAL DOWN
+          take the first child, and then match the index
+        if we're going VERTICAL UP
+          take the last child, and then match the index
 
-    if we're in a nested grid
-      and we're going HORIZONTAL LEFT
-        take the matching index of the same depth, and then the last child
-      and we're going HORIZONTAL RIGHT
-        take the matching index of the same depth, and then the first child
+      if we're in a nested grid
+        and we're going HORIZONTAL LEFT
+          take the matching index of the same depth, and then the last child
+        and we're going HORIZONTAL RIGHT
+          take the matching index of the same depth, and then the first child
 
-    if its not a nested grid, take the matching index
-    */
+      if its not a nested grid, take the matching index
+      */
 
-    if (this.isIndexAlignMode) {
-      if (node.isIndexAlign) {
-        // we're in a nested grid, so need to take into account orientation and direction of travel
-        const nodeParent = this.getNode(node.parent)
-        if (nodeParent.orientation === 'vertical') {
-          if (direction === 'UP') {
-            return this.digDown(_findChildWithClosestIndex(this.getNodeLastChild(node), this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction)
+      if (this.isIndexAlignMode) {
+        const currentFocusedNode = this.getCurrentFocusNode()
+        const currentFocusedIndexRange = currentFocusedNode.indexRange
+        const currentFocusedIndex = currentFocusedIndexRange ? currentFocusedIndexRange[0] : currentFocusedNode.index
+        if (node.isIndexAlign) {
+          // we're in a nested grid, so need to take into account orientation and direction of travel
+          if (node.parent.orientation === Orientations.VERTICAL) {
+            if (direction === Directions.UP) {
+              // dig down
+              node = findChildWithClosestIndex(this.getNodeLastChild(node), currentFocusedIndex, currentFocusedIndexRange)
+              continue
+            }
+            if (direction === Directions.DOWN) {
+              // dig down
+              node = findChildWithClosestIndex(this.getNodeFirstChild(node), currentFocusedIndex, currentFocusedIndexRange)
+              continue
+            }
           }
-          if (direction === 'DOWN') {
-            return this.digDown(_findChildWithClosestIndex(this.getNodeFirstChild(node), this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction)
+
+          if (node.parent.orientation === Orientations.HORIZONTAL) {
+            if (direction === Directions.LEFT) {
+              // dig down
+              node = this.getNodeLastChild(findChildWithClosestIndex(node, currentFocusedNode.parent.index))
+              continue
+            }
+            if (direction === Directions.RIGHT) {
+              // dig down
+              node = this.getNodeFirstChild(findChildWithClosestIndex(node, currentFocusedNode.parent.index))
+              continue
+            }
           }
         }
 
-        if (nodeParent.orientation === 'horizontal') {
-          if (direction === 'LEFT') {
-            const firstStep = _findChildWithClosestIndex(node, this.getNode(this.currentFocusNode.parent).index)
-            return this.digDown(this.getNodeLastChild(firstStep), direction)
-          }
-          if (direction === 'RIGHT') {
-            const firstStep = _findChildWithClosestIndex(node, this.getNode(this.currentFocusNode.parent).index)
-            return this.digDown(this.getNodeFirstChild(firstStep), direction)
-          }
+        // we're not in a nested grid, so just look for matching index ranges or index
+        const matchingViaIndexRange = findChildWithMatchingIndexRange(node, currentFocusedIndex)
+        if (matchingViaIndexRange) {
+          // dig down
+          node = matchingViaIndexRange
+          continue
+        } else {
+          // dig down
+          node = findChildWithClosestIndex(node, currentFocusedIndex, currentFocusedIndexRange)
+          continue
         }
       }
 
-      // we're not in a nested grid, so just look for matching index ranges or index
-      const matchingViaIndexRange = _findChildWithMatchingIndexRange(node, this.currentFocusNodeIndex)
-      if (matchingViaIndexRange) {
-        return this.digDown(matchingViaIndexRange, direction)
+      // if possible, picking a branch that had focus in the past, one of its children was focused
+      if (node.activeChild) {
+        // dig down
+        node = node.activeChild
+        continue
       }
-      return this.digDown(_findChildWithClosestIndex(node, this.currentFocusNodeIndex, this.currentFocusNodeIndexRange), direction)
+
+      // otherwise simply digging deeper, picking branch with first focusable candidate
+      node = this.getNextFocusableChildInDirection(node, Directions.UNSPECIFIED)
     }
 
-    if (!isNodeFocusable(node) && !this.doesNodeHaveFocusableChildren(node)) {
-      const parentNode = this.getNode(node.parent)
-      const nextSiblingFromNode = this.getNextChildInDirection({ ...parentNode, activeChild: node.id }, direction)
-      // if the next sibling is ME, we're in an infinite loop - just return null
-      if (nextSiblingFromNode.id === node.id) {
-        return null
-      }
-      return this.digDown(nextSiblingFromNode, direction)
-    }
-
-    // if we dont have an active child, use the first child
-    if (!node.activeChild) {
-      this.setActiveChild(node.id, this.getNodeFirstChild(node).id)
-    }
-
-    const nextChild = node.children[node.activeChild]
-
-    return (isNodeFocusable(nextChild)) ? nextChild : this.digDown(nextChild, direction)
+    return undefined
   }
 
   /**
-   * gets the semantic next child for a given direction
-   * if the direction is left or up, return the semantic previous child of the node
-   * if the direction is right or down, return the semantic next child of the node
+   * Gets the semantic next focusable child for a given direction.
    *
-   * @param {object} node
-   * @param {string} direction
-   */
-  getNextChildInDirection (node: Node, direction: string = null): Node {
-    if (!direction) {
-      return this.getNextChild(node)
-    }
-
-    direction = direction.toUpperCase()
-
-    if (node.orientation === 'horizontal' && direction === 'RIGHT') {
-      return this.getNextChild(node)
-    }
-    if (node.orientation === 'horizontal' && direction === 'LEFT') {
-      return this.getPrevChild(node)
-    }
-    if (node.orientation === 'vertical' && direction === 'DOWN') {
-      return this.getNextChild(node)
-    }
-    if (node.orientation === 'vertical' && direction === 'UP') {
-      return this.getPrevChild(node)
-    }
-
-    return null
-  }
-
-  /**
-   * get the semantic "next" child for a node
+   * If the direction is 'left' or 'up', return the semantic previous focusable child of the node.
+   * If the direction is 'right' or 'down'', return the semantic next focusable child of the node.
+   * If the direction is *, return the semantic next (or previous, if next not found) focusable child of the node.
    *
-   * @param {object} node
+   * @param {object} node - node, for which next focusable child for a given direction is returned
+   * @param {string} direction - direction in which to traverse while searching for next focusable child
    */
-  getNextChild (node: Node): Node {
-    if (!node.activeChild) {
-      this.setActiveChild(node.id, this.getNodeFirstChild(node).id)
-    }
-
-    const currentActiveIndex = node.children[node.activeChild].index
-
-    let nextChild = _findChildWithIndex(node, currentActiveIndex + 1)
-
-    if (!nextChild) {
-      if (node.isWrapping) {
-        nextChild = this.getNodeFirstChild(node)
-      } else {
-        nextChild = node.children[node.activeChild]
-      }
-    }
-
-    return nextChild
-  }
-
-  /**
-   * get the semantic "previous" child for a node
-   *
-   * @param {object} node
-   */
-  getPrevChild (node: Node): Node {
-    if (!node.activeChild) {
-      this.setActiveChild(node.id, this.getNodeFirstChild(node).id)
-    }
-
-    const currentActiveIndex = node.children[node.activeChild].index
-
-    let prevChild = _findChildWithIndex(node, currentActiveIndex - 1)
-
-    if (!prevChild) {
-      // cant find a prev child, so the prev child is the current child
-      if (node.isWrapping) {
-        prevChild = this.getNodeLastChild(node)
-      } else {
-        prevChild = node.children[node.activeChild]
-      }
-    }
-
-    return prevChild
-  }
-
-  /**
-   * get the first child of a node, based on index
-   *
-   * @param {object} node
-   */
-  getNodeFirstChild (node: Node): Node {
-    if (!node.children) {
+  getNextFocusableChildInDirection (node: Node, direction: Direction): Node | undefined {
+    if (!node) {
       return undefined
     }
 
-    const orderedIndexes = Object.keys(node.children).map(childId => node.children[childId].index).sort((a, b) => a - b)
+    const validOrientation = toValidOrientation(node.orientation)
+    const validDirection = toValidDirection(direction)
 
-    return _findChildWithIndex(node, orderedIndexes[0])
+    let nextChildInDirection
+
+    const traverseForward = (validDirection === Directions.UNSPECIFIED) ||
+      (validOrientation === Orientations.HORIZONTAL && validDirection === Directions.RIGHT) ||
+      (validOrientation === Orientations.VERTICAL && validDirection === Directions.DOWN)
+
+    if (traverseForward) {
+      nextChildInDirection = this.getNextFocusableChild(node)
+    }
+
+    const traverseBackward = (validDirection === Directions.UNSPECIFIED) ||
+      (validOrientation === Orientations.HORIZONTAL && validDirection === Directions.LEFT) ||
+      (validOrientation === Orientations.VERTICAL && validDirection === Directions.UP)
+
+    if (!nextChildInDirection && traverseBackward) {
+      nextChildInDirection = this.getPrevFocusableChild(node)
+    }
+
+    return nextChildInDirection
   }
 
   /**
-   * get the last child of a node, based on index
+   * Gets the semantic "next" child for a node that might be focused or bypass focus to its children.
    *
-   * @param {object} node
+   * @param {object} node - node, for which next focusable child is returned
    */
-  getNodeLastChild (node: Node): Node {
-    if (!node.children) {
+  getNextFocusableChild (node: Node): Node | undefined {
+    if (!node || !node.children) {
+      return undefined
+    }
+    // there's no child that is (or was) focused, so we can quickly pick first focusable child
+    if (!node.activeChild) {
+      return this.getNodeFirstFocusableChild(node)
+    }
+
+    // starting right after child that is (or was) focused
+    for (let i = node.activeChild.index + 1; i < node.children.length; i++) {
+      if (this.isNodeFocusableCandidate(node.children[i])) {
+        return node.children[i]
+      }
+    }
+
+    // we haven't found a node so far, so looking from the beginning of list up to current active node if possible
+    if (node.isWrapping) {
+      for (let i = 0; i < node.activeChild.index; i++) {
+        if (this.isNodeFocusableCandidate(node.children[i])) {
+          return node.children[i]
+        }
+      }
+    }
+
+    return undefined
+  }
+
+  /**
+   * Gets the semantic "previous" child for a node that might be focused or bypass focus to its children.
+   *
+   * @param {object} node - node, for which previous focusable child is returned
+   */
+  getPrevFocusableChild (node: Node): Node | undefined {
+    if (!node || !node.children) {
+      return undefined
+    }
+    // there's no child that is (or was) focused, so we can quickly pick last focusable child
+    if (!node.activeChild) {
+      return this.getNodeLastFocusableChild(node)
+    }
+
+    // starting right before child that is (or was) focused
+    for (let i = node.activeChild.index - 1; i >= 0; i--) {
+      if (this.isNodeFocusableCandidate(node.children[i])) {
+        return node.children[i]
+      }
+    }
+
+    // we haven't found a node so far, so looking from the end of list up to current active node if possible
+    if (node.isWrapping) {
+      for (let i = node.children.length - 1; i > node.activeChild.index; i--) {
+        if (this.isNodeFocusableCandidate(node.children[i])) {
+          return node.children[i]
+        }
+      }
+    }
+
+    return undefined
+  }
+
+  /**
+   * Gets the first child of a node, based on index.
+   *
+   * @param {object} node - node, for which first child is returned
+   */
+  getNodeFirstChild (node: Node): Node | undefined {
+    if (!node || !node.children) {
       return undefined
     }
 
-    const orderedIndexes = Object.keys(node.children).map(childId => node.children[childId].index).sort((a, b) => a - b)
-
-    return _findChildWithIndex(node, orderedIndexes[orderedIndexes.length - 1])
+    return node.children[0]
   }
 
   /**
-   * given an event, handle any state changes that may arise from the direction pressed.
-   * state changes based on climbUp'ing and digDown'ing from the current focusedNode
+   * Gets the last child of a node, based on index.
+   *
+   * @param {object} node - node, for which last child is returned
+   */
+  getNodeLastChild (node: Node): Node | undefined {
+    if (!node || !node.children) {
+      return undefined
+    }
+
+    return node.children[node.children.length - 1]
+  }
+
+  /**
+   * Gets the first focusable (or containing focusable nodes) child of a node, based on index.
+   *
+   * @param {object} node - node, for which first focusable child is returned
+   */
+  getNodeFirstFocusableChild (node: Node): Node | undefined {
+    if (!node || !node.children) {
+      return undefined
+    }
+
+    for (let i = 0; i < node.children.length; i++) {
+      if (this.isNodeFocusableCandidate(node.children[i])) {
+        return node.children[i]
+      }
+    }
+
+    return undefined
+  }
+
+  /**
+   * Gets the last focusable (or containing focusable nodes) child of a node, based on index.
+   *
+   * @param {object} node - node, for which last focusable child is returned
+   */
+  getNodeLastFocusableChild (node: Node): Node | undefined {
+    if (!node || !node.children) {
+      return undefined
+    }
+
+    for (let i = node.children.length - 1; i >= 0; i--) {
+      if (this.isNodeFocusableCandidate(node.children[i])) {
+        return node.children[i]
+      }
+    }
+
+    return undefined
+  }
+
+  /**
+   * Given an event, handle any state changes that may arise from the direction pressed.
+   *
+   * State changes based on climbing up and digging down from the current focusedNode
    *
    * @param {object} event
-   * @param {string} [event.keyCode]
+   * @param {number} [event.keyCode]
    * @param {string} [event.direction]
+   * @param {object} [options]
+   * @param {boolean} [options.forceFocus] - if true and there's no currently focused node, LRUD will try to focus
+   *                                         first focusable node; default: false
    */
-  handleKeyEvent (event: KeyEvent): Node | void {
-    const direction = (event.keyCode) ? getDirectionForKeyCode(event.keyCode) : event.direction.toUpperCase()
-    const currentFocusNode = this.getNode(this.currentFocusNodeId)
+  handleKeyEvent (event: KeyEvent, options: HandleKeyEventOptions = { forceFocus: false }): Node | undefined {
+    if (!event) {
+      return undefined
+    }
+
+    const direction = (event.keyCode) ? getDirectionForKeyCode(event.keyCode) : toValidDirection(event.direction)
+    if (!direction) {
+      return undefined
+    }
+
+    const currentFocusNode = this.getCurrentFocusNode()
 
     // if all we're doing is processing an enter, just run the `onSelect` function of the current node...
-    if (direction === 'ENTER') {
-      this.emitter.emit('select', currentFocusNode)
-      if (currentFocusNode.onSelect) {
-        currentFocusNode.onSelect(currentFocusNode)
+    if (direction === Directions.ENTER) {
+      if (currentFocusNode) {
+        this.emitter.emit('select', currentFocusNode)
+        if (currentFocusNode.onSelect) {
+          currentFocusNode.onSelect(currentFocusNode)
+        }
       }
-      return
+      return currentFocusNode
     }
 
-    // climb up from where we are...
-    const topNode = this.climbUp(currentFocusNode, direction)
+    let topNode: Node
+    let focusableNode: Node
 
-    // ... if we cant find a top node, its an invalid move - just return
-    if (!topNode) {
-      return
+    if (!currentFocusNode && options.forceFocus) {
+      // No node is focused, focusing first focusable node
+      topNode = this.getRootNode()
+      focusableNode = this.getNextFocusableChildInDirection(topNode, Directions.UNSPECIFIED)
+    } else {
+      // climb up from where we are...
+      topNode = this.climbUp(currentFocusNode, direction)
+
+      // ... if we cant find a top node, its an invalid move - just return
+      if (!topNode) {
+        return undefined
+      }
+
+      // ...if we need to align indexes, turn the flag on now...
+      this.isIndexAlignMode = topNode.isIndexAlign === true
+
+      // ...get the top's next child in the direction we're going...
+      const nextChild = this.getNextFocusableChildInDirection(topNode, direction)
+
+      // ...and depending on if we're able to find a child, dig down from the child or from the original top...
+      focusableNode = this.digDown(nextChild || topNode, direction)
     }
-
-    // ...if we need to align indexes, turn the flag on now...
-    this.isIndexAlignMode = topNode.isIndexAlign === true
-
-    // ...get the top's next child in the direction we're going...
-    const nextChild = this.getNextChildInDirection(topNode, direction)
-
-    // ...and depending on if we're able to find a child, dig down from the child or from the original top...
-    const focusableNode: Node = (nextChild) ? this.digDown(nextChild, direction) : this.digDown(topNode, direction)
 
     if (!focusableNode) {
-      return
+      return undefined
     }
 
     // ...give an opportunity for the move to be cancelled by the leaving node
-    if (currentFocusNode.shouldCancelLeave) {
+    if (currentFocusNode && currentFocusNode.shouldCancelLeave) {
       if (currentFocusNode.shouldCancelLeave(currentFocusNode, focusableNode)) {
         if (currentFocusNode.onLeaveCancelled) {
           currentFocusNode.onLeaveCancelled(currentFocusNode, focusableNode)
@@ -710,14 +805,16 @@ export class Lrud {
     }
 
     // ...and then assign focus
-    this.assignFocus(focusableNode.id)
+    this.assignFocus(focusableNode)
+
+    const offset = (direction === Directions.LEFT || direction === Directions.UP) ? -1 : 1
 
     // emit events and fire functions now that the move has completed
     this.emitter.emit('move', {
       leave: currentFocusNode,
       enter: focusableNode,
       direction,
-      offset: (direction === 'LEFT' || direction === 'UP') ? -1 : 1
+      offset
     })
 
     if (topNode.onMove) {
@@ -726,11 +823,11 @@ export class Lrud {
         leave: currentFocusNode,
         enter: focusableNode,
         direction,
-        offset: (direction === 'LEFT' || direction === 'UP') ? -1 : 1
+        offset
       })
     }
 
-    if (currentFocusNode.onLeave) {
+    if (currentFocusNode && currentFocusNode.onLeave) {
       currentFocusNode.onLeave(currentFocusNode)
     }
     if (focusableNode.onEnter) {
@@ -741,22 +838,26 @@ export class Lrud {
   }
 
   /**
-   * Sets the activeChild of the parentId node to the value of the childId node
+   * Sets the activeChild of the parent node to the value of the child node.
    *
-   * @param {string} parentId
-   * @param {string} childId
+   * @param {string|object} parent - node or id of the node, which activeChild is about to be set
+   * @param {string|object} child - node or id of the node, that is about to be set as parent's activeChild
    */
-  setActiveChild (parentId: string, childId: string): void {
-    const child = this.getNode(childId)
-    const parent = this.getNode(parentId)
-    if (!child) {
+  setActiveChild (parent: NodeId | Node, child: NodeId | Node): void {
+    parent = typeof parent === 'string' ? this.getNode(parent) : parent as Node
+    child = typeof child === 'string' ? this.getNode(child) : child as Node
+
+    if (!parent || !child) {
+      return
+    }
+    if (child.parent.id !== parent.id) {
       return
     }
 
     // the parent already has an active child, and its NOT the same child that we're now setting
-    if (parent.activeChild && parent.activeChild !== child.id) {
-      const currentActiveChild = this.getNode(parent.activeChild)
-      parent.activeChild = child.id
+    if (parent.activeChild && parent.activeChild.id !== child.id) {
+      const currentActiveChild = parent.activeChild
+      parent.activeChild = child
       this.emitter.emit('inactive', currentActiveChild)
       if (currentActiveChild.onInactive) {
         currentActiveChild.onInactive(currentActiveChild)
@@ -773,7 +874,7 @@ export class Lrud {
         })
       }
     } else if (!parent.activeChild) {
-      parent.activeChild = child.id
+      parent.activeChild = child
       this.emitter.emit('active', child)
       if (child.onActive) {
         child.onActive(child)
@@ -789,71 +890,93 @@ export class Lrud {
   }
 
   /**
-   * Sets the activeChild of the parentId node to the value of the childId node
-   * if the parent node has a parent itself, it digs up the tree and sets those activeChild values
+   * Sets the activeChild of the parent node to the value of the child node.
    *
-   * @param {string} parentId
-   * @param {string} childId
+   * If the parent node has a parent itself, it digs up the tree and sets those activeChild values.
+   *
+   * @param {string|object} parent - node or id of the node, which activeChild is about to be set
+   * @param {string|object} child - node or id of the node, that is about to be set as parent's activeChild
    */
-  setActiveChildRecursive (parentId: string, childId: string): void {
-    this.setActiveChild(parentId, childId)
-    const parent = this.getNode(parentId)
+  setActiveChildRecursive (parent: NodeId | Node, child: NodeId | Node): void {
+    parent = typeof parent === 'string' ? this.getNode(parent) : parent as Node
+    child = typeof child === 'string' ? this.getNode(child) : child as Node
 
-    // if the parent has a parent, bubble up
-    if (parent.parent) {
-      this.setActiveChildRecursive(parent.parent, parent.id)
+    while (parent) {
+      this.setActiveChild(parent, child)
+      // if the parent has a parent, bubble up
+      child = parent
+      parent = parent.parent
     }
   }
-  /**
-   * set the current focus of the instance to the given node ID
-   * if the given node ID points to a non-focusable node, we dig down from
-   * the given node to find a node that can be focused on
-   * calls `onFocus` on the given node, if it exists, and emits a `focus` event
-   * also calls `onBlur` on the node that WAS focused before this function was called
-   *
-   * @param {string} nodeId
-   */
-  assignFocus (nodeId: string): void {
-    let node = this.getNode(nodeId)
 
-    if (node.children && !this.doesNodeHaveFocusableChildren(node)) {
-      throw new Error(`"${node.id}" does not have focusable children. Are you trying to assign focus to ${node.id}?`)
+  /**
+   * Unsets the activeChild of the parent nodes branch ensuring that activeChild is on the unsetting child node path
+   * and not on the currentFocusNode's path, unless child node is a currentFocusNode.
+   *
+   * @param {string|object} parent - node or id of the node, which activeChild is about to be unset
+   * @param {string|object} activeChild - node or id of the node, that is about to be unset as parent's activeChild
+   */
+  unsetActiveChild (parent: NodeId | Node, activeChild: NodeId | Node): void {
+    parent = typeof parent === 'string' ? this.getNode(parent) : parent as Node
+    activeChild = typeof activeChild === 'string' ? this.getNode(activeChild) : activeChild as Node
+
+    if (!parent || !parent.activeChild) {
+      return
+    }
+    if (!activeChild || parent.activeChild !== activeChild) {
+      return
     }
 
-    if (!isNodeFocusable(node)) {
-      node = this.digDown(node)
+    const isActiveChildAtCurrentFocusNodeBranch = this.isSameOrParentForChild(activeChild, this.currentFocusNode)
+
+    while (parent && parent.activeChild) {
+      const isParentAtActiveChildBranch = parent.activeChild === activeChild
+      const isParentAtCurrentFocusedNodeBranch = this.isSameOrParentForChild(parent.activeChild, this.currentFocusNode)
+
+      if (isActiveChildAtCurrentFocusNodeBranch || (isParentAtActiveChildBranch && !isParentAtCurrentFocusedNodeBranch)) {
+        parent.activeChild = undefined
+      }
+
+      activeChild = parent
+      parent = parent.parent
+    }
+  }
+
+  /**
+   * Sets the current focus of the instance to the given node or node ID.
+   *
+   * If the given node points to a non-focusable node, we dig down from
+   * the given node to find a node that can be focused on.
+   *
+   * Calls `onFocus` on the given node, if it exists, and emits a `focus` event,
+   * also calls `onBlur` on the node that WAS focused before this function was called.
+   *
+   * @param {string|object} node - node or id of the node to be focused
+   */
+  assignFocus (node: NodeId | Node): void {
+    node = typeof node === 'string' ? this.getNode(node) : node as Node
+
+    // Focus might be assigned to node that is not focusable itself, but
+    // contains focusable children, looking for such child
+    if (node && !isNodeFocusable(node)) {
+      node = this.digDown(node, Directions.UNSPECIFIED)
     }
 
     if (!node) {
       throw new Error('trying to assign focus to a non focusable node')
     }
 
-    if (this.currentFocusNodeId) {
-      const previouslyFocusedNode = this.getNode(this.currentFocusNodeId)
-      if (previouslyFocusedNode) {
-        this.emitter.emit('blur', previouslyFocusedNode)
-        if (previouslyFocusedNode.onBlur) {
-          previouslyFocusedNode.onBlur(previouslyFocusedNode)
-        }
+    if (this.currentFocusNode) {
+      this.emitter.emit('blur', this.currentFocusNode)
+      if (this.currentFocusNode.onBlur) {
+        this.currentFocusNode.onBlur(this.currentFocusNode)
       }
     }
 
-    this.currentFocusNodeId = node.id
     this.currentFocusNode = node
 
-    if (node.indexRange) {
-      this.currentFocusNodeIndex = node.indexRange[0]
-      this.currentFocusNodeIndexRangeLowerBound = node.indexRange[0]
-      this.currentFocusNodeIndexRangeUpperBound = node.indexRange[1]
-      this.currentFocusNodeIndexRange = node.indexRange
-    } else {
-      this.currentFocusNodeIndex = node.index
-      this.currentFocusNodeIndexRangeLowerBound = node.index
-      this.currentFocusNodeIndexRangeUpperBound = node.index
-    }
-
     if (node.parent) {
-      this.setActiveChildRecursive(node.parent, node.id)
+      this.setActiveChildRecursive(node.parent, node)
     }
 
     if (node.onFocus) {
@@ -864,123 +987,178 @@ export class Lrud {
   }
 
   /**
-   * If the focus of the tree is out of sync, ie, the current focused node becomes unfocusable this can be used to fall back to another focus.
-   * @param {focusedNode}
+   * If the focus of the tree is out of sync, ie, the current focused node becomes unfocusable,
+   * this can be used to fall back to another focus.
+   *
+   * @param {object} node - node, based on which focus is recalculated
    */
   recalculateFocus (node: Node): void {
-    const parentNode = this.getNode(node.parent)
-    const top = this.climbUp(parentNode, '*')
-    if (top) {
-      const prev = this.getPrevChild(top)
-      if (isNodeFocusable(prev) || (prev && prev.children && Object.keys(prev.children).length)) {
-        const child = this.digDown(prev)
-        this.assignFocus(child.id)
-      } else {
-        this.assignFocus(top.id)
-      }
+    const topNode = this.climbUp(node, Directions.UNSPECIFIED) || this.getRootNode()
+    const nextChild = this.getNextFocusableChildInDirection(topNode, Directions.UNSPECIFIED)
+    const focusableNode = this.digDown(nextChild || topNode, Directions.UNSPECIFIED)
+    if (focusableNode) {
+      this.assignFocus(focusableNode)
     } else {
       this.currentFocusNode = undefined
-      this.currentFocusNodeId = undefined
-      this.currentFocusNodeIndex = undefined
     }
   }
 
   /**
-   * given a tree, return an array of Nodes in that tree
+   * Given a tree, register all of its nodes into this instance.
    *
-   * @param {object} tree
+   * @param {object} subTreeRootNodeConfig
    */
+  registerTree (subTreeRootNodeConfig: NodeConfig): void {
+    if (!subTreeRootNodeConfig) {
+      return
+    }
 
-  /**
-   * given a tree, register all of its nodes into this instance
-   *
-   * @param {object} tree
-   */
-  registerTree (tree: object): void {
-    getNodesFromTree(tree).forEach(node => {
-      this.registerNode(node.id, node)
+    traverseNodeSubtree(subTreeRootNodeConfig, traversedNodeConfig => {
+      this.registerNode(traversedNodeConfig.id, traversedNodeConfig)
+      if (traversedNodeConfig.children) {
+        for (let i = 0; i < traversedNodeConfig.children.length; i++) {
+          traversedNodeConfig.children[i].parent = traversedNodeConfig.id
+        }
+      }
     })
   }
 
   /**
-   * given a tree object, attempt to register that tree into the current lrud instance
+   * Given a tree object, attempt to register that tree into the current lrud instance.
    *
-   * if the given tree already exists as a branch in the instance tree, the new tree will replace that branch
+   * If the given tree already exists as a branch in the instance tree, the new tree will replace that branch.
    *
-   * if the new tree doesn't already exist as a branch in the instance tree, this function will register the new
-   * tree as a branch against the root node, as per standard registerNode() behaviour
+   * If the new tree doesn't already exist as a branch in the instance tree, this function will register the new
+   * tree as a branch against the root node, as per standard registerNode() behaviour.
    *
-   * @param {object} tree
-   * @param {object} options
-   * @param {object} options.maintainIndex if true, and new tree is replacing an existing branch of the tree, maintain the original branches relative index
+   * @param {object} subTreeRootNodeConfig
+   * @param {object} [options]
+   * @param {boolean} [options.maintainIndex] - if true, and new tree is replacing an existing branch of the tree,
+   *                                            maintain the original branches relative index; default: true
    */
-  insertTree (tree: object, options: InsertTreeOptions = { maintainIndex: true }): void {
-    const replacementNode = tree[Object.keys(tree)[0]]
-
-    if (!replacementNode.id) {
-      replacementNode.id = Object.keys(tree)[0]
+  insertTree (subTreeRootNodeConfig: NodeConfig, options: InsertTreeOptions = { maintainIndex: true }): void {
+    if (!subTreeRootNodeConfig) {
+      return
     }
 
-    const originalNode = this.pickNode(replacementNode.id)
-    if (!replacementNode.parent && originalNode && originalNode.parent) {
-      replacementNode.parent = originalNode.parent
+    const nodeToReplace = this.pickNode(subTreeRootNodeConfig.id)
+    if (!subTreeRootNodeConfig.parent && nodeToReplace && nodeToReplace.parent) {
+      subTreeRootNodeConfig.parent = nodeToReplace.parent.id
     }
 
-    const parentNode = this.getNode(replacementNode.parent)
-
-    if (options.maintainIndex && originalNode && originalNode.index) {
-      replacementNode.index = originalNode.index
-      Object.keys(parentNode.children).forEach(childId => {
-        const child = parentNode.children[childId]
-        if (child.index >= originalNode.index) {
-          child.index += 1
-        }
-      })
+    if (options.maintainIndex && nodeToReplace && typeof nodeToReplace.index === 'number') {
+      subTreeRootNodeConfig.index = nodeToReplace.index
     }
 
-    this.registerTree(tree)
-
-    if (options.maintainIndex) {
-      this.reindexChildrenOfNode(parentNode)
-    }
-  }
-
-  doesNodeHaveFocusableChildren (node: Node): boolean {
-    return this.focusableNodePathList.some(p => p.indexOf(`${node.id}.`) > -1)
+    this.registerTree(subTreeRootNodeConfig)
   }
 
   /**
-   * Change the ability of a node to be focused in place
-   * @param {string} nodeId
-   * @param {boolean} isFocusable
+   * Checks is node contains children that might be focused (are a focusable candidates).
+   * It checks the whole node's children sub-tree, not only direct children.
+   *
+   * @param {object} node - node, which children are checked against being focusable candidates
    */
-  setNodeFocusable (nodeId: string, isFocusable: boolean): void {
-    const node = this.getNode(nodeId)
-    if (!node) return
+  doesNodeHaveFocusableChildren (node: Node): boolean {
+    if (!node || !node.children) {
+      return false
+    }
+
+    let nodeHaveFocusableChildren = false
+    traverseNodeSubtree(node, traversedNode => {
+      // ignoring when subtree root, we are only interested in children focusability
+      if (traversedNode !== node) {
+        nodeHaveFocusableChildren = nodeHaveFocusableChildren || isNodeFocusable(traversedNode)
+      }
+      return nodeHaveFocusableChildren
+    })
+
+    return nodeHaveFocusableChildren
+  }
+
+  /**
+   * Checks if node is focusable or contains focusable children.
+   *
+   * @param {object} node - node to check against being focusable candidate
+   */
+  isNodeFocusableCandidate (node: Node): boolean {
+    return isNodeFocusable(node) || this.doesNodeHaveFocusableChildren(node)
+  }
+
+  /**
+   * Checks if given parent node is a child's parent node or the node itself. If it's a parent it doesn't have
+   * to be a direct one, but has to be placed at a path to the root node.
+   *
+   * E.g.
+   *        root
+   *        / \
+   *       A   B
+   *      /     \
+   *     AA      BA
+   *    /  \
+   *  AAA  AAB
+   *
+   *  Expect:
+   *    isSameOrParentForChild('A', 'A') -> true
+   *    isSameOrParentForChild('A', 'AA') -> true
+   *    isSameOrParentForChild('AA', 'A') -> false
+   *    isSameOrParentForChild('A', 'AAA') -> true
+   *    isSameOrParentForChild('AAA', 'AA') -> false
+   *    isSameOrParentForChild('A', 'BA') -> false
+   *    isSameOrParentForChild('BA', 'A') -> false
+   *    isSameOrParentForChild('AA', 'BA') -> false
+   *    isSameOrParentForChild('BA', 'AA') -> false
+   *
+   * @param {string|object} parent - parent or id of the examined parent
+   * @param {string|object} child - node id of the node which parents are queried
+   */
+  isSameOrParentForChild (parent: NodeId | Node, child: NodeId | Node): boolean {
+    parent = typeof parent === 'string' ? this.getNode(parent) : parent as Node
+    child = typeof child === 'string' ? this.getNode(child) : child as Node
+
+    if (!parent || !child) {
+      return false
+    }
+
+    if (parent === child) {
+      return true
+    }
+
+    while (child) {
+      if (child.parent === parent) {
+        return true
+      }
+      child = child.parent
+    }
+
+    return false
+  }
+
+  /**
+   * Changes the ability of a node to be focused in place.
+   *
+   * @param {string|object} node - node or id of the node, which focusability property is about to be changed
+   * @param {boolean} isFocusable - focusability value to set
+   */
+  setNodeFocusable (node: NodeId | Node, isFocusable: boolean): void {
+    node = typeof node === 'string' ? this.getNode(node) : node as Node
+    if (!node) {
+      return
+    }
 
     const nodeIsFocusable = isNodeFocusable(node)
-    if (nodeIsFocusable === isFocusable) return
+    if (nodeIsFocusable === isFocusable) {
+      return
+    }
 
     node.isFocusable = isFocusable
     if (!isFocusable) {
-      const path = this.getPathForNodeId(nodeId)
-      this.focusableNodePathList.splice(this.focusableNodePathList.indexOf(path), 1)
-      const parent = this.getNode(node.parent)
-      if (parent && parent.activeChild && parent.activeChild === nodeId) {
-        delete parent.activeChild
-        // Reset activeChild
-        const nextChild = this.getNextChild(parent)
-        if (nextChild) {
-          this.setActiveChild(parent.id, nextChild.id)
-        }
-      }
-
-      if (this.currentFocusNodeId === nodeId) {
+      if (this.currentFocusNode === node) {
         this.recalculateFocus(node)
       }
-    } else {
-      const path = this.getPathForNodeId(nodeId)
-      this.focusableNodePathList.push(path)
+      if (node.parent) {
+        this.unsetActiveChild(node.parent, node)
+      }
     }
   }
 }

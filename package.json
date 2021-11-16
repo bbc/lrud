@@ -1,6 +1,6 @@
 {
   "name": "lrud",
-  "version": "5.1.1",
+  "version": "8.0.0",
   "description": "Left, Right, Up, Down. A spatial navigation library for devices with input via directional controls",
   "main": "dist/cjs/index.min.js",
   "module": "dist/esm/index.js",
@@ -26,26 +26,25 @@
     "url": "git@github.com:bbc/lrud.git"
   },
   "devDependencies": {
-    "@types/jest": "^26.0.15",
-    "@typescript-eslint/eslint-plugin": "^2.6.1",
-    "@typescript-eslint/parser": "^2.6.1",
-    "eslint": "^6.6.0",
-    "eslint-config-standard": "^11.0.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-node": "^6.0.1",
-    "eslint-plugin-promise": "^3.8.0",
-    "eslint-plugin-standard": "^3.1.0",
-    "jest": "^26.6.1",
+    "@types/jest": "^26.0.22",
+    "@typescript-eslint/eslint-plugin": "^4.19.0",
+    "@typescript-eslint/parser": "^4.19.0",
+    "eslint": "^7.22.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.3.1",
+    "jest": "^26.6.3",
     "rimraf": "^2.6.2",
     "rollup": "^1.25.1",
     "rollup-plugin-commonjs": "^9.1.2",
     "rollup-plugin-node-resolve": "^4.2.4",
     "rollup-plugin-typescript": "^1.0.1",
-    "rollup-plugin-typescript2": "^0.21.0",
+    "rollup-plugin-typescript2": "^0.30.0",
     "rollup-plugin-uglify": "^6.0.4",
-    "ts-jest": "^26.4.0",
-    "tslib": "^1.9.3",
-    "typescript": "^4.0.5"
+    "ts-jest": "^26.5.4",
+    "tslib": "^2.1.0",
+    "typescript": "^4.2.3"
   },
   "dependencies": {
     "mitt": "^1.2.0"

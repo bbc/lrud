@@ -13,11 +13,19 @@ describe('registerTree()', () => {
     Alpha.registerNode('b', { isFocusable: true })
 
     // register A's tree against B
-    Beta.registerTree(Alpha.tree)
+    Beta.registerTree(Alpha.getRootNode())
 
     // B should now have the correct nodes in its tree
-    expect(Beta.tree.root).toBeTruthy()
-    expect(Beta.tree.root.children.a).toBeTruthy()
-    expect(Beta.tree.root.children.b).toBeTruthy()
+    expect(Beta.nodes.root).toBeTruthy()
+    expect(Beta.nodes.root.children.length).toEqual(2)
+    expect(Beta.nodes.root.children[0].id).toEqual('a')
+    expect(Beta.nodes.root.children[1].id).toEqual('b')
+  })
+
+  test('should not fail when tree is not defined', () => {
+    const navigation = new Lrud()
+    navigation.registerNode('root')
+
+    expect(() => navigation.registerTree(undefined)).not.toThrow()
   })
 })
