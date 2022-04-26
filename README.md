@@ -1,4 +1,4 @@
-# LRUD [![Build Status](https://travis-ci.org/bbc/lrud.svg?branch=master)](https://travis-ci.org/bbc/lrud)
+# LRUD ![Build Status](https://github.com/bbc/lrud/actions/workflows/github-actions.yml/badge.svg?branch=master)
 
 A spatial navigation library for devices with input via directional controls
 
