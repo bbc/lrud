@@ -1,0 +1,12 @@
+name: github-actions
+on: [push, pull_request]
+jobs:
+  check-tests-pass:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - run: npm ci
+      - run: npm run test
