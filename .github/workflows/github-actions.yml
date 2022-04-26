@@ -1,5 +1,5 @@
 name: github-actions
-on: [pull_request]
+on: [push, pull_request]
 jobs:
   check-tests-pass:
     runs-on: ubuntu-latest
