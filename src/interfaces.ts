@@ -60,7 +60,7 @@ export interface Node extends Tree<Node> {
 export interface NodeConfig extends Tree<NodeConfig>, Omit<Node, 'id'|'parent'|'activeChild'|'children'|'overrides'|'overrideSources'> {
   id?: NodeId
   parent?: NodeId
-  activeChild?: NodeId
+  activeChild?: NodeId | Node
 }
 
 export type NodesBag = { [id in NodeId]: Node }

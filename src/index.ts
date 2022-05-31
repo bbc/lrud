@@ -1055,7 +1055,10 @@ export class Lrud {
     if (options.maintainActiveChildren) {
       traverseNodeSubtree(subTreeRootNodeConfig, traversedNodeConfig => {
         if (traversedNodeConfig.activeChild) {
-          this.getNode(traversedNodeConfig.id).activeChild = this.getNode(traversedNodeConfig.activeChild)
+          this.getNode(traversedNodeConfig.id).activeChild = this.getNode(
+            typeof traversedNodeConfig.activeChild === 'string'
+              ? traversedNodeConfig.activeChild
+              : traversedNodeConfig.activeChild.id)
         }
       })
     }
