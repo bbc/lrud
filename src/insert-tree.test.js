@@ -233,4 +233,67 @@ describe('insertTree()', () => {
 
     expect(() => navigation.insertTree(undefined)).not.toThrow()
   })
+
+  test('should not maintain active children if maintainActiveChildren not enabled', () => {
+    const navigation = new Lrud()
+      .registerNode('root')
+      .registerNode('a')
+      .registerNode('b')
+
+    const subTree = {
+      id: 'c',
+      orientation: 'vertical',
+      activeChild: 'c_1',
+      children: [
+        { id: 'c_1', isFocusable: true },
+        { id: 'c_2', isFocusable: true }
+      ]
+    }
+
+    navigation.insertTree(subTree)
+
+    expect(navigation.getNode('c').activeChild).not.toBeDefined()
+  })
+
+  test('should maintain active children if maintainActiveChildren enabled', () => {
+    const navigation = new Lrud()
+      .registerNode('root')
+      .registerNode('a')
+      .registerNode('b')
+
+    const subTree = {
+      id: 'c',
+      orientation: 'vertical',
+      activeChild: 'c_1',
+      children: [
+        { id: 'c_1', isFocusable: true },
+        { id: 'c_2', isFocusable: true }
+      ]
+    }
+
+    navigation.insertTree(subTree, { maintainActiveChildren: true })
+
+    expect(navigation.getNode('c').activeChild.id).toEqual('c_1')
+  })
+
+  test('should maintain active children if Node supplied', () => {
+    const navigation = new Lrud()
+      .registerNode('root')
+      .registerNode('a')
+      .registerNode('b')
+
+    const subTree = {
+      id: 'c',
+      orientation: 'vertical',
+      activeChild: { id: 'c_1' },
+      children: [
+        { id: 'c_1', isFocusable: true },
+        { id: 'c_2', isFocusable: true }
+      ]
+    }
+
+    navigation.insertTree(subTree, { maintainActiveChildren: true })
+
+    expect(navigation.getNode('c').activeChild.id).toEqual('c_1')
+  })
 })
