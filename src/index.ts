@@ -1036,7 +1036,7 @@ export class Lrud {
    * @param {boolean} [options.maintainIndex] - if true, and new tree is replacing an existing branch of the tree,
    *                                            maintain the original branches relative index; default: true
    */
-  insertTree (subTreeRootNodeConfig: NodeConfig, options: InsertTreeOptions = { maintainIndex: true }): void {
+  insertTree (subTreeRootNodeConfig: NodeConfig, options: InsertTreeOptions = { maintainIndex: true, maintainActiveChildren: false }): void {
     if (!subTreeRootNodeConfig) {
       return
     }
@@ -1051,6 +1051,14 @@ export class Lrud {
     }
 
     this.registerTree(subTreeRootNodeConfig)
+
+    if (options.maintainActiveChildren) {
+      traverseNodeSubtree(subTreeRootNodeConfig, traversedNodeConfig => {
+        if (traversedNodeConfig.activeChild) {
+          this.getNode(traversedNodeConfig.id).activeChild = this.getNode(traversedNodeConfig.activeChild)
+        }
+      })
+    }
   }
 
   /**

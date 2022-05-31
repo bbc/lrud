@@ -60,6 +60,7 @@ export interface Node extends Tree<Node> {
 export interface NodeConfig extends Tree<NodeConfig>, Omit<Node, 'id'|'parent'|'activeChild'|'children'|'overrides'|'overrideSources'> {
   id?: NodeId
   parent?: NodeId
+  activeChild?: NodeId
 }
 
 export type NodesBag = { [id in NodeId]: Node }
@@ -75,6 +76,7 @@ export interface HandleKeyEventOptions {
 
 export interface InsertTreeOptions {
   maintainIndex?: boolean
+  maintainActiveChildren?: boolean
 }
 
 export interface UnregisterNodeOptions {
