@@ -966,10 +966,49 @@ export class Lrud {
       throw new Error('trying to assign focus to a non focusable node')
     }
 
+    const currentParents = []
+    const newParents = []
+
     if (this.currentFocusNode) {
       this.emitter.emit('blur', this.currentFocusNode)
       if (this.currentFocusNode.onBlur) {
         this.currentFocusNode.onBlur(this.currentFocusNode)
+      }
+
+      let parent = this.currentFocusNode.parent
+
+      // get list of all parents for current focus node
+      while (parent) {
+        currentParents.push(parent)
+
+        // if the parent has a parent, bubble up
+        parent = parent.parent
+      }
+    }
+
+    let parent = node.parent
+
+    // get list of all parents for new focus node
+    while (parent) {
+      newParents.push(parent)
+
+      // if the parent has a parent, bubble up
+      parent = parent.parent
+    }
+
+    // list of parents that will lose focus and not gain it again
+    const blurParents = currentParents.filter((node) => newParents.indexOf(node) === -1)
+
+    // list of parents that did not have focus and will gain it
+    const focusParents = newParents.filter((node) => currentParents.indexOf(node) === -1)
+
+    for (const blurParent of blurParents) {
+      this.emitter.emit('blurWithin', {
+        node: blurParent,
+        blurNode: this.currentFocusNode
+      })
+      if (blurParent.onBlurWithin) {
+        blurParent.onBlurWithin(blurParent, this.currentFocusNode)
       }
     }
 
@@ -984,6 +1023,16 @@ export class Lrud {
     }
 
     this.emitter.emit('focus', node)
+
+    for (const focusParent of focusParents) {
+      this.emitter.emit('focusWithin', {
+        node: focusParent,
+        focusNode: node
+      })
+      if (focusParent.onFocusWithin) {
+        focusParent.onFocusWithin(focusParent, node)
+      }
+    }
   }
 
   /**

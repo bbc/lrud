@@ -54,6 +54,8 @@ export interface Node extends Tree<Node> {
   onActiveChildChange?: (event: { node: Node, leave: Node, enter: Node }) => void
   onBlur?: (node: Node) => void
   onFocus?: (node: Node) => void
+  onFocusWithin?: (node: Node, focusNode: Node) => void
+  onBlurWithin?: (node: Node, blurNode: Node) => void
   onMove?: (event: { node: Node, leave: Node, enter: Node, direction: Direction, offset: -1 | 1 }) => void
 }
 

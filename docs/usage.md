@@ -156,6 +156,18 @@ If given, the `onFocus` function will be called when the node gets focussed on.
 
 If given, the `onBlur` function will be called when the node if the node had focus and a new node gains focus.
 
+### `onFocusWithin`
+
+`function`
+
+If given, the `onFocusWithin` function will be called when any of the nested children of the node gains focus, and none had focus before. I.e. focus has moved into the parent.
+
+### `onBlurWithin`
+
+`function`
+
+If given, the `onBlurWithin` function will be called when the node if one of the nested children of the node had focus, and now none of them do. I.e. focus has move out of the parent.
+
 ### `onSelect`
 
 `function`
@@ -308,6 +320,28 @@ navigation.on('move', moveEvent => {
   focusedDomNode.classList.add('focused');
 })
 
+```
+
+The following two events occur when focus moves into/out of a parent node:
+* `navigation.on('focusWithin', function)` - Focus was given to a nested child node.
+* `navigation.on('blurWithin', function)` - Focus was taken from all nested child nodes.
+
+The `focusWithin` event callback is called with an event like so:
+
+```js
+{
+    node: <node>        // the node that focus has moved into
+    focusNode: <node>   // the child node that has gained focus
+}
+```
+
+The `blurWithin` event callback is called with an event like so:
+
+```js
+{
+    node: <node>        // the node that focus has moved outside of
+    blurNode: <node>    // the child node that has lost focus
+}
 ```
 
 To unregister an event callback, simply call the .off() method

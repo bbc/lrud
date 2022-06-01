@@ -186,6 +186,85 @@ describe('lrud', () => {
         navigation.assignFocus('root')
       }).toThrow('trying to assign focus to a non focusable node')
     })
+
+    test('should trigger onFocusWithin for parents', () => {
+      const onFocusSpy = jest.fn()
+      const focusEventSpy = jest.fn()
+
+      const navigation = new Lrud()
+        .registerNode('root', { onFocusWithin: onFocusSpy })
+        .registerNode('a', { parent: 'root', onFocusWithin: onFocusSpy })
+        .registerNode('aa', { parent: 'a', isFocusable: true })
+
+      navigation.on('focusWithin', focusEventSpy)
+
+      navigation.assignFocus('aa')
+
+      // 1st bubbling to 'a'
+      expect(onFocusSpy.mock.calls[0][0].id).toEqual('a')
+      expect(onFocusSpy.mock.calls[0][1].id).toEqual('aa')
+      // ...then to 'root'
+      expect(onFocusSpy.mock.calls[1][0].id).toEqual('root')
+      expect(onFocusSpy.mock.calls[1][1].id).toEqual('aa')
+
+      // 1st bubbling to 'a'
+      expect(focusEventSpy.mock.calls[0][0].node.id).toEqual('a')
+      expect(focusEventSpy.mock.calls[0][0].focusNode.id).toEqual('aa')
+      // ...then to 'root'
+      expect(focusEventSpy.mock.calls[1][0].node.id).toEqual('root')
+      expect(focusEventSpy.mock.calls[1][0].focusNode.id).toEqual('aa')
+    })
+
+    test('should trigger onBlurWithin for parents of previous focus node', () => {
+      const onBlurSpy = jest.fn()
+      const blurEventSpy = jest.fn()
+
+      const navigation = new Lrud()
+        .registerNode('root')
+        .registerNode('a', { parent: 'root', onBlurWithin: onBlurSpy })
+        .registerNode('aa', { parent: 'a', isFocusable: true })
+        .registerNode('b', { parent: 'root' })
+        .registerNode('bb', { parent: 'b', isFocusable: true })
+
+      navigation.on('blurWithin', blurEventSpy)
+
+      navigation.assignFocus('aa')
+      navigation.assignFocus('bb')
+
+      expect(onBlurSpy.mock.calls[0][0].id).toEqual('a')
+      expect(onBlurSpy.mock.calls[0][1].id).toEqual('aa')
+
+      expect(blurEventSpy.mock.calls[0][0].node.id).toEqual('a')
+      expect(blurEventSpy.mock.calls[0][0].blurNode.id).toEqual('aa')
+    })
+
+    test('should not trigger onFocusWithin or onBlurWithin if focus remains in parent', () => {
+      const focusSpy = jest.fn()
+      const blurSpy = jest.fn()
+      const focusEventSpy = jest.fn()
+      const blurEventSpy = jest.fn()
+
+      const navigation = new Lrud()
+        .registerNode('root', { onFocusWithin: focusSpy, onBlurWithin: blurSpy })
+        .registerNode('a', { parent: 'root' })
+        .registerNode('aa', { parent: 'a', isFocusable: true })
+        .registerNode('b', { parent: 'root' })
+        .registerNode('bb', { parent: 'b', isFocusable: true })
+
+      navigation.on('focusWithin', (event) => event.node.id === 'root' && focusEventSpy(event))
+      navigation.on('blurWithin', (event) => event.node.id === 'root' && blurEventSpy(event))
+
+      navigation.assignFocus('aa')
+      navigation.assignFocus('bb')
+
+      // should only trigger for the first assignment
+      expect(focusSpy.mock.calls.length).toEqual(1)
+      expect(focusEventSpy.mock.calls.length).toEqual(1)
+
+      // should never trigger
+      expect(blurSpy.mock.calls.length).toEqual(0)
+      expect(blurEventSpy.mock.calls.length).toEqual(0)
+    })
   })
 
   describe('climbUp()', () => {
