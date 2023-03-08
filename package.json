@@ -47,7 +47,7 @@
     "typescript": "^4.2.3"
   },
   "dependencies": {
-    "mitt": "^1.2.0"
+    "mitt": "^3.0.0"
   },
   "scripts": {
     "preversion": "npm test",

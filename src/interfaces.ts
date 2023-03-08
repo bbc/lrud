@@ -89,3 +89,21 @@ export interface MoveNodeOptions {
 export interface RegisterOverrideOptions {
   forceOverride?: boolean
 }
+
+export type Events = {
+  focus: Node;
+  blur: Node;
+  inactive: Node;
+  active: Node;
+  select: Node;
+  cancelled: {
+    leave: Node;
+    enter: Node;
+  };
+  move: {
+    leave: Node;
+    enter: Node;
+    direction: Direction;
+    offset: -1 | 1;
+  };
+}
