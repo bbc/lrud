@@ -2,7 +2,7 @@
 
 A spatial navigation library for devices with input via directional controls
 
-## :nut_and_bolt: Maintenance mode
+## :nut_and_bolt: Maintenance mode :nut_and_bolt:
 LRUD is now in maintenance mode; existing bugs will be fixed, but new features will not be added. A library called `lrud-spatial` will be made available to the community soon.
 
 ## Upgrading from V2
