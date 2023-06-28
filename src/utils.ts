@@ -267,6 +267,8 @@ export const prepareNode = (nodeId: NodeId, nodeConfig: NodeConfig = {}): Node =
     onActiveChildChange: nodeConfig.onActiveChildChange,
     onBlur: nodeConfig.onBlur,
     onFocus: nodeConfig.onFocus,
+    onBlurWithin: nodeConfig.onBlurWithin,
+    onFocusWithin: nodeConfig.onFocusWithin,
     onMove: nodeConfig.onMove
   }
 }
