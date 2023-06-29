@@ -120,6 +120,7 @@ export class Lrud {
 
     // to keep tree coherent, nodes that are about to be added to not existing parent are ignored
     if (!parentNode) {
+      console.warn(`Node with an ID of ${nodeId} has not been registered because its parent does not exist`)
       return this
     }
 

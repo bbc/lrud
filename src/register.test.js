@@ -161,8 +161,7 @@ describe('registerNode()', () => {
   })
 
   test('should ignore children provided in node configuration', () => {
-    const navigation = new Lrud()
-      .registerNode('root')
+    const navigation = new Lrud().registerNode('root')
       .registerNode('a', {
         parent: 'root',
         children: { aa: { isFocusable: true } }
@@ -171,7 +170,8 @@ describe('registerNode()', () => {
     expect(navigation.getNode('a').children).toBeUndefined()
   })
 
-  test('should do nothing when registering node under not existing parent', () => {
+  test('should only print a warning to the console when registering node under not existing parent', () => {
+    global.console = { warn: jest.fn() }
     const navigation = new Lrud()
       .registerNode('root')
       .registerNode('a')
@@ -183,5 +183,8 @@ describe('registerNode()', () => {
     }).not.toThrow()
 
     expect(result).toEqual(navigation)
+    expect(console.warn).toHaveBeenCalledWith(
+      'Node with an ID of c has not been registered because its parent does not exist'
+    )
   })
 })
